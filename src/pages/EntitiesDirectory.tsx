@@ -138,7 +138,7 @@ const BusinessDirectory = () => {
             </Link>
             <div className="flex items-center space-x-4">
               <Button variant="ghost" asChild>
-                <Link to="/homepage">All Reviews</Link>
+                <Link to="/reviews">All Reviews</Link>
               </Button>
               <Button variant="ghost">Sign In</Button>
               <Button asChild>
