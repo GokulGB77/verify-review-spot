@@ -10,28 +10,32 @@ interface ReviewCardProps {
   id: string;
   userName: string;
   rating: number;
-  reviewText: string;
-  verificationLevel: 'Verified Graduate' | 'Verified Employee' | 'Verified User' | 'Unverified';
+  content: string;
+  userBadge: 'Verified Graduate' | 'Verified Employee' | 'Verified User' | 'Unverified User';
   proofProvided: boolean;
   upvotes: number;
   downvotes: number;
-  createdAt: string;
+  date: string;
   businessResponse?: string;
   businessResponseDate?: string;
+  title?: string;
+  isVerified?: boolean;
 }
 
 const ReviewCard = ({
   id,
   userName,
   rating,
-  reviewText,
-  verificationLevel,
+  content,
+  userBadge,
   proofProvided,
   upvotes: initialUpvotes,
   downvotes: initialDownvotes,
-  createdAt,
+  date,
   businessResponse,
-  businessResponseDate
+  businessResponseDate,
+  title,
+  isVerified = false
 }: ReviewCardProps) => {
   const [upvotes, setUpvotes] = useState(initialUpvotes);
   const [downvotes, setDownvotes] = useState(initialDownvotes);
@@ -79,7 +83,7 @@ const ReviewCard = ({
   };
 
   const getVerificationIcon = (level: string) => {
-    if (level === 'Unverified') {
+    if (level === 'Unverified User') {
       return null;
     }
     return level === 'Verified Graduate' || level === 'Verified Employee' ? 
@@ -100,10 +104,10 @@ const ReviewCard = ({
                 <span className="font-semibold text-gray-900">{userName}</span>
                 <Badge 
                   variant="outline" 
-                  className={`${getVerificationColor(verificationLevel)} flex items-center`}
+                  className={`${getVerificationColor(userBadge)} flex items-center`}
                 >
-                  {getVerificationIcon(verificationLevel)}
-                  {verificationLevel}
+                  {getVerificationIcon(userBadge)}
+                  {userBadge}
                 </Badge>
                 {proofProvided && (
                   <Badge variant="outline" className="bg-orange-100 text-orange-800 border-orange-200">
@@ -124,14 +128,17 @@ const ReviewCard = ({
                     />
                   ))}
                 </div>
-                <span className="text-sm text-gray-600">{createdAt}</span>
+                <span className="text-sm text-gray-600">{date}</span>
               </div>
             </div>
           </div>
         </div>
       </CardHeader>
       <CardContent>
-        <p className="text-gray-700 mb-4 leading-relaxed">{reviewText}</p>
+        {title && (
+          <h3 className="font-semibold text-lg mb-2 text-gray-900">{title}</h3>
+        )}
+        <p className="text-gray-700 mb-4 leading-relaxed">{content}</p>
         
         {businessResponse && (
           <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-4">
