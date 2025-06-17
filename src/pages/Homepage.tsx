@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import  TypingAnimation  from "@/components/ui/typing-animation";
 import {
   Search,
   Shield,
@@ -46,10 +47,12 @@ const Index = () => {
             Authentic Reviews You Can
             <span className="text-blue-600"> Trust</span>
           </h1>
-          <p className="text-xl text-gray-600 mb-12 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-600 mb-4 max-w-2xl mx-auto">
             Discover verified reviews from real users. No fake reviews, no
             manipulation. Just honest experiences backed by proof.
           </p>
+
+          <TypingAnimation />
 
           {/* Search Bar */}
           <div className="max-w-2xl mx-auto mb-12">
