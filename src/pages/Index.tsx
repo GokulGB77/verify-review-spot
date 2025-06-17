@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -175,8 +174,8 @@ const Index = () => {
           </div>
 
           <div className="text-center mt-8">
-            <Button variant="outline" size="lg">
-              View All Reviews
+            <Button variant="outline" size="lg" asChild>
+              <Link to="/homepage">View All Reviews</Link>
             </Button>
           </div>
         </div>
