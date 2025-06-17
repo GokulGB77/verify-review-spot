@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -142,6 +141,9 @@ const Homepage = () => {
               <span className="text-2xl font-bold text-gray-900">Review Spot</span>
             </Link>
             <div className="flex items-center space-x-4">
+              <Button variant="ghost" asChild>
+                <Link to="/businesses">Browse Businesses</Link>
+              </Button>
               <Button variant="ghost" asChild>
                 <Link to="/search">Search</Link>
               </Button>
