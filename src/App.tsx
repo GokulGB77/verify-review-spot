@@ -4,11 +4,11 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import Homepage from "./pages/Homepage";
-import BusinessDirectory from "./pages/BusinessDirectory";
+import Index from "./pages/Homepage";
+import Homepage from "./pages/Reviews";
+import BusinessDirectory from "./pages/EntitiesDirectory";
 import SearchResults from "./pages/SearchResults";
-import BusinessProfile from "./pages/BusinessProfile";
+import BusinessProfile from "./pages/EntityProfile";
 import WriteReview from "./pages/WriteReview";
 import NotFound from "./pages/NotFound";
 
