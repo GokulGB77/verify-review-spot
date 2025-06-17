@@ -239,6 +239,9 @@ const Index = () => {
             <Button size="lg" variant="secondary">
               Write a Review
             </Button>
+            <Button size="lg" variant="outline" className="bg-transparent border-white text-white hover:bg-white hover:text-blue-600" asChild>
+              <Link to="/businesses">Browse All Businesses</Link>
+            </Button>
             <Button size="lg" variant="outline" className="bg-transparent border-white text-white hover:bg-white hover:text-blue-600">
               Register Your Business
             </Button>
