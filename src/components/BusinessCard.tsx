@@ -16,7 +16,6 @@ interface BusinessCardProps {
   location?: string;
   website?: string;
   phone?: string;
-  isSponsored?: boolean;
   hasSubscription?: boolean;
 }
 
@@ -31,7 +30,6 @@ const BusinessCard = ({
   location,
   website,
   phone,
-  isSponsored = false,
   hasSubscription = false
 }: BusinessCardProps) => {
   const getVerificationBadgeColor = (status: string) => {
@@ -46,89 +44,98 @@ const BusinessCard = ({
   };
 
   return (
-    <Card className={`w-full hover:shadow-lg transition-shadow ${isSponsored ? 'border-yellow-200 bg-yellow-50' : ''}`}>
-      <CardHeader>
-        <div className="flex justify-between items-start">
-          <div className="flex-1">
-            <div className="flex items-center space-x-2 mb-2">
-              <CardTitle className="text-xl">{name}</CardTitle>
-              {isSponsored && (
-                <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-200">
-                  Sponsored
-                </Badge>
-              )}
-              {hasSubscription && (
-                <Badge variant="outline" className="bg-purple-100 text-purple-800 border-purple-200">
-                  Trusted by Review Spot
-                </Badge>
-              )}
-            </div>
-            <div className="flex items-center space-x-2 mb-2">
-              <CardDescription className="text-base">{category}</CardDescription>
-              <Badge 
-                variant="outline" 
-                className={`${getVerificationBadgeColor(verificationStatus)} flex items-center`}
-              >
-                {verificationStatus === 'Verified' && <CheckCircle className="h-3 w-3 mr-1" />}
-                {verificationStatus}
+    <Card className="w-full h-full hover:shadow-lg transition-all duration-300 border border-gray-200 bg-white">
+      <CardHeader className="pb-4">
+        <div className="space-y-3">
+          <div className="flex items-start justify-between">
+            <CardTitle className="text-xl font-semibold text-gray-900 line-clamp-1">
+              {name}
+            </CardTitle>
+            {hasSubscription && (
+              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs">
+                Trusted
               </Badge>
+            )}
+          </div>
+          
+          <div className="flex items-center gap-2 flex-wrap">
+            <CardDescription className="text-sm font-medium text-gray-600">
+              {category}
+            </CardDescription>
+            <Badge 
+              variant="outline" 
+              className={`${getVerificationBadgeColor(verificationStatus)} flex items-center text-xs`}
+            >
+              {verificationStatus === 'Verified' && <CheckCircle className="h-3 w-3 mr-1" />}
+              {verificationStatus}
+            </Badge>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="flex items-center">
+              {[...Array(5)].map((_, i) => (
+                <Star
+                  key={i}
+                  className={`h-4 w-4 ${
+                    i < Math.floor(rating)
+                      ? 'text-yellow-400 fill-current'
+                      : 'text-gray-300'
+                  }`}
+                />
+              ))}
             </div>
-            <p className="text-gray-600 text-sm line-clamp-2">{description}</p>
+            <span className="font-semibold text-lg text-gray-900">{rating}</span>
+            <span className="text-sm text-gray-500">({reviewCount} reviews)</span>
           </div>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="flex items-center space-x-4 mb-4">
-          <div className="flex items-center">
-            {[...Array(5)].map((_, i) => (
-              <Star
-                key={i}
-                className={`h-4 w-4 ${
-                  i < Math.floor(rating)
-                    ? 'text-yellow-400 fill-current'
-                    : 'text-gray-300'
-                }`}
-              />
-            ))}
+
+      <CardContent className="pt-0">
+        <div className="space-y-4">
+          <p className="text-gray-600 text-sm leading-relaxed line-clamp-3">
+            {description}
+          </p>
+
+          <div className="space-y-2">
+            {location && (
+              <div className="flex items-center text-sm text-gray-600">
+                <MapPin className="h-4 w-4 mr-2 text-gray-400 flex-shrink-0" />
+                <span className="truncate">{location}</span>
+              </div>
+            )}
+            {website && (
+              <div className="flex items-center text-sm text-gray-600">
+                <Globe className="h-4 w-4 mr-2 text-gray-400 flex-shrink-0" />
+                <a 
+                  href={website} 
+                  className="hover:text-blue-600 transition-colors truncate" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                >
+                  {website.replace(/^https?:\/\//, '')}
+                </a>
+              </div>
+            )}
+            {phone && (
+              <div className="flex items-center text-sm text-gray-600">
+                <Phone className="h-4 w-4 mr-2 text-gray-400 flex-shrink-0" />
+                <span>{phone}</span>
+              </div>
+            )}
           </div>
-          <span className="font-semibold text-lg">{rating}</span>
-          <span className="text-gray-600">({reviewCount} reviews)</span>
-        </div>
 
-        <div className="space-y-2 mb-4">
-          {location && (
-            <div className="flex items-center text-sm text-gray-600">
-              <MapPin className="h-4 w-4 mr-2" />
-              {location}
-            </div>
-          )}
-          {website && (
-            <div className="flex items-center text-sm text-gray-600">
-              <Globe className="h-4 w-4 mr-2" />
-              <a href={website} className="hover:text-blue-600" target="_blank" rel="noopener noreferrer">
-                {website}
-              </a>
-            </div>
-          )}
-          {phone && (
-            <div className="flex items-center text-sm text-gray-600">
-              <Phone className="h-4 w-4 mr-2" />
-              {phone}
-            </div>
-          )}
-        </div>
-
-        <div className="flex space-x-2">
-          <Button asChild className="flex-1">
-            <Link to={`/business/${id}`}>
-              View Reviews
-            </Link>
-          </Button>
-          <Button variant="outline" asChild>
-            <Link to={`/business/${id}/write-review`}>
-              Write Review
-            </Link>
-          </Button>
+          <div className="flex gap-2 pt-2">
+            <Button asChild className="flex-1 bg-blue-600 hover:bg-blue-700">
+              <Link to={`/business/${id}`}>
+                View Reviews
+              </Link>
+            </Button>
+            <Button variant="outline" asChild className="border-gray-300 hover:bg-gray-50">
+              <Link to={`/business/${id}/write-review`}>
+                Write Review
+              </Link>
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>

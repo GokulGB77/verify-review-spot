@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,7 +25,6 @@ const BusinessDirectory = () => {
       location: 'Mumbai, Maharashtra',
       website: 'https://techacademypro.com',
       phone: '+91 98765 43210',
-      isSponsored: true,
       hasSubscription: true
     },
     {
@@ -40,7 +38,6 @@ const BusinessDirectory = () => {
       location: 'Delhi, NCR',
       website: 'https://digitalskills.edu',
       phone: '+91 87654 32109',
-      isSponsored: false,
       hasSubscription: false
     },
     {
@@ -52,7 +49,6 @@ const BusinessDirectory = () => {
       reviewCount: 234,
       verificationStatus: 'Unclaimed' as const,
       location: 'Bangalore, Karnataka',
-      isSponsored: false,
       hasSubscription: false
     },
     {
@@ -66,7 +62,6 @@ const BusinessDirectory = () => {
       location: 'Pune, Maharashtra',
       website: 'https://codemaster.edu',
       phone: '+91 76543 21098',
-      isSponsored: false,
       hasSubscription: true
     },
     {
@@ -80,7 +75,6 @@ const BusinessDirectory = () => {
       location: 'Hyderabad, Telangana',
       website: 'https://businessleadership.hub',
       phone: '+91 65432 10987',
-      isSponsored: true,
       hasSubscription: true
     },
     {
@@ -93,7 +87,6 @@ const BusinessDirectory = () => {
       verificationStatus: 'Claimed' as const,
       location: 'Chennai, Tamil Nadu',
       website: 'https://creativearts.academy',
-      isSponsored: false,
       hasSubscription: false
     }
   ];
