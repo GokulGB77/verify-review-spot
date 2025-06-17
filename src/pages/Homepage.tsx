@@ -20,66 +20,13 @@ import {
   Eye,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import Header from "@/components/common/Header";
+import Footer from "@/components/common/Footer";
+import { featuredReviews, recentlyAddedEntities } from "@/mock-data/mockDatas";
+import CTASection from "@/components/CtaSection";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
-
-  const featuredReviews = [
-    {
-      id: 1,
-      businessName: "Tech Academy Pro",
-      rating: 4.2,
-      reviewCount: 156,
-      verificationLevel: "Verified Graduate",
-      category: "EdTech",
-      badge: "verified",
-    },
-    {
-      id: 2,
-      businessName: "Digital Skills Institute",
-      rating: 3.8,
-      reviewCount: 89,
-      verificationLevel: "Verified User",
-      category: "Education",
-      badge: "verified",
-    },
-    {
-      id: 3,
-      businessName: "Career Boost Academy",
-      rating: 2.1,
-      reviewCount: 234,
-      verificationLevel: "Mixed Verification",
-      category: "EdTech",
-      badge: "mixed",
-    },
-  ];
-
-  const recentlyAddedEntities = [
-    {
-      id: 1,
-      businessName: "SkillUp Learning",
-      category: "EdTech",
-      location: "Bangalore, India",
-      addedDays: 2,
-      description: "A new-age platform for upskilling and certification courses."
-    },
-    {
-      id: 2,
-      businessName: "EduBridge Solutions",
-      category: "Education",
-      location: "Mumbai, India",
-      addedDays: 5,
-      description: "Connecting students with top educators and mentors."
-    },
-    {
-      id: 3,
-      businessName: "NextGen Academy",
-      category: "EdTech",
-      location: "Delhi, India",
-      addedDays: 7,
-      description: "Innovative learning solutions for the digital generation."
-    }
-  ];
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
@@ -90,24 +37,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-2">
-              <Shield className="h-8 w-8 text-blue-600" />
-              <span className="text-2xl font-bold text-gray-900">
-                Review Spot
-              </span>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Button variant="ghost">For Entities</Button>
-              <Button variant="ghost">Sign In</Button>
-              <Button>Get Started</Button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Hero Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
@@ -265,7 +195,6 @@ const Index = () => {
               <Button variant="outline" size="lg" asChild>
                 <Link to="/reviews">View All Reviews</Link>
               </Button>
-              
             </div>
           </div>
         </div>
@@ -340,7 +269,6 @@ const Index = () => {
             <Button variant="outline" size="lg" asChild>
               <Link to="/businesses">View All Entities</Link>
             </Button>
-           
           </div>
         </div>
       </section>
@@ -397,118 +325,10 @@ const Index = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-blue-600">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">
-            Ready to Share Your Experience?
-          </h2>
-          <p className="text-xl text-blue-100 mb-8">
-            Join thousands of verified users making the review ecosystem more
-            trustworthy
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" variant="secondary">
-              Write a Review
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="bg-transparent border-white text-white hover:bg-white hover:text-blue-600"
-              asChild
-            >
-              <Link to="/businesses">Browse All Entities</Link>
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="bg-transparent border-white text-white hover:bg-white hover:text-blue-600"
-            >
-              Register Your Entity
-            </Button>
-          </div>
-        </div>
-      </section>
+      <CTASection/>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div>
-            <div className="flex items-center space-x-2 mb-4">
-              <Shield className="h-6 w-6" />
-              <span className="text-xl font-bold">Review Spot</span>
-            </div>
-            <p className="text-gray-400">
-              Building trust through verified, authentic reviews
-            </p>
-          </div>
-          <div>
-            <h3 className="font-semibold mb-4">For Users</h3>
-            <ul className="space-y-2 text-gray-400">
-              <li>
-                <Link to="/search" className="hover:text-white">
-                  Search Reviews
-                </Link>
-              </li>
-              <li>
-                <Link to="/write-review" className="hover:text-white">
-                  Write a Review
-                </Link>
-              </li>
-              <li>
-                <Link to="/verify" className="hover:text-white">
-                  Get Verified
-                </Link>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="font-semibold mb-4">For Entities</h3>
-            <ul className="space-y-2 text-gray-400">
-              <li>
-                <Link to="/business/register" className="hover:text-white">
-                  Register Entity
-                </Link>
-              </li>
-              <li>
-                <Link to="/business/dashboard" className="hover:text-white">
-                  Entity Dashboard
-                </Link>
-              </li>
-              <li>
-                <Link to="/business/pricing" className="hover:text-white">
-                  Pricing
-                </Link>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="font-semibold mb-4">Support</h3>
-            <ul className="space-y-2 text-gray-400">
-              <li>
-                <Link to="/help" className="hover:text-white">
-                  Help Center
-                </Link>
-              </li>
-              <li>
-                <Link to="/contact" className="hover:text-white">
-                  Contact Us
-                </Link>
-              </li>
-              <li>
-                <Link to="/legal" className="hover:text-white">
-                  Legal Assistance
-                </Link>
-              </li>
-            </ul>
-          </div>
-        </div>
-        <div className="max-w-7xl mx-auto mt-8 pt-8 border-t border-gray-800 text-center text-gray-400">
-          <p>
-            &copy; 2024 Review Spot. All rights reserved. | Privacy Policy |
-            Terms of Service
-          </p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };

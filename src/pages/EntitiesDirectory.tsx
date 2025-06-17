@@ -6,91 +6,16 @@ import { Badge } from "@/components/ui/badge";
 import { Search, Shield, Filter, Building, MapPin } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import BusinessCard from '@/components/BusinessCard';
+import Header from "@/components/common/Header";
+import Footer from "@/components/common/Footer";
+
+import {businesses} from '@/mock-data/mockDatas';
+
 
 const BusinessDirectory = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [verificationFilter, setVerificationFilter] = useState('all');
-
-  // Mock data for businesses
-  const businesses = [
-    {
-      id: '1',
-      name: 'Tech Academy Pro',
-      category: 'EdTech',
-      description: 'Leading technology bootcamp offering full-stack development, data science, and AI/ML courses with guaranteed job placement assistance.',
-      rating: 4.2,
-      reviewCount: 156,
-      verificationStatus: 'Verified' as const,
-      location: 'Mumbai, Maharashtra',
-      website: 'https://techacademypro.com',
-      phone: '+91 98765 43210',
-      hasSubscription: true
-    },
-    {
-      id: '2',
-      name: 'Digital Skills Institute',
-      category: 'Education',
-      description: 'Comprehensive digital marketing and business skills training institute with flexible learning options and industry partnerships.',
-      rating: 3.8,
-      reviewCount: 89,
-      verificationStatus: 'Claimed' as const,
-      location: 'Delhi, NCR',
-      website: 'https://digitalskills.edu',
-      phone: '+91 87654 32109',
-      hasSubscription: false
-    },
-    {
-      id: '3',
-      name: 'Career Boost Academy',
-      category: 'EdTech',
-      description: 'Professional development and career transition programs focusing on emerging technologies and soft skills development.',
-      rating: 2.1,
-      reviewCount: 234,
-      verificationStatus: 'Unclaimed' as const,
-      location: 'Bangalore, Karnataka',
-      hasSubscription: false
-    },
-    {
-      id: '4',
-      name: 'CodeMaster Institute',
-      category: 'EdTech',
-      description: 'Specialized coding bootcamp for beginners and professionals looking to upskill in programming languages and frameworks.',
-      rating: 4.5,
-      reviewCount: 127,
-      verificationStatus: 'Verified' as const,
-      location: 'Pune, Maharashtra',
-      website: 'https://codemaster.edu',
-      phone: '+91 76543 21098',
-      hasSubscription: true
-    },
-    {
-      id: '5',
-      name: 'Business Leadership Hub',
-      category: 'Professional Training',
-      description: 'Executive education and leadership development programs for mid-level to senior management professionals.',
-      rating: 4.7,
-      reviewCount: 67,
-      verificationStatus: 'Verified' as const,
-      location: 'Hyderabad, Telangana',
-      website: 'https://businessleadership.hub',
-      phone: '+91 65432 10987',
-      hasSubscription: true
-    },
-    {
-      id: '6',
-      name: 'Creative Arts Academy',
-      category: 'Arts & Design',
-      description: 'Fine arts, graphic design, and digital media courses with hands-on training and portfolio development support.',
-      rating: 3.9,
-      reviewCount: 43,
-      verificationStatus: 'Claimed' as const,
-      location: 'Chennai, Tamil Nadu',
-      website: 'https://creativearts.academy',
-      hasSubscription: false
-    }
-  ];
-
   const categories = ['all', 'EdTech', 'Education', 'Professional Training', 'Arts & Design'];
   const verificationStatuses = ['all', 'Verified', 'Claimed', 'Unclaimed'];
 
@@ -128,26 +53,7 @@ const BusinessDirectory = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <Link to="/" className="flex items-center space-x-2">
-              <Shield className="h-8 w-8 text-blue-600" />
-              <span className="text-2xl font-bold text-gray-900">Review Spot</span>
-            </Link>
-            <div className="flex items-center space-x-4">
-              <Button variant="ghost" asChild>
-                <Link to="/reviews">All Reviews</Link>
-              </Button>
-              <Button variant="ghost">Sign In</Button>
-              <Button asChild>
-                <Link to="/write-review">Write Review</Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header/>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Page Header */}
@@ -268,6 +174,7 @@ const BusinessDirectory = () => {
           </div>
         )}
       </div>
+      <Footer />
     </div>
   );
 };
