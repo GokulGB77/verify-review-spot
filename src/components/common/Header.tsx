@@ -1,5 +1,5 @@
 
-import { Shield, User, LogOut } from "lucide-react";
+import { Shield, User, LogOut, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -36,6 +36,9 @@ const Header = () => {
             <Button variant="ghost" asChild>
               <Link to="/reviews">Review Feed</Link>
             </Button>
+            <Button variant="ghost" asChild>
+              <Link to="/businesses">Browse Businesses</Link>
+            </Button>
             
             {user ? (
               <DropdownMenu>
@@ -45,7 +48,13 @@ const Header = () => {
                     <span>Account</span>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align="end" className="bg-white">
+                  <DropdownMenuItem asChild>
+                    <Link to="/my-reviews" className="flex items-center">
+                      <FileText className="h-4 w-4 mr-2" />
+                      My Reviews
+                    </Link>
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleSignOut}>
                     <LogOut className="h-4 w-4 mr-2" />
                     Sign Out

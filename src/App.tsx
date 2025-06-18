@@ -12,6 +12,7 @@ import SearchResults from "./pages/SearchResults";
 import BusinessProfile from "./pages/EntityProfile";
 import WriteReview from "./pages/WriteReview";
 import Auth from "./pages/Auth";
+import MyReviewsPage from "./pages/MyReviews";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/business/:id" element={<BusinessProfile />} />
             <Route path="/write-review" element={<WriteReview />} />
             <Route path="/business/:id/write-review" element={<WriteReview />} />
+            <Route path="/my-reviews" element={<MyReviewsPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

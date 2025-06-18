@@ -9,6 +9,66 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      businesses: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          email: string | null
+          employee_count: string | null
+          founded_year: number | null
+          has_subscription: boolean | null
+          id: string
+          location: string | null
+          name: string
+          phone: string | null
+          programs: string[] | null
+          rating: number | null
+          review_count: number | null
+          updated_at: string
+          verification_status: string | null
+          website: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          email?: string | null
+          employee_count?: string | null
+          founded_year?: number | null
+          has_subscription?: boolean | null
+          id?: string
+          location?: string | null
+          name: string
+          phone?: string | null
+          programs?: string[] | null
+          rating?: number | null
+          review_count?: number | null
+          updated_at?: string
+          verification_status?: string | null
+          website?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          email?: string | null
+          employee_count?: string | null
+          founded_year?: number | null
+          has_subscription?: boolean | null
+          id?: string
+          location?: string | null
+          name?: string
+          phone?: string | null
+          programs?: string[] | null
+          rating?: number | null
+          review_count?: number | null
+          updated_at?: string
+          verification_status?: string | null
+          website?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -35,6 +95,62 @@ export type Database = {
           username?: string | null
         }
         Relationships: []
+      }
+      reviews: {
+        Row: {
+          business_id: string
+          business_response: string | null
+          business_response_date: string | null
+          content: string
+          created_at: string
+          downvotes: number | null
+          id: string
+          proof_provided: boolean | null
+          rating: number
+          updated_at: string
+          upvotes: number | null
+          user_badge: string | null
+          user_id: string
+        }
+        Insert: {
+          business_id: string
+          business_response?: string | null
+          business_response_date?: string | null
+          content: string
+          created_at?: string
+          downvotes?: number | null
+          id?: string
+          proof_provided?: boolean | null
+          rating: number
+          updated_at?: string
+          upvotes?: number | null
+          user_badge?: string | null
+          user_id: string
+        }
+        Update: {
+          business_id?: string
+          business_response?: string | null
+          business_response_date?: string | null
+          content?: string
+          created_at?: string
+          downvotes?: number | null
+          id?: string
+          proof_provided?: boolean | null
+          rating?: number
+          updated_at?: string
+          upvotes?: number | null
+          user_badge?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

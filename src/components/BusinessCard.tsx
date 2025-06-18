@@ -4,20 +4,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Star, MapPin, Globe, Phone, CheckCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import type { Business } from '@/hooks/useBusinesses';
 
-interface BusinessCardProps {
-  id: string;
-  name: string;
-  category: string;
-  description: string;
-  rating: number;
-  reviewCount: number;
-  verificationStatus: 'Verified' | 'Claimed' | 'Unclaimed';
-  location?: string;
-  website?: string;
-  phone?: string;
-  hasSubscription?: boolean;
-}
+interface BusinessCardProps extends Business {}
 
 const BusinessCard = ({
   id,
@@ -25,14 +14,14 @@ const BusinessCard = ({
   category,
   description,
   rating,
-  reviewCount,
-  verificationStatus,
+  review_count,
+  verification_status,
   location,
   website,
   phone,
-  hasSubscription = false
+  has_subscription
 }: BusinessCardProps) => {
-  const getVerificationBadgeColor = (status: string) => {
+  const getVerificationBadgeColor = (status: string | null) => {
     switch (status) {
       case 'Verified':
         return 'bg-green-100 text-green-800 border-green-200';
@@ -43,6 +32,9 @@ const BusinessCard = ({
     }
   };
 
+  const displayRating = rating || 0;
+  const displayReviewCount = review_count || 0;
+
   return (
     <Card className="w-full h-full hover:shadow-lg transition-all duration-300 border border-gray-200 bg-white">
       <CardHeader className="pb-4">
@@ -51,7 +43,7 @@ const BusinessCard = ({
             <CardTitle className="text-xl font-semibold text-gray-900 line-clamp-1">
               {name}
             </CardTitle>
-            {hasSubscription && (
+            {has_subscription && (
               <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs">
                 Trusted
               </Badge>
@@ -64,10 +56,10 @@ const BusinessCard = ({
             </CardDescription>
             <Badge 
               variant="outline" 
-              className={`${getVerificationBadgeColor(verificationStatus)} flex items-center text-xs`}
+              className={`${getVerificationBadgeColor(verification_status)} flex items-center text-xs`}
             >
-              {verificationStatus === 'Verified' && <CheckCircle className="h-3 w-3 mr-1" />}
-              {verificationStatus}
+              {verification_status === 'Verified' && <CheckCircle className="h-3 w-3 mr-1" />}
+              {verification_status || 'Unverified'}
             </Badge>
           </div>
 
@@ -77,24 +69,26 @@ const BusinessCard = ({
                 <Star
                   key={i}
                   className={`h-4 w-4 ${
-                    i < Math.floor(rating)
+                    i < Math.floor(displayRating)
                       ? 'text-yellow-400 fill-current'
                       : 'text-gray-300'
                   }`}
                 />
               ))}
             </div>
-            <span className="font-semibold text-lg text-gray-900">{rating}</span>
-            <span className="text-sm text-gray-500">({reviewCount} reviews)</span>
+            <span className="font-semibold text-lg text-gray-900">{displayRating.toFixed(1)}</span>
+            <span className="text-sm text-gray-500">({displayReviewCount} reviews)</span>
           </div>
         </div>
       </CardHeader>
 
       <CardContent className="pt-0">
         <div className="space-y-4">
-          <p className="text-gray-600 text-sm leading-relaxed line-clamp-3">
-            {description}
-          </p>
+          {description && (
+            <p className="text-gray-600 text-sm leading-relaxed line-clamp-3">
+              {description}
+            </p>
+          )}
 
           <div className="space-y-2">
             {location && (
