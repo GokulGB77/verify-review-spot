@@ -8,7 +8,7 @@ export type Review = Tables<'reviews'> & {
   profiles?: {
     username: string | null;
     full_name: string | null;
-  };
+  } | null;
 };
 
 export const useReviews = (businessId?: string) => {
@@ -17,13 +17,7 @@ export const useReviews = (businessId?: string) => {
     queryFn: async () => {
       let query = supabase
         .from('reviews')
-        .select(`
-          *,
-          profiles:user_id (
-            username,
-            full_name
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (businessId) {
