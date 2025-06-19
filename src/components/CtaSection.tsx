@@ -1,10 +1,14 @@
+
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 
 // This component renders a Call to Action section encouraging users to write reviews, browse entities, or register their own entity.
 // It includes a title, description, and three buttons with different actions.
 
 const CTASection = () => {
+  const { user } = useAuth();
+
   return (
     <section className="py-16 px-4 sm:px-6 lg:px-8 bg-blue-600">
       <div className="max-w-4xl mx-auto text-center">
@@ -16,9 +20,15 @@ const CTASection = () => {
           trustworthy
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button size="lg" variant="secondary">
-            Write a Review
-          </Button>
+          {user ? (
+            <Button size="lg" variant="secondary" asChild>
+              <Link to="/write-review">Write a Review</Link>
+            </Button>
+          ) : (
+            <Button size="lg" variant="secondary" asChild>
+              <Link to="/auth">Sign in to Review</Link>
+            </Button>
+          )}
           <Button
             size="lg"
             variant="outline"

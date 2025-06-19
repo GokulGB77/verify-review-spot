@@ -1,6 +1,5 @@
-
 import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,9 +8,12 @@ import { Star, MapPin, Globe, Phone, Mail, CheckCircle, AlertTriangle } from 'lu
 import ReviewCard from '@/components/ReviewCard';
 import { useBusiness } from '@/hooks/useBusinesses';
 import { useReviews } from '@/hooks/useReviews';
+import { useAuth } from '@/contexts/AuthContext';
+import Header from '@/components/common/Header';
 
 const BusinessProfile = () => {
   const { id } = useParams();
+  const { user } = useAuth();
   const [selectedTab, setSelectedTab] = useState('reviews');
   
   const { data: business, isLoading: businessLoading } = useBusiness(id || '');
@@ -20,20 +22,7 @@ const BusinessProfile = () => {
   if (businessLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <header className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-16">
-              <div className="flex items-center space-x-2">
-                <h1 className="text-2xl font-bold text-blue-600">Review Spot</h1>
-              </div>
-              <div className="flex items-center space-x-4">
-                <Button variant="ghost">Sign In</Button>
-                <Button>Write Review</Button>
-              </div>
-            </div>
-          </div>
-        </header>
-
+        <Header />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="text-center py-12">
             <p className="text-gray-500">Loading business profile...</p>
@@ -46,20 +35,7 @@ const BusinessProfile = () => {
   if (!business) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <header className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-16">
-              <div className="flex items-center space-x-2">
-                <h1 className="text-2xl font-bold text-blue-600">Review Spot</h1>
-              </div>
-              <div className="flex items-center space-x-4">
-                <Button variant="ghost">Sign In</Button>
-                <Button>Write Review</Button>
-              </div>
-            </div>
-          </div>
-        </header>
-
+        <Header />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="text-center py-12">
             <p className="text-red-500">Business not found.</p>
@@ -106,20 +82,7 @@ const BusinessProfile = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-2">
-              <h1 className="text-2xl font-bold text-blue-600">Review Spot</h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Button variant="ghost">Sign In</Button>
-              <Button>Write Review</Button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Business Header */}
@@ -190,9 +153,19 @@ const BusinessProfile = () => {
                     ))}
                   </div>
                   <div className="text-gray-600">{business.review_count || 0} reviews</div>
-                  <Button className="w-full mt-4">
-                    Write a Review
-                  </Button>
+                  {user ? (
+                    <Button className="w-full mt-4" asChild>
+                      <Link to={`/business/${id}/write-review`}>
+                        Write a Review
+                      </Link>
+                    </Button>
+                  ) : (
+                    <Button className="w-full mt-4" asChild>
+                      <Link to="/auth">
+                        Sign in to Review
+                      </Link>
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>
@@ -252,6 +225,19 @@ const BusinessProfile = () => {
                 ) : (
                   <div className="text-center py-8">
                     <p className="text-gray-500">No reviews yet. Be the first to write one!</p>
+                    {user ? (
+                      <Button className="mt-4" asChild>
+                        <Link to={`/business/${id}/write-review`}>
+                          Write the First Review
+                        </Link>
+                      </Button>
+                    ) : (
+                      <Button className="mt-4" asChild>
+                        <Link to="/auth">
+                          Sign in to Write Review
+                        </Link>
+                      </Button>
+                    )}
                   </div>
                 )}
                 {transformedReviews.length > 0 && (

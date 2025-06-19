@@ -1,73 +1,54 @@
 
-import { Shield, User, LogOut, FileText } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 const Header = () => {
   const { user, signOut } = useAuth();
-  const navigate = useNavigate();
 
   const handleSignOut = async () => {
     await signOut();
-    navigate('/');
   };
 
   return (
     <header className="bg-white shadow-sm border-b">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <Link to="/">
-            <div className="flex items-center space-x-2">
-              <Shield className="h-8 w-8 text-blue-600" />
-              <span className="text-2xl font-bold text-gray-900">
-                Review Spot
-              </span>
-            </div>
-          </Link>
+          <div className="flex items-center space-x-2">
+            <Link to="/" className="text-2xl font-bold text-blue-600">
+              Review Spot
+            </Link>
+          </div>
+          <nav className="hidden md:flex items-center space-x-6">
+            <Link to="/businesses" className="text-gray-700 hover:text-blue-600">
+              Browse Entities
+            </Link>
+            <Link to="/reviews" className="text-gray-700 hover:text-blue-600">
+              Reviews
+            </Link>
+            {user && (
+              <Link to="/my-reviews" className="text-gray-700 hover:text-blue-600">
+                My Reviews
+              </Link>
+            )}
+          </nav>
           <div className="flex items-center space-x-4">
-            <Button variant="ghost">For Entities</Button>
-            <Button variant="ghost" asChild>
-              <Link to="/reviews">Review Feed</Link>
-            </Button>
-            <Button variant="ghost" asChild>
-              <Link to="/businesses">Browse Businesses</Link>
-            </Button>
-            
             {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="flex items-center space-x-2">
-                    <User className="h-4 w-4" />
-                    <span>Account</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="bg-white">
-                  <DropdownMenuItem asChild>
-                    <Link to="/my-reviews" className="flex items-center">
-                      <FileText className="h-4 w-4 mr-2" />
-                      My Reviews
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleSignOut}>
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Sign Out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <>
+                <Button variant="ghost" asChild>
+                  <Link to="/write-review">Write Review</Link>
+                </Button>
+                <Button variant="ghost" onClick={handleSignOut}>
+                  Sign Out
+                </Button>
+              </>
             ) : (
               <>
                 <Button variant="ghost" asChild>
                   <Link to="/auth">Sign In</Link>
                 </Button>
                 <Button asChild>
-                  <Link to="/auth">Get Started</Link>
+                  <Link to="/auth">Sign Up</Link>
                 </Button>
               </>
             )}

@@ -1,5 +1,6 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,14 +10,38 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Star, Upload, Shield, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useAuth } from '@/contexts/AuthContext';
+import { useCreateReview } from '@/hooks/useReviews';
+import { useBusiness } from '@/hooks/useBusinesses';
+import { useToast } from '@/hooks/use-toast';
+import Header from '@/components/common/Header';
 
 const WriteReview = () => {
+  const { id: businessId } = useParams();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const createReview = useCreateReview();
+  const { data: business } = useBusiness(businessId || '');
+
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [reviewText, setReviewText] = useState('');
   const [businessName, setBusinessName] = useState('');
   const [verificationLevel, setVerificationLevel] = useState('');
   const [proofFile, setProofFile] = useState<File | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+
+    if (business) {
+      setBusinessName(business.name);
+    }
+  }, [user, business, navigate]);
 
   const verificationOptions = [
     { value: 'verified-graduate', label: 'Verified Graduate', description: 'I am a graduate/student of this institution' },
@@ -36,39 +61,70 @@ const WriteReview = () => {
     }
   };
 
-  const handleSubmit = () => {
-    if (!businessName || !rating || !reviewText.trim()) {
-      alert('Please fill in all required fields');
+  const handleSubmit = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to submit a review.",
+        variant: "destructive"
+      });
+      navigate('/auth');
       return;
     }
-    
-    console.log('Review submission:', {
-      businessName,
-      rating,
-      reviewText,
-      verificationLevel,
-      proofFile
-    });
-    
-    alert('Review submitted for verification! You will receive an email confirmation shortly.');
+
+    if (!businessId) {
+      toast({
+        title: "Error",
+        description: "No business selected for review.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!rating || !reviewText.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "Please provide a rating and review text.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      await createReview.mutateAsync({
+        business_id: businessId,
+        rating,
+        content: reviewText,
+        user_badge: verificationLevel || 'Unverified User',
+        proof_provided: !!proofFile
+      });
+
+      toast({
+        title: "Review Submitted!",
+        description: "Your review has been submitted successfully.",
+      });
+
+      navigate(`/business/${businessId}`);
+    } catch (error: any) {
+      toast({
+        title: "Submission Failed",
+        description: error.message || "Failed to submit review. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  if (!user) {
+    return null; // Will redirect to auth
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-2">
-              <h1 className="text-2xl font-bold text-blue-600">Review Spot</h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Button variant="ghost">Back to Search</Button>
-              <Button variant="ghost">Sign In</Button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
@@ -76,6 +132,11 @@ const WriteReview = () => {
           <p className="text-lg text-gray-600">
             Share your honest experience to help others make informed decisions
           </p>
+          {business && (
+            <p className="text-sm text-gray-500 mt-2">
+              Reviewing: <span className="font-medium">{business.name}</span>
+            </p>
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -86,7 +147,7 @@ const WriteReview = () => {
                 <CardTitle>Your Review Details</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                {/* Business Search */}
+                {/* Business Name - Read only if from URL */}
                 <div>
                   <Label htmlFor="business-name">Business/Institution Name *</Label>
                   <Input
@@ -95,10 +156,13 @@ const WriteReview = () => {
                     value={businessName}
                     onChange={(e) => setBusinessName(e.target.value)}
                     className="mt-1"
+                    disabled={!!businessId}
                   />
-                  <p className="text-sm text-gray-600 mt-1">
-                    Can't find your business? <Button variant="link" className="p-0 h-auto">Request to add it</Button>
-                  </p>
+                  {!businessId && (
+                    <p className="text-sm text-gray-600 mt-1">
+                      Can't find your business? <Button variant="link" className="p-0 h-auto">Request to add it</Button>
+                    </p>
+                  )}
                 </div>
 
                 {/* Rating */}
@@ -192,11 +256,16 @@ const WriteReview = () => {
 
                 {/* Submit Button */}
                 <div className="pt-4">
-                  <Button onClick={handleSubmit} size="lg" className="w-full">
-                    Submit Review for Verification
+                  <Button 
+                    onClick={handleSubmit} 
+                    size="lg" 
+                    className="w-full"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? 'Submitting...' : 'Submit Review'}
                   </Button>
                   <p className="text-sm text-gray-600 mt-2 text-center">
-                    Your review will be verified before publication
+                    Your review will be published immediately
                   </p>
                 </div>
               </CardContent>
@@ -220,14 +289,14 @@ const WriteReview = () => {
                       <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0" />
                       <div className="text-sm">
                         <div className="font-medium">Identity Verification</div>
-                        <div className="text-gray-600">Aadhaar-based verification for all users</div>
+                        <div className="text-gray-600">Account-based verification for all users</div>
                       </div>
                     </div>
                     <div className="flex items-start space-x-2">
                       <div className="w-2 h-2 bg-green-600 rounded-full mt-2 flex-shrink-0" />
                       <div className="text-sm">
                         <div className="font-medium">Proof Verification</div>
-                        <div className="text-gray-600">Manual verification of uploaded documents</div>
+                        <div className="text-gray-600">Optional document verification</div>
                       </div>
                     </div>
                     <div className="flex items-start space-x-2">
