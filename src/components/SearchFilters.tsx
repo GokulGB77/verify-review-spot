@@ -60,7 +60,9 @@ const SearchFilters = ({ onFiltersChange, activeFilters }: SearchFiltersProps) =
   ];
 
   const updateFilter = (key: string, value: any) => {
-    const newFilters = { ...localFilters, [key]: value };
+    // Convert "all" values back to empty strings for filtering logic
+    const filterValue = value === 'all-categories' || value === 'all-locations' ? '' : value;
+    const newFilters = { ...localFilters, [key]: filterValue };
     setLocalFilters(newFilters);
     onFiltersChange(newFilters);
   };
@@ -181,12 +183,12 @@ const SearchFilters = ({ onFiltersChange, activeFilters }: SearchFiltersProps) =
           <CardTitle className="text-lg">Category</CardTitle>
         </CardHeader>
         <CardContent>
-          <Select value={localFilters.category} onValueChange={(value) => updateFilter('category', value)}>
+          <Select value={localFilters.category || 'all-categories'} onValueChange={(value) => updateFilter('category', value)}>
             <SelectTrigger>
               <SelectValue placeholder="Select category..." />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Categories</SelectItem>
+              <SelectItem value="all-categories">All Categories</SelectItem>
               {categories.map((category) => (
                 <SelectItem key={category} value={category}>
                   {category}
@@ -254,12 +256,12 @@ const SearchFilters = ({ onFiltersChange, activeFilters }: SearchFiltersProps) =
           <CardTitle className="text-lg">Location</CardTitle>
         </CardHeader>
         <CardContent>
-          <Select value={localFilters.location} onValueChange={(value) => updateFilter('location', value)}>
+          <Select value={localFilters.location || 'all-locations'} onValueChange={(value) => updateFilter('location', value)}>
             <SelectTrigger>
               <SelectValue placeholder="Select location..." />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Locations</SelectItem>
+              <SelectItem value="all-locations">All Locations</SelectItem>
               {locations.map((location) => (
                 <SelectItem key={location} value={location}>
                   {location}
