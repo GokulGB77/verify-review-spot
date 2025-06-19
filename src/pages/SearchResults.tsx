@@ -1,5 +1,6 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Filter } from 'lucide-react';
@@ -7,37 +8,50 @@ import BusinessCard from '@/components/BusinessCard';
 import SearchFilters from '@/components/SearchFilters';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useBusinesses } from '@/hooks/useBusinesses';
+import Header from "@/components/common/Header";
+import Footer from "@/components/common/Footer";
 
 const SearchResults = () => {
+  const [searchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState({});
   const { data: businesses = [], isLoading, error } = useBusinesses();
+
+  // Get search query from URL on component mount
+  useEffect(() => {
+    const queryFromUrl = searchParams.get('q');
+    if (queryFromUrl) {
+      setSearchQuery(queryFromUrl);
+    }
+  }, [searchParams]);
 
   const handleSearch = () => {
     console.log('Searching for:', searchQuery, 'with filters:', filters);
   };
 
+  // Filter businesses based on search query
+  const filteredBusinesses = businesses.filter(business => {
+    if (!searchQuery.trim()) return true;
+    
+    const query = searchQuery.toLowerCase();
+    return (
+      business.name.toLowerCase().includes(query) ||
+      business.category.toLowerCase().includes(query) ||
+      (business.description && business.description.toLowerCase().includes(query)) ||
+      (business.location && business.location.toLowerCase().includes(query))
+    );
+  });
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <header className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-16">
-              <div className="flex items-center space-x-2">
-                <h1 className="text-2xl font-bold text-blue-600">Review Spot</h1>
-              </div>
-              <div className="flex items-center space-x-4">
-                <Button variant="ghost">Sign In</Button>
-                <Button>Write Review</Button>
-              </div>
-            </div>
-          </div>
-        </header>
+        <Header />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="text-center py-12">
             <p className="text-gray-500">Loading search results...</p>
           </div>
         </div>
+        <Footer />
       </div>
     );
   }
@@ -45,44 +59,20 @@ const SearchResults = () => {
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <header className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-16">
-              <div className="flex items-center space-x-2">
-                <h1 className="text-2xl font-bold text-blue-600">Review Spot</h1>
-              </div>
-              <div className="flex items-center space-x-4">
-                <Button variant="ghost">Sign In</Button>
-                <Button>Write Review</Button>
-              </div>
-            </div>
-          </div>
-        </header>
+        <Header />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="text-center py-12">
             <p className="text-red-500">Error loading search results. Please try again.</p>
           </div>
         </div>
+        <Footer />
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-2">
-              <h1 className="text-2xl font-bold text-blue-600">Review Spot</h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Button variant="ghost">Sign In</Button>
-              <Button>Write Review</Button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Search Bar */}
@@ -135,29 +125,44 @@ const SearchResults = () => {
             {/* Results Header */}
             <div className="mb-6">
               <h2 className="text-xl font-semibold text-gray-900">
-                Found {businesses.length} results
+                {searchQuery ? `Search results for "${searchQuery}"` : 'All entities'}
               </h2>
               <p className="text-gray-600">
-                Showing verified reviews for educational institutions
+                Found {filteredBusinesses.length} result{filteredBusinesses.length !== 1 ? 's' : ''}
               </p>
             </div>
 
             {/* Results Grid */}
-            <div className="space-y-4">
-              {businesses.map((business) => (
-                <BusinessCard key={business.id} {...business} />
-              ))}
-            </div>
+            {filteredBusinesses.length > 0 ? (
+              <div className="space-y-4">
+                {filteredBusinesses.map((business) => (
+                  <BusinessCard key={business.id} {...business} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-gray-500">
+                  {searchQuery 
+                    ? `No entities found matching "${searchQuery}". Try adjusting your search terms.`
+                    : 'No entities found.'
+                  }
+                </p>
+              </div>
+            )}
 
             {/* Pagination placeholder */}
-            <div className="mt-8 text-center">
-              <Button variant="outline">
-                Load More Results
-              </Button>
-            </div>
+            {filteredBusinesses.length > 0 && (
+              <div className="mt-8 text-center">
+                <Button variant="outline">
+                  Load More Results
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>
+      
+      <Footer />
     </div>
   );
 };

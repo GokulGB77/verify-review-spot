@@ -21,7 +21,7 @@ import {
   Lock,
   Eye,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Header from "@/components/common/Header";
 import Footer from "@/components/common/Footer";
 import CTASection from "@/components/CtaSection";
@@ -30,13 +30,14 @@ import { useReviews } from "@/hooks/useReviews";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate();
   const { data: businesses = [] } = useBusinesses();
   const { data: allReviews = [] } = useReviews();
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
-      // Navigate to search results - will implement routing later
-      console.log("Searching for:", searchQuery);
+      // Navigate to search results with the search query
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
     }
   };
 
