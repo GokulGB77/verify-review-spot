@@ -7,78 +7,94 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Star, MapPin, Globe, Phone, Mail, CheckCircle, AlertTriangle } from 'lucide-react';
 import ReviewCard from '@/components/ReviewCard';
+import { useBusiness } from '@/hooks/useBusinesses';
+import { useReviews } from '@/hooks/useReviews';
 
 const BusinessProfile = () => {
   const { id } = useParams();
   const [selectedTab, setSelectedTab] = useState('reviews');
+  
+  const { data: business, isLoading: businessLoading } = useBusiness(id || '');
+  const { data: reviews = [], isLoading: reviewsLoading } = useReviews(id);
 
-  // Mock business data
-  const business = {
-    id: '1',
-    name: 'Tech Academy Pro',
-    category: 'EdTech',
-    description: 'Leading online coding bootcamp with industry-relevant curriculum and job placement assistance. We offer comprehensive programs in full-stack development, data science, and mobile app development.',
-    rating: 4.2,
-    reviewCount: 156,
-    verificationStatus: 'Verified',
-    location: 'Mumbai, Maharashtra',
-    website: 'https://techacademypro.com',
-    phone: '+91 98765 43210',
-    email: 'contact@techacademypro.com',
-    hasSubscription: true,
-    foundedYear: 2018,
-    employeeCount: '50-100',
-    programs: ['Full Stack Development', 'Data Science', 'Mobile App Development', 'UI/UX Design']
-  };
+  if (businessLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <header className="bg-white shadow-sm border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center h-16">
+              <div className="flex items-center space-x-2">
+                <h1 className="text-2xl font-bold text-blue-600">Review Spot</h1>
+              </div>
+              <div className="flex items-center space-x-4">
+                <Button variant="ghost">Sign In</Button>
+                <Button>Write Review</Button>
+              </div>
+            </div>
+          </div>
+        </header>
 
-  // Mock reviews data
-  const reviews = [
-    {
-      id: '1',
-      userName: 'Rahul S.',
-      rating: 5,
-      content: 'Excellent bootcamp! The curriculum is very practical and industry-focused. The instructors are experienced professionals who provide great mentorship. I got placed in a top tech company within 3 months of completion.',
-      userBadge: 'Verified Graduate' as const,
-      proofProvided: true,
-      upvotes: 24,
-      downvotes: 2,
-      date: '2 weeks ago',
-      businessResponse: 'Thank you Rahul for your wonderful feedback! We\'re thrilled to hear about your successful placement. Best wishes for your career ahead!',
-      businessResponseDate: '1 week ago'
-    },
-    {
-      id: '2',
-      userName: 'Priya M.',
-      rating: 4,
-      content: 'Good program overall. The content is comprehensive and well-structured. However, I felt the pace was a bit fast for beginners. The career support team is very helpful and responsive.',
-      userBadge: 'Verified Graduate' as const,
-      proofProvided: true,
-      upvotes: 18,
-      downvotes: 5,
-      date: '1 month ago'
-    },
-    {
-      id: '3',
-      userName: 'Anonymous User',
-      rating: 2,
-      content: 'Not satisfied with the quality of instruction. Some instructors seemed inexperienced and the course material was outdated. Customer service was also unresponsive to my concerns.',
-      userBadge: 'Unverified User' as const,
-      proofProvided: false,
-      upvotes: 8,
-      downvotes: 15,
-      date: '2 months ago',
-      businessResponse: 'We apologize for your experience. We have recently updated our curriculum and instructor training program. Please contact us at support@techacademypro.com to discuss your concerns.',
-      businessResponseDate: '2 months ago'
-    }
-  ];
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="text-center py-12">
+            <p className="text-gray-500">Loading business profile...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-  const ratingDistribution = [
-    { stars: 5, count: 78, percentage: 50 },
-    { stars: 4, count: 47, percentage: 30 },
-    { stars: 3, count: 16, percentage: 10 },
-    { stars: 2, count: 9, percentage: 6 },
-    { stars: 1, count: 6, percentage: 4 }
-  ];
+  if (!business) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <header className="bg-white shadow-sm border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center h-16">
+              <div className="flex items-center space-x-2">
+                <h1 className="text-2xl font-bold text-blue-600">Review Spot</h1>
+              </div>
+              <div className="flex items-center space-x-4">
+                <Button variant="ghost">Sign In</Button>
+                <Button>Write Review</Button>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="text-center py-12">
+            <p className="text-red-500">Business not found.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Transform reviews data for display
+  const transformedReviews = reviews.map(review => ({
+    id: review.id,
+    userName: 'Anonymous User', // We'll implement user profiles later
+    rating: review.rating,
+    content: review.content,
+    userBadge: review.user_badge || 'Unverified User',
+    proofProvided: review.proof_provided || false,
+    upvotes: review.upvotes || 0,
+    downvotes: review.downvotes || 0,
+    date: new Date(review.created_at).toLocaleDateString(),
+    businessResponse: review.business_response,
+    businessResponseDate: review.business_response_date ? new Date(review.business_response_date).toLocaleDateString() : undefined
+  }));
+
+  // Calculate rating distribution
+  const ratingCounts = [1, 2, 3, 4, 5].map(rating => 
+    transformedReviews.filter(review => review.rating === rating).length
+  );
+  
+  const totalReviews = transformedReviews.length;
+  const ratingDistribution = ratingCounts.map((count, index) => ({
+    stars: index + 1,
+    count,
+    percentage: totalReviews > 0 ? Math.round((count / totalReviews) * 100) : 0
+  })).reverse();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -107,55 +123,65 @@ const BusinessProfile = () => {
                   <CardTitle className="text-3xl">{business.name}</CardTitle>
                   <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200 flex items-center">
                     <CheckCircle className="h-4 w-4 mr-1" />
-                    {business.verificationStatus}
+                    {business.verification_status || 'Unverified'}
                   </Badge>
-                  {business.hasSubscription && (
+                  {business.has_subscription && (
                     <Badge variant="outline" className="bg-purple-100 text-purple-800 border-purple-200">
                       Trusted by Review Spot
                     </Badge>
                   )}
                 </div>
                 <CardDescription className="text-lg mb-4">{business.category}</CardDescription>
-                <p className="text-gray-700 mb-4">{business.description}</p>
+                {business.description && (
+                  <p className="text-gray-700 mb-4">{business.description}</p>
+                )}
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
-                  <div className="flex items-center">
-                    <MapPin className="h-4 w-4 mr-2" />
-                    {business.location}
-                  </div>
-                  <div className="flex items-center">
-                    <Globe className="h-4 w-4 mr-2" />
-                    <a href={business.website} className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">
-                      {business.website}
-                    </a>
-                  </div>
-                  <div className="flex items-center">
-                    <Phone className="h-4 w-4 mr-2" />
-                    {business.phone}
-                  </div>
-                  <div className="flex items-center">
-                    <Mail className="h-4 w-4 mr-2" />
-                    {business.email}
-                  </div>
+                  {business.location && (
+                    <div className="flex items-center">
+                      <MapPin className="h-4 w-4 mr-2" />
+                      {business.location}
+                    </div>
+                  )}
+                  {business.website && (
+                    <div className="flex items-center">
+                      <Globe className="h-4 w-4 mr-2" />
+                      <a href={business.website} className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">
+                        {business.website}
+                      </a>
+                    </div>
+                  )}
+                  {business.phone && (
+                    <div className="flex items-center">
+                      <Phone className="h-4 w-4 mr-2" />
+                      {business.phone}
+                    </div>
+                  )}
+                  {business.email && (
+                    <div className="flex items-center">
+                      <Mail className="h-4 w-4 mr-2" />
+                      {business.email}
+                    </div>
+                  )}
                 </div>
               </div>
               
               <div className="mt-6 lg:mt-0 lg:ml-8 text-center">
                 <div className="bg-white border-2 border-gray-200 rounded-lg p-6">
-                  <div className="text-4xl font-bold text-gray-900 mb-2">{business.rating}</div>
+                  <div className="text-4xl font-bold text-gray-900 mb-2">{(business.rating || 0).toFixed(1)}</div>
                   <div className="flex items-center justify-center mb-2">
                     {[...Array(5)].map((_, i) => (
                       <Star
                         key={i}
                         className={`h-5 w-5 ${
-                          i < Math.floor(business.rating)
+                          i < Math.floor(business.rating || 0)
                             ? 'text-yellow-400 fill-current'
                             : 'text-gray-300'
                         }`}
                       />
                     ))}
                   </div>
-                  <div className="text-gray-600">{business.reviewCount} reviews</div>
+                  <div className="text-gray-600">{business.review_count || 0} reviews</div>
                   <Button className="w-full mt-4">
                     Write a Review
                   </Button>
@@ -205,14 +231,26 @@ const BusinessProfile = () => {
 
               {/* Reviews List */}
               <div className="lg:col-span-2">
-                <div className="space-y-4">
-                  {reviews.map((review) => (
-                    <ReviewCard key={review.id} {...review} />
-                  ))}
-                </div>
-                <div className="mt-6 text-center">
-                  <Button variant="outline">Load More Reviews</Button>
-                </div>
+                {reviewsLoading ? (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500">Loading reviews...</p>
+                  </div>
+                ) : transformedReviews.length > 0 ? (
+                  <div className="space-y-4">
+                    {transformedReviews.map((review) => (
+                      <ReviewCard key={review.id} {...review} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500">No reviews yet. Be the first to write one!</p>
+                  </div>
+                )}
+                {transformedReviews.length > 0 && (
+                  <div className="mt-6 text-center">
+                    <Button variant="outline">Load More Reviews</Button>
+                  </div>
+                )}
               </div>
             </div>
           </TabsContent>
@@ -227,26 +265,34 @@ const BusinessProfile = () => {
                   <div>
                     <h3 className="font-semibold mb-2">Company Information</h3>
                     <div className="space-y-2 text-sm">
-                      <div><span className="font-medium">Founded:</span> {business.foundedYear}</div>
-                      <div><span className="font-medium">Company Size:</span> {business.employeeCount} employees</div>
+                      {business.founded_year && (
+                        <div><span className="font-medium">Founded:</span> {business.founded_year}</div>
+                      )}
+                      {business.employee_count && (
+                        <div><span className="font-medium">Company Size:</span> {business.employee_count} employees</div>
+                      )}
                       <div><span className="font-medium">Industry:</span> {business.category}</div>
                     </div>
                   </div>
-                  <div>
-                    <h3 className="font-semibold mb-2">Programs Offered</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {business.programs.map((program) => (
-                        <Badge key={program} variant="outline">
-                          {program}
-                        </Badge>
-                      ))}
+                  {business.programs && business.programs.length > 0 && (
+                    <div>
+                      <h3 className="font-semibold mb-2">Programs Offered</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {business.programs.map((program: string) => (
+                          <Badge key={program} variant="outline">
+                            {program}
+                          </Badge>
+                        ))}
+                      </div>
                     </div>
+                  )}
+                </div>
+                {business.description && (
+                  <div className="mt-6">
+                    <h3 className="font-semibold mb-2">Description</h3>
+                    <p className="text-gray-700">{business.description}</p>
                   </div>
-                </div>
-                <div className="mt-6">
-                  <h3 className="font-semibold mb-2">Description</h3>
-                  <p className="text-gray-700">{business.description}</p>
-                </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -261,19 +307,18 @@ const BusinessProfile = () => {
                   <div className="space-y-4">
                     <div className="flex justify-between">
                       <span>Total Reviews</span>
-                      <span className="font-semibold">{business.reviewCount}</span>
+                      <span className="font-semibold">{business.review_count || 0}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Verified Reviews</span>
-                      <span className="font-semibold">143 (92%)</span>
+                      <span className="font-semibold">
+                        {transformedReviews.filter(r => r.userBadge !== 'Unverified User').length} 
+                        ({transformedReviews.length > 0 ? Math.round((transformedReviews.filter(r => r.userBadge !== 'Unverified User').length / transformedReviews.length) * 100) : 0}%)
+                      </span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Response Rate</span>
-                      <span className="font-semibold">89%</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Avg Response Time</span>
-                      <span className="font-semibold">2.3 days</span>
+                      <span>Average Rating</span>
+                      <span className="font-semibold">{(business.rating || 0).toFixed(1)}/5</span>
                     </div>
                   </div>
                 </CardContent>
@@ -287,19 +332,27 @@ const BusinessProfile = () => {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <span>Identity Verified</span>
-                      <CheckCircle className="h-5 w-5 text-green-500" />
+                      {business.verification_status === 'Verified' ? (
+                        <CheckCircle className="h-5 w-5 text-green-500" />
+                      ) : (
+                        <AlertTriangle className="h-5 w-5 text-yellow-500" />
+                      )}
                     </div>
                     <div className="flex items-center justify-between">
                       <span>Business Claimed</span>
-                      <CheckCircle className="h-5 w-5 text-green-500" />
+                      {business.verification_status !== 'Unclaimed' ? (
+                        <CheckCircle className="h-5 w-5 text-green-500" />
+                      ) : (
+                        <AlertTriangle className="h-5 w-5 text-yellow-500" />
+                      )}
                     </div>
                     <div className="flex items-center justify-between">
                       <span>Premium Member</span>
-                      <CheckCircle className="h-5 w-5 text-green-500" />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span>Open Disputes</span>
-                      <span className="text-sm text-gray-600">None</span>
+                      {business.has_subscription ? (
+                        <CheckCircle className="h-5 w-5 text-green-500" />
+                      ) : (
+                        <span className="text-sm text-gray-600">No</span>
+                      )}
                     </div>
                   </div>
                 </CardContent>

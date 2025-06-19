@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,22 +7,49 @@ import { Badge } from "@/components/ui/badge";
 import { Search, Shield, Filter, Star, MapPin, CheckCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import ReviewCard from '@/components/ReviewCard';
-
 import Header from "@/components/common/Header";
 import Footer from "@/components/common/Footer";
-import {allReviews} from '@/mock-data/mockDatas';
+import { useReviews } from '@/hooks/useReviews';
+import { useBusinesses } from '@/hooks/useBusinesses';
+
 const Homepage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('recent');
-
   
+  const { data: allReviews = [], isLoading: reviewsLoading } = useReviews();
+  const { data: businesses = [] } = useBusinesses();
 
   const handleSearch = () => {
     console.log('Searching for:', searchQuery);
   };
 
+  // Create a map of business ID to business details for easy lookup
+  const businessMap = businesses.reduce((acc, business) => {
+    acc[business.id] = business;
+    return acc;
+  }, {} as Record<string, any>);
+
   const getFilteredReviews = () => {
-    let filtered = allReviews;
+    let filtered = allReviews.map(review => {
+      const business = businessMap[review.business_id];
+      return {
+        id: review.id,
+        businessId: review.business_id,
+        businessName: business?.name || 'Unknown Business',
+        businessCategory: business?.category || 'Unknown Category',
+        businessLocation: business?.location || 'Location not specified',
+        userName: 'Anonymous User', // We'll need to implement user profiles later
+        userBadge: review.user_badge || 'Unverified User',
+        rating: review.rating,
+        date: new Date(review.created_at).toLocaleDateString(),
+        title: `Review for ${business?.name || 'Business'}`,
+        content: review.content,
+        isVerified: review.user_badge !== 'Unverified User',
+        proofProvided: review.proof_provided || false,
+        upvotes: review.upvotes || 0,
+        downvotes: review.downvotes || 0,
+      };
+    });
     
     if (searchQuery.trim()) {
       filtered = filtered.filter(review => 
@@ -46,9 +74,29 @@ const Homepage = () => {
     }
   };
 
+  const filteredReviews = getFilteredReviews();
+  const verifiedReviews = filteredReviews.filter(r => r.isVerified);
+  const averageRating = filteredReviews.length > 0 
+    ? (filteredReviews.reduce((acc, r) => acc + r.rating, 0) / filteredReviews.length).toFixed(1) 
+    : '0.0';
+  const uniqueBusinesses = [...new Set(filteredReviews.map(r => r.businessId))].length;
+
+  if (reviewsLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center py-12">
+            <p className="text-gray-500">Loading reviews...</p>
+          </div>
+        </div>
+        <Footer/>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <Header />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -120,14 +168,14 @@ const Homepage = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <Card>
             <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-blue-600">{allReviews.length}</div>
+              <div className="text-2xl font-bold text-blue-600">{filteredReviews.length}</div>
               <div className="text-sm text-gray-600">Total Reviews</div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4 text-center">
               <div className="text-2xl font-bold text-green-600">
-                {allReviews.filter(r => r.isVerified).length}
+                {verifiedReviews.length}
               </div>
               <div className="text-sm text-gray-600">Verified Reviews</div>
             </CardContent>
@@ -135,7 +183,7 @@ const Homepage = () => {
           <Card>
             <CardContent className="p-4 text-center">
               <div className="text-2xl font-bold text-yellow-600">
-                {(allReviews.reduce((acc, r) => acc + r.rating, 0) / allReviews.length).toFixed(1)}
+                {averageRating}
               </div>
               <div className="text-sm text-gray-600">Average Rating</div>
             </CardContent>
@@ -143,7 +191,7 @@ const Homepage = () => {
           <Card>
             <CardContent className="p-4 text-center">
               <div className="text-2xl font-bold text-purple-600">
-                {[...new Set(allReviews.map(r => r.businessId))].length}
+                {uniqueBusinesses}
               </div>
               <div className="text-sm text-gray-600">Businesses</div>
             </CardContent>
@@ -151,52 +199,60 @@ const Homepage = () => {
         </div>
 
         {/* Reviews List */}
-        <div className="space-y-6">
-          {getFilteredReviews().map((review) => (
-            <Card key={review.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-2 mb-2">
-                      <Link 
-                        to={`/business/${review.businessId}`}
-                        className="text-lg font-semibold text-blue-600 hover:text-blue-800"
+        {filteredReviews.length > 0 ? (
+          <div className="space-y-6">
+            {filteredReviews.map((review) => (
+              <Card key={review.id} className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <Link 
+                          to={`/business/${review.businessId}`}
+                          className="text-lg font-semibold text-blue-600 hover:text-blue-800"
+                        >
+                          {review.businessName}
+                        </Link>
+                        <Badge variant="outline">{review.businessCategory}</Badge>
+                      </div>
+                      <div className="flex items-center space-x-2 text-sm text-gray-600 mb-2">
+                        <MapPin className="h-3 w-3" />
+                        {review.businessLocation}
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      {review.isVerified && (
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                      )}
+                      <Badge 
+                        variant={review.isVerified ? 'default' : 'secondary'}
+                        className={review.isVerified ? 'bg-green-100 text-green-800' : ''}
                       >
-                        {review.businessName}
-                      </Link>
-                      <Badge variant="outline">{review.businessCategory}</Badge>
-                    </div>
-                    <div className="flex items-center space-x-2 text-sm text-gray-600 mb-2">
-                      <MapPin className="h-3 w-3" />
-                      {review.businessLocation}
+                        {review.userBadge}
+                      </Badge>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    {review.isVerified && (
-                      <CheckCircle className="h-4 w-4 text-green-500" />
-                    )}
-                    <Badge 
-                      variant={review.isVerified ? 'default' : 'secondary'}
-                      className={review.isVerified ? 'bg-green-100 text-green-800' : ''}
-                    >
-                      {review.userBadge}
-                    </Badge>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <ReviewCard {...review} />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                </CardHeader>
+                <CardContent>
+                  <ReviewCard {...review} />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-gray-500">No reviews found matching your criteria.</p>
+          </div>
+        )}
 
         {/* Load More */}
-        <div className="text-center mt-8">
-          <Button variant="outline" size="lg">
-            Load More Reviews
-          </Button>
-        </div>
+        {filteredReviews.length > 0 && (
+          <div className="text-center mt-8">
+            <Button variant="outline" size="lg">
+              Load More Reviews
+            </Button>
+          </div>
+        )}
       </div>
 
       <Footer/>

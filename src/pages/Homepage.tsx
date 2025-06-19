@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import {
   Card,
@@ -23,11 +24,14 @@ import {
 import { Link } from "react-router-dom";
 import Header from "@/components/common/Header";
 import Footer from "@/components/common/Footer";
-import { featuredReviews, recentlyAddedEntities } from "@/mock-data/mockDatas";
 import CTASection from "@/components/CtaSection";
+import { useBusinesses } from "@/hooks/useBusinesses";
+import { useReviews } from "@/hooks/useReviews";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const { data: businesses = [] } = useBusinesses();
+  const { data: allReviews = [] } = useReviews();
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
@@ -35,6 +39,33 @@ const Index = () => {
       console.log("Searching for:", searchQuery);
     }
   };
+
+  // Get featured reviews (latest reviews with high ratings)
+  const featuredReviews = businesses
+    .filter(business => business.rating && business.rating >= 4)
+    .slice(0, 3)
+    .map(business => ({
+      id: business.id,
+      businessName: business.name,
+      rating: business.rating || 0,
+      reviewCount: business.review_count || 0,
+      verificationLevel: business.verification_status === 'Verified' ? 'Verified Business' : 'Claimed Business',
+      category: business.category,
+      badge: business.verification_status === 'Verified' ? 'verified' : 'claimed',
+    }));
+
+  // Get recently added entities (latest businesses)
+  const recentlyAddedEntities = businesses
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .slice(0, 3)
+    .map(business => ({
+      id: business.id,
+      businessName: business.name,
+      category: business.category,
+      location: business.location || 'Location not specified',
+      addedDays: Math.floor((new Date().getTime() - new Date(business.created_at).getTime()) / (1000 * 60 * 60 * 24)),
+      description: business.description || 'No description available'
+    }));
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -140,58 +171,64 @@ const Index = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {featuredReviews.map((review) => (
-              <Card
-                key={review.id}
-                className="hover:shadow-lg transition-shadow cursor-pointer"
-              >
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle className="text-lg">
-                        {review.businessName}
-                      </CardTitle>
-                      <CardDescription>{review.category}</CardDescription>
+          {featuredReviews.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {featuredReviews.map((review) => (
+                <Card
+                  key={review.id}
+                  className="hover:shadow-lg transition-shadow cursor-pointer"
+                >
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle className="text-lg">
+                          {review.businessName}
+                        </CardTitle>
+                        <CardDescription>{review.category}</CardDescription>
+                      </div>
+                      <Badge
+                        variant={
+                          review.badge === "verified" ? "default" : "secondary"
+                        }
+                        className={
+                          review.badge === "verified"
+                            ? "bg-green-100 text-green-800"
+                            : ""
+                        }
+                      >
+                        {review.verificationLevel}
+                      </Badge>
                     </div>
-                    <Badge
-                      variant={
-                        review.badge === "verified" ? "default" : "secondary"
-                      }
-                      className={
-                        review.badge === "verified"
-                          ? "bg-green-100 text-green-800"
-                          : ""
-                      }
-                    >
-                      {review.verificationLevel}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center space-x-2 mb-2">
-                    <div className="flex items-center">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`h-4 w-4 ${
-                            i < Math.floor(review.rating)
-                              ? "text-yellow-400 fill-current"
-                              : "text-gray-300"
-                          }`}
-                        />
-                      ))}
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center space-x-2 mb-2">
+                      <div className="flex items-center">
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className={`h-4 w-4 ${
+                              i < Math.floor(review.rating)
+                                ? "text-yellow-400 fill-current"
+                                : "text-gray-300"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <span className="font-semibold">{review.rating.toFixed(1)}</span>
                     </div>
-                    <span className="font-semibold">{review.rating}</span>
-                  </div>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Users className="h-4 w-4 mr-1" />
-                    {review.reviewCount} reviews
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                    <div className="flex items-center text-sm text-gray-600">
+                      <Users className="h-4 w-4 mr-1" />
+                      {review.reviewCount} reviews
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-500">No featured reviews available yet.</p>
+            </div>
+          )}
 
           <div className="text-center mt-8">
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -215,58 +252,64 @@ const Index = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {recentlyAddedEntities.map((entity) => (
-              <Card
-                key={entity.id}
-                className="hover:shadow-lg transition-shadow cursor-pointer"
-              >
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle className="text-lg">
-                        {entity.businessName}
-                      </CardTitle>
-                      <CardDescription>{entity.category}</CardDescription>
+          {recentlyAddedEntities.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {recentlyAddedEntities.map((entity) => (
+                <Card
+                  key={entity.id}
+                  className="hover:shadow-lg transition-shadow cursor-pointer"
+                >
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle className="text-lg">
+                          {entity.businessName}
+                        </CardTitle>
+                        <CardDescription>{entity.category}</CardDescription>
+                      </div>
+                      <Badge
+                        variant="outline"
+                        className="bg-blue-50 text-blue-700 border-blue-200"
+                      >
+                        New
+                      </Badge>
                     </div>
-                    <Badge
-                      variant="outline"
-                      className="bg-blue-50 text-blue-700 border-blue-200"
-                    >
-                      New
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center space-x-2">
-                      <TrendingUp className="h-4 w-4 text-green-500" />
-                      <span className="text-sm text-gray-600">
-                        Added {entity.addedDays} days ago
-                      </span>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm font-medium text-gray-900">
-                        {entity.location}
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center space-x-2">
+                        <TrendingUp className="h-4 w-4 text-green-500" />
+                        <span className="text-sm text-gray-600">
+                          Added {entity.addedDays} days ago
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm font-medium text-gray-900">
+                          {entity.location}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-3">
-                    {entity.description}
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center text-sm text-gray-500">
-                      <Star className="h-4 w-4 mr-1 text-gray-400" />
-                      Awaiting first review
+                    <p className="text-sm text-gray-600 mb-3">
+                      {entity.description}
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center text-sm text-gray-500">
+                        <Star className="h-4 w-4 mr-1 text-gray-400" />
+                        Awaiting first review
+                      </div>
+                      <Button size="sm" variant="outline" asChild>
+                        <Link to={`/business/${entity.id}`}>View Details</Link>
+                      </Button>
                     </div>
-                    <Button size="sm" variant="outline">
-                      View Details
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-500">No recently added entities available.</p>
+            </div>
+          )}
 
           <div className="text-center mt-8">
             <Button variant="outline" size="lg" asChild>
