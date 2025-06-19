@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,16 +9,16 @@ import { Link } from 'react-router-dom';
 import BusinessCard from '@/components/BusinessCard';
 import Header from "@/components/common/Header";
 import Footer from "@/components/common/Footer";
-
-import {businesses} from '@/mock-data/mockDatas';
-
+import { useBusinesses } from '@/hooks/useBusinesses';
 
 const BusinessDirectory = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [verificationFilter, setVerificationFilter] = useState('all');
-  const categories = ['all', 'EdTech', 'Education', 'Professional Training', 'Arts & Design'];
-  const verificationStatuses = ['all', 'Verified', 'Claimed', 'Unclaimed'];
+  const { data: businesses = [], isLoading, error } = useBusinesses();
+
+  const categories = ['all', 'EdTech', 'Education', 'Food & Beverage', 'Health & Fitness', 'Marketing', 'Technology', 'Beauty & Wellness', 'Retail'];
+  const verificationStatuses = ['all', 'Verified', 'Unverified'];
 
   const handleSearch = () => {
     console.log('Searching for:', searchQuery);
@@ -29,9 +30,9 @@ const BusinessDirectory = () => {
     if (searchQuery.trim()) {
       filtered = filtered.filter(business => 
         business.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        business.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        business.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         business.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        business.location.toLowerCase().includes(searchQuery.toLowerCase())
+        business.location?.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
@@ -40,16 +41,44 @@ const BusinessDirectory = () => {
     }
 
     if (verificationFilter !== 'all') {
-      filtered = filtered.filter(business => business.verificationStatus === verificationFilter);
+      filtered = filtered.filter(business => business.verification_status === verificationFilter);
     }
 
     return filtered;
   };
 
   const totalBusinesses = businesses.length;
-  const verifiedBusinesses = businesses.filter(b => b.verificationStatus === 'Verified').length;
-  const averageRating = (businesses.reduce((acc, b) => acc + b.rating, 0) / businesses.length).toFixed(1);
-  const totalReviews = businesses.reduce((acc, b) => acc + b.reviewCount, 0);
+  const verifiedBusinesses = businesses.filter(b => b.verification_status === 'Verified').length;
+  const averageRating = businesses.length > 0 ? (businesses.reduce((acc, b) => acc + (b.rating || 0), 0) / businesses.length).toFixed(1) : '0.0';
+  const totalReviews = businesses.reduce((acc, b) => acc + (b.review_count || 0), 0);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header/>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center py-12">
+            <p className="text-gray-500">Loading businesses...</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header/>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center py-12">
+            <p className="text-red-500">Error loading businesses. Please try again.</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

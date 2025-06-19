@@ -67,6 +67,7 @@ export const useUserReviews = () => {
 
 export const useCreateReview = () => {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   
   return useMutation({
     mutationFn: async (review: {
@@ -76,9 +77,14 @@ export const useCreateReview = () => {
       user_badge?: string;
       proof_provided?: boolean;
     }) => {
+      if (!user?.id) throw new Error('User must be authenticated');
+      
       const { data, error } = await supabase
         .from('reviews')
-        .insert([review])
+        .insert([{
+          ...review,
+          user_id: user.id
+        }])
         .select()
         .single();
       

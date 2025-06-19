@@ -6,53 +6,66 @@ import { Search, Filter } from 'lucide-react';
 import BusinessCard from '@/components/BusinessCard';
 import SearchFilters from '@/components/SearchFilters';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { useBusinesses } from '@/hooks/useBusinesses';
 
 const SearchResults = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState({});
-  
-  // Mock data for development
-  const mockBusinesses = [
-    {
-      id: '1',
-      name: 'Tech Academy Pro',
-      category: 'EdTech',
-      description: 'Leading online coding bootcamp with industry-relevant curriculum and job placement assistance.',
-      rating: 4.2,
-      reviewCount: 156,
-      verificationStatus: 'Verified' as const,
-      location: 'Mumbai, Maharashtra',
-      website: 'https://techacademypro.com',
-      phone: '+91 98765 43210',
-      hasSubscription: true
-    },
-    {
-      id: '2',
-      name: 'Digital Skills Institute',
-      category: 'Education',
-      description: 'Comprehensive digital marketing and web development courses with hands-on projects.',
-      rating: 3.8,
-      reviewCount: 89,
-      verificationStatus: 'Claimed' as const,
-      location: 'Delhi, NCR',
-      website: 'https://digitalskills.in'
-    },
-    {
-      id: '3',
-      name: 'Career Boost Academy',
-      category: 'EdTech',
-      description: 'Professional development and career guidance platform for working professionals.',
-      rating: 2.1,
-      reviewCount: 234,
-      verificationStatus: 'Unclaimed' as const,
-      location: 'Bangalore, Karnataka',
-      isSponsored: true
-    }
-  ];
+  const { data: businesses = [], isLoading, error } = useBusinesses();
 
   const handleSearch = () => {
     console.log('Searching for:', searchQuery, 'with filters:', filters);
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <header className="bg-white shadow-sm border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center h-16">
+              <div className="flex items-center space-x-2">
+                <h1 className="text-2xl font-bold text-blue-600">Review Spot</h1>
+              </div>
+              <div className="flex items-center space-x-4">
+                <Button variant="ghost">Sign In</Button>
+                <Button>Write Review</Button>
+              </div>
+            </div>
+          </div>
+        </header>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="text-center py-12">
+            <p className="text-gray-500">Loading search results...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <header className="bg-white shadow-sm border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center h-16">
+              <div className="flex items-center space-x-2">
+                <h1 className="text-2xl font-bold text-blue-600">Review Spot</h1>
+              </div>
+              <div className="flex items-center space-x-4">
+                <Button variant="ghost">Sign In</Button>
+                <Button>Write Review</Button>
+              </div>
+            </div>
+          </div>
+        </header>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="text-center py-12">
+            <p className="text-red-500">Error loading search results. Please try again.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -122,7 +135,7 @@ const SearchResults = () => {
             {/* Results Header */}
             <div className="mb-6">
               <h2 className="text-xl font-semibold text-gray-900">
-                Found {mockBusinesses.length} results
+                Found {businesses.length} results
               </h2>
               <p className="text-gray-600">
                 Showing verified reviews for educational institutions
@@ -131,7 +144,7 @@ const SearchResults = () => {
 
             {/* Results Grid */}
             <div className="space-y-4">
-              {mockBusinesses.map((business) => (
+              {businesses.map((business) => (
                 <BusinessCard key={business.id} {...business} />
               ))}
             </div>
