@@ -23,6 +23,14 @@ const Homepage = () => {
     console.log('Searching for:', searchQuery);
   };
 
+  // Helper function to ensure userBadge is a valid type
+  const getValidUserBadge = (badge: string | null): 'Verified Graduate' | 'Verified Employee' | 'Verified User' | 'Unverified User' => {
+    if (!badge) return 'Unverified User';
+    
+    const validBadges = ['Verified Graduate', 'Verified Employee', 'Verified User', 'Unverified User'];
+    return validBadges.includes(badge) ? badge as any : 'Unverified User';
+  };
+
   // Create a map of business ID to business details for easy lookup
   const businessMap = businesses.reduce((acc, business) => {
     acc[business.id] = business;
@@ -39,12 +47,12 @@ const Homepage = () => {
         businessCategory: business?.category || 'Unknown Category',
         businessLocation: business?.location || 'Location not specified',
         userName: 'Anonymous User', // We'll need to implement user profiles later
-        userBadge: review.user_badge || 'Unverified User',
+        userBadge: getValidUserBadge(review.user_badge),
         rating: review.rating,
         date: new Date(review.created_at).toLocaleDateString(),
         title: `Review for ${business?.name || 'Business'}`,
         content: review.content,
-        isVerified: review.user_badge !== 'Unverified User',
+        isVerified: getValidUserBadge(review.user_badge) !== 'Unverified User',
         proofProvided: review.proof_provided || false,
         upvotes: review.upvotes || 0,
         downvotes: review.downvotes || 0,

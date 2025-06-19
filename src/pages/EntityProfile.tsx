@@ -69,13 +69,21 @@ const BusinessProfile = () => {
     );
   }
 
+  // Helper function to ensure userBadge is a valid type
+  const getValidUserBadge = (badge: string | null): 'Verified Graduate' | 'Verified Employee' | 'Verified User' | 'Unverified User' => {
+    if (!badge) return 'Unverified User';
+    
+    const validBadges = ['Verified Graduate', 'Verified Employee', 'Verified User', 'Unverified User'];
+    return validBadges.includes(badge) ? badge as any : 'Unverified User';
+  };
+
   // Transform reviews data for display
   const transformedReviews = reviews.map(review => ({
     id: review.id,
     userName: 'Anonymous User', // We'll implement user profiles later
     rating: review.rating,
     content: review.content,
-    userBadge: review.user_badge || 'Unverified User',
+    userBadge: getValidUserBadge(review.user_badge),
     proofProvided: review.proof_provided || false,
     upvotes: review.upvotes || 0,
     downvotes: review.downvotes || 0,
