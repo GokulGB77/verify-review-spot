@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,6 +18,10 @@ const RoleManagement = () => {
   const [loading, setLoading] = useState(false);
   const { assignRole } = useUserRoles();
   const { toast } = useToast();
+
+  const handleRoleChange = (value: string) => {
+    setSelectedRole(value as UserRole);
+  };
 
   const handleAssignRole = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,7 +101,7 @@ const RoleManagement = () => {
           
           <div>
             <Label htmlFor="role">Role</Label>
-            <Select value={selectedRole} onValueChange={(value: UserRole) => setSelectedRole(value)}>
+            <Select value={selectedRole} onValueChange={handleRoleChange}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
