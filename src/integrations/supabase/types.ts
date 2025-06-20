@@ -71,26 +71,38 @@ export type Database = {
       }
       profiles: {
         Row: {
+          aadhaar_mobile: string | null
+          aadhaar_number: string | null
           avatar_url: string | null
           created_at: string
+          email: string | null
           full_name: string | null
           id: string
+          is_verified: boolean | null
           updated_at: string
           username: string | null
         }
         Insert: {
+          aadhaar_mobile?: string | null
+          aadhaar_number?: string | null
           avatar_url?: string | null
           created_at?: string
+          email?: string | null
           full_name?: string | null
           id: string
+          is_verified?: boolean | null
           updated_at?: string
           username?: string | null
         }
         Update: {
+          aadhaar_mobile?: string | null
+          aadhaar_number?: string | null
           avatar_url?: string | null
           created_at?: string
+          email?: string | null
           full_name?: string | null
           id?: string
+          is_verified?: boolean | null
           updated_at?: string
           username?: string | null
         }

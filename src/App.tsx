@@ -1,50 +1,56 @@
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "@/contexts/AuthContext";
-import Index from "./pages/Homepage";
-import Reviews from "./pages/Reviews";
-import BusinessDirectory from "./pages/EntitiesDirectory";
-import SearchResults from "./pages/SearchResults";
-import BusinessProfile from "./pages/EntityProfile";
-import WriteReview from "./pages/WriteReview";
-import Auth from "./pages/Auth";
-import MyReviewsPage from "./pages/MyReviews";
-import SuperAdminDashboard from "./pages/SuperAdminDashboard";
-import EntityDashboard from "./pages/EntityDashboard";
-import NotFound from "./pages/NotFound";
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from '@/components/ui/toaster';
+import { AuthProvider } from '@/contexts/AuthContext';
+import Header from '@/components/common/Header';
+import Footer from '@/components/common/Footer';
+import Homepage from '@/pages/Homepage';
+import Auth from '@/pages/Auth';
+import EntitiesDirectory from '@/pages/EntitiesDirectory';
+import EntityProfile from '@/pages/EntityProfile';
+import WriteReview from '@/pages/WriteReview';
+import Reviews from '@/pages/Reviews';
+import MyReviews from '@/pages/MyReviews';
+import SearchResults from '@/pages/SearchResults';
+import EntityDashboard from '@/pages/EntityDashboard';
+import SuperAdminDashboard from '@/pages/SuperAdminDashboard';
+import ProfileSettings from '@/pages/ProfileSettings';
+import NotFound from '@/pages/NotFound';
+import './App.css';
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/reviews" element={<Reviews />} />
-            <Route path="/businesses" element={<BusinessDirectory />} />
-            <Route path="/search" element={<SearchResults />} />
-            <Route path="/business/:id" element={<BusinessProfile />} />
-            <Route path="/write-review" element={<WriteReview />} />
-            <Route path="/business/:id/write-review" element={<WriteReview />} />
-            <Route path="/my-reviews" element={<MyReviewsPage />} />
-            <Route path="/admin" element={<SuperAdminDashboard />} />
-            <Route path="/business/:id/dashboard" element={<EntityDashboard />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
-  </QueryClientProvider>
-);
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <Router>
+          <div className="min-h-screen bg-gray-50 flex flex-col">
+            <Header />
+            <main className="flex-1">
+              <Routes>
+                <Route path="/" element={<Homepage />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/businesses" element={<EntitiesDirectory />} />
+                <Route path="/business/:id" element={<EntityProfile />} />
+                <Route path="/write-review" element={<WriteReview />} />
+                <Route path="/reviews" element={<Reviews />} />
+                <Route path="/my-reviews" element={<MyReviews />} />
+                <Route path="/search" element={<SearchResults />} />
+                <Route path="/dashboard" element={<EntityDashboard />} />
+                <Route path="/admin" element={<SuperAdminDashboard />} />
+                <Route path="/profile" element={<ProfileSettings />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </main>
+            <Footer />
+          </div>
+          <Toaster />
+        </Router>
+      </AuthProvider>
+    </QueryClientProvider>
+  );
+}
 
 export default App;

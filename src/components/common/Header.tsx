@@ -29,9 +29,14 @@ const Header = () => {
               Reviews
             </Link>
             {user && (
-              <Link to="/my-reviews" className="text-gray-700 hover:text-blue-600">
-                My Reviews
-              </Link>
+              <>
+                <Link to="/my-reviews" className="text-gray-700 hover:text-blue-600">
+                  My Reviews
+                </Link>
+                <Link to="/profile" className="text-gray-700 hover:text-blue-600">
+                  Profile
+                </Link>
+              </>
             )}
             {isSuperAdmin() && (
               <Link to="/admin" className="text-gray-700 hover:text-blue-600">
