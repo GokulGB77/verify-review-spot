@@ -10,6 +10,9 @@ const Header = () => {
     await signOut();
   };
 
+  // Simple admin check - in production, you'd want proper role management
+  const isAdmin = user?.email === 'admin@reviewspot.com';
+
   return (
     <header className="bg-white shadow-sm border-b">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -29,6 +32,11 @@ const Header = () => {
             {user && (
               <Link to="/my-reviews" className="text-gray-700 hover:text-blue-600">
                 My Reviews
+              </Link>
+            )}
+            {isAdmin && (
+              <Link to="/admin" className="text-gray-700 hover:text-blue-600">
+                Admin Dashboard
               </Link>
             )}
           </nav>
