@@ -1,8 +1,15 @@
-
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRoles } from "@/hooks/useUserRoles";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
+import { UserCircle, ChevronDown } from "lucide-react";
 
 const Header = () => {
   const { user, signOut } = useAuth();
@@ -28,16 +35,6 @@ const Header = () => {
             <Link to="/reviews" className="text-gray-700 hover:text-blue-600">
               Reviews
             </Link>
-            {user && (
-              <>
-                <Link to="/my-reviews" className="text-gray-700 hover:text-blue-600">
-                  My Reviews
-                </Link>
-                <Link to="/profile" className="text-gray-700 hover:text-blue-600">
-                  Profile
-                </Link>
-              </>
-            )}
             {isSuperAdmin() && (
               <Link to="/admin" className="text-gray-700 hover:text-blue-600">
                 Admin Dashboard
@@ -50,9 +47,27 @@ const Header = () => {
                 <Button variant="ghost" asChild>
                   <Link to="/write-review">Write Review</Link>
                 </Button>
-                <Button variant="ghost" onClick={handleSignOut}>
-                  Sign Out
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="flex items-center gap-2">
+                      <UserCircle className="h-4 w-4" />
+                      <span>My Account</span>
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem asChild>
+                      <Link to="/my-reviews" className="w-full cursor-pointer">My Reviews</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/profile" className="w-full cursor-pointer">Profile</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
+                      Sign Out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </>
             ) : (
               <>
