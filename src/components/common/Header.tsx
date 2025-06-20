@@ -2,16 +2,15 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserRoles } from "@/hooks/useUserRoles";
 
 const Header = () => {
   const { user, signOut } = useAuth();
+  const { isSuperAdmin } = useUserRoles();
 
   const handleSignOut = async () => {
     await signOut();
   };
-
-  // Simple admin check - in production, you'd want proper role management
-  const isAdmin = user?.email === 'admin@reviewspot.com';
 
   return (
     <header className="bg-white shadow-sm border-b">
@@ -34,7 +33,7 @@ const Header = () => {
                 My Reviews
               </Link>
             )}
-            {isAdmin && (
+            {isSuperAdmin() && (
               <Link to="/admin" className="text-gray-700 hover:text-blue-600">
                 Admin Dashboard
               </Link>

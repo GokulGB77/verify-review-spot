@@ -1,6 +1,6 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUserRoles } from '@/hooks/useUserRoles';
 import { useBusinesses } from '@/hooks/useBusinesses';
 import { useReviews } from '@/hooks/useReviews';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,6 +16,7 @@ import { useNavigate } from 'react-router-dom';
 
 const SuperAdminDashboard = () => {
   const { user } = useAuth();
+  const { isSuperAdmin, loading: rolesLoading } = useUserRoles();
   const { data: businesses, isLoading: businessesLoading } = useBusinesses();
   const { data: reviews, isLoading: reviewsLoading } = useReviews();
   const navigate = useNavigate();
@@ -23,10 +24,15 @@ const SuperAdminDashboard = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
-  // Simple admin check - in production, you'd want proper role management
-  const isAdmin = user?.email === 'admin@reviewspot.com';
+  if (rolesLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">Loading...</div>
+      </div>
+    );
+  }
 
-  if (!isAdmin) {
+  if (!isSuperAdmin()) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <Card className="w-96">
