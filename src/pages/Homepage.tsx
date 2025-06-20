@@ -70,7 +70,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <Header />
 
       {/* Hero Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
@@ -374,8 +373,7 @@ const Index = () => {
       {/* CTA Section */}
       <CTASection/>
 
-      {/* Footer */}
-      <Footer />
+     
     </div>
   );
 };
