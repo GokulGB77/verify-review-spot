@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Upload, Lock, Shield, Clock, Image } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Profile {
   is_verified: boolean | null;
@@ -47,6 +48,23 @@ const PANVerificationForm = ({
   // Check if user has submitted verification details
   const hasSubmittedVerification = profile?.pan_number && profile?.full_name_pan && profile?.mobile;
   
+  // Function to get proper image URL
+  const getImageUrl = (imageUrl: string | null) => {
+    if (!imageUrl) return null;
+    
+    // If it's already a full URL, return as is
+    if (imageUrl.startsWith('http')) {
+      return imageUrl;
+    }
+    
+    // If it looks like a storage path, construct the proper URL
+    const { data } = supabase.storage
+      .from('verification-docs')
+      .getPublicUrl(imageUrl);
+    
+    return data.publicUrl;
+  };
+
   return (
     <form onSubmit={handleVerifyPAN} className="space-y-6">
       {profile?.is_verified ? (
@@ -68,16 +86,17 @@ const PANVerificationForm = ({
               <Label className="text-sm font-medium text-yellow-700">Your uploaded PAN card:</Label>
               <div className="mt-2">
                 <img
-                  src={profile.pan_image_url}
+                  src={getImageUrl(profile.pan_image_url)}
                   alt="Uploaded PAN Card"
                   className="max-w-xs h-auto border rounded-lg shadow-sm"
                   style={{ maxHeight: '200px' }}
                   onError={(e) => {
                     console.error('Failed to load image:', profile.pan_image_url);
+                    console.error('Constructed URL:', getImageUrl(profile.pan_image_url));
                     e.currentTarget.style.display = 'none';
                   }}
                   onLoad={() => {
-                    console.log('Image loaded successfully:', profile.pan_image_url);
+                    console.log('Image loaded successfully:', getImageUrl(profile.pan_image_url));
                   }}
                 />
               </div>

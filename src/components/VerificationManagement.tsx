@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -62,6 +61,23 @@ const VerificationManagement = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Function to get proper image URL
+  const getImageUrl = (imageUrl: string | null) => {
+    if (!imageUrl) return null;
+    
+    // If it's already a full URL, return as is
+    if (imageUrl.startsWith('http')) {
+      return imageUrl;
+    }
+    
+    // If it looks like a file path, construct the proper URL
+    const { data } = supabase.storage
+      .from('verification-docs')
+      .getPublicUrl(imageUrl);
+    
+    return data.publicUrl;
   };
 
   const handleApproveVerification = async (userId: string) => {
@@ -252,7 +268,7 @@ const VerificationManagement = () => {
                               <div>
                                 <label className="text-sm font-medium">PAN Card Image:</label>
                                 <div className="mt-2">
-                                  {imageError === selectedRequest.pan_image_url ? (
+                                  {imageError === getImageUrl(selectedRequest.pan_image_url) ? (
                                     <div className="flex items-center gap-2 p-4 border rounded-lg bg-red-50 border-red-200">
                                       <AlertCircle className="h-5 w-5 text-red-500" />
                                       <div>
@@ -260,18 +276,21 @@ const VerificationManagement = () => {
                                           Failed to load image
                                         </p>
                                         <p className="text-xs text-red-600">
-                                          URL: {selectedRequest.pan_image_url}
+                                          Original URL: {selectedRequest.pan_image_url}
+                                        </p>
+                                        <p className="text-xs text-red-600">
+                                          Constructed URL: {getImageUrl(selectedRequest.pan_image_url)}
                                         </p>
                                       </div>
                                     </div>
                                   ) : (
                                     <img
-                                      src={selectedRequest.pan_image_url}
+                                      src={getImageUrl(selectedRequest.pan_image_url)}
                                       alt="PAN Card"
                                       className="max-w-full h-auto border rounded-lg shadow-sm"
                                       style={{ maxHeight: '400px' }}
-                                      onError={() => handleImageError(selectedRequest.pan_image_url!)}
-                                      onLoad={() => handleImageLoad(selectedRequest.pan_image_url!)}
+                                      onError={() => handleImageError(getImageUrl(selectedRequest.pan_image_url)!)}
+                                      onLoad={() => handleImageLoad(getImageUrl(selectedRequest.pan_image_url)!)}
                                     />
                                   )}
                                 </div>
