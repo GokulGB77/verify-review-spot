@@ -1,23 +1,25 @@
-
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Toaster } from '@/components/ui/toaster';
-import { AuthProvider } from '@/contexts/AuthContext';
-import Header from '@/components/common/Header';
-import Footer from '@/components/common/Footer';
-import Homepage from '@/pages/Homepage';
-import Auth from '@/pages/Auth';
-import EntitiesDirectory from '@/pages/EntitiesDirectory';
-import EntityProfile from '@/pages/EntityProfile';
-import WriteReview from '@/pages/WriteReview';
-import Reviews from '@/pages/Reviews';
-import MyReviews from '@/pages/MyReviews';
-import SearchResults from '@/pages/SearchResults';
-import EntityDashboard from '@/pages/EntityDashboard';
-import SuperAdminDashboard from '@/pages/SuperAdminDashboard';
-import ProfileSettings from '@/pages/ProfileSettings';
-import NotFound from '@/pages/NotFound';
-import './App.css';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Toaster } from "@/components/ui/toaster";
+import { AuthProvider } from "@/contexts/AuthContext";
+import Header from "@/components/common/Header";
+import Footer from "@/components/common/Footer";
+import Homepage from "@/pages/Homepage";
+import Auth from "@/pages/Auth";
+import EntitiesDirectory from "@/pages/EntitiesDirectory";
+import EntityProfile from "@/pages/EntityProfile";
+import WriteReview from "@/pages/WriteReview";
+import Reviews from "@/pages/Reviews";
+import MyReviews from "@/pages/MyReviews";
+import SearchResults from "@/pages/SearchResults";
+import EntityDashboard from "@/pages/EntityDashboard";
+import SuperAdminDashboard from "@/pages/SuperAdminDashboard";
+import ProfileSettings from "@/pages/ProfileSettings";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import Legal from "./pages/Legal";
+import TermsOfService from "./pages/TermsOfService";
+import NotFound from "@/pages/NotFound";
+import "./App.css";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +43,9 @@ function App() {
                 <Route path="/dashboard" element={<EntityDashboard />} />
                 <Route path="/admin" element={<SuperAdminDashboard />} />
                 <Route path="/profile" element={<ProfileSettings />} />
+                <Route path="/legal" element={<Legal />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                <Route path="/terms-of-service" element={<TermsOfService />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>
