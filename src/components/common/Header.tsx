@@ -127,7 +127,7 @@ const Header = () => {
               </>
             ) : (
               <Button asChild>
-                <Link to="/auth">Sign In with Google</Link>
+                <Link to="/auth">Sign In</Link>
               </Button>
             )}
           </div>
