@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Upload, Lock, Shield, Clock } from "lucide-react";
+import { Upload, Lock, Shield, Clock, Image } from "lucide-react";
 
 interface Profile {
   is_verified: boolean | null;
@@ -64,6 +64,19 @@ const PANVerificationForm = ({
             <Clock className="h-5 w-5 text-yellow-600 mr-2" />
             <strong>Verification under process.</strong> You will get the verified user badge once we verify your details.
           </p>
+          {profile?.pan_image_url && (
+            <div className="mt-4">
+              <Label className="text-sm font-medium text-yellow-700">Your uploaded PAN card:</Label>
+              <div className="mt-2">
+                <img
+                  src={profile.pan_image_url}
+                  alt="Uploaded PAN Card"
+                  className="max-w-xs h-auto border rounded-lg shadow-sm"
+                  style={{ maxHeight: '200px' }}
+                />
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         <>
@@ -109,25 +122,53 @@ const PANVerificationForm = ({
             />
           </div>
 
-          {/* PAN Card Upload - Made Optional */}
+          {/* PAN Card Upload */}
           <div>
             <div className="text-left mb-1">
-              <Label htmlFor="pan-upload">Upload PAN Card (Optional)</Label>
+              <Label htmlFor="pan-upload">Upload PAN Card Image</Label>
             </div>
             <div className="mt-1 border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
-              <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-              <div className="text-sm text-gray-600">
-                <label
-                  htmlFor="pan-upload"
-                  className="cursor-pointer text-blue-600 hover:text-blue-500"
-                >
-                  Upload a file
-                </label>
-                <span> or drag and drop</span>
-              </div>
-              <p className="text-xs text-gray-500 mt-1">
-                Clear image of your PAN card (JPG, PNG, PDF up to 2MB) - You can add this later
-              </p>
+              {panFile ? (
+                <div className="space-y-3">
+                  <Image className="h-12 w-12 text-green-500 mx-auto" />
+                  <div className="text-sm text-green-600 font-medium">
+                    ✓ {panFileName} selected
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    File ready for upload
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const input = document.getElementById('pan-upload') as HTMLInputElement;
+                      if (input) {
+                        input.value = '';
+                        input.dispatchEvent(new Event('change', { bubbles: true }));
+                      }
+                    }}
+                  >
+                    Choose Different File
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                  <div className="text-sm text-gray-600">
+                    <label
+                      htmlFor="pan-upload"
+                      className="cursor-pointer text-blue-600 hover:text-blue-500"
+                    >
+                      Upload a file
+                    </label>
+                    <span> or drag and drop</span>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Clear image of your PAN card (JPG, PNG, PDF up to 2MB)
+                  </p>
+                </>
+              )}
               <input
                 id="pan-upload"
                 type="file"
@@ -136,11 +177,6 @@ const PANVerificationForm = ({
                 onChange={handlePanFileUpload}
               />
             </div>
-            {panFileName && (
-              <div className="mt-2 text-sm text-green-600">
-                ✓ {panFileName} uploaded
-              </div>
-            )}
           </div>
 
           {/* PAN Consent Message */}
