@@ -18,8 +18,13 @@ const Footer = () => {
           <h3 className="font-semibold mb-4">For Users</h3>
           <ul className="space-y-2 text-gray-400">
             <li>
-              <Link to="/search" className="hover:text-white">
-                Search Reviews
+              <Link to="/businesses" className="hover:text-white">
+                Browse Entities
+              </Link>
+            </li>
+            <li>
+              <Link to="/reviews" className="hover:text-white">
+                Explore Reviews
               </Link>
             </li>
             <li>
@@ -28,7 +33,7 @@ const Footer = () => {
               </Link>
             </li>
             <li>
-              <Link to="/verify" className="hover:text-white">
+              <Link to="/profile/verification" className="hover:text-white">
                 Get Verified
               </Link>
             </li>
@@ -68,8 +73,8 @@ const Footer = () => {
               </Link>
             </li>
             <li>
-              <Link to="/legal" className="hover:text-white">
-                Legal Assistance
+              <Link to="/report" className="hover:text-white">
+                Report a Problem
               </Link>
             </li>
           </ul>
@@ -91,6 +96,22 @@ const Footer = () => {
           >
             Terms of Service
           </Link>
+          <span className="mx-2">|</span>
+          <Link
+            to="/cookies"
+            className="hover:text-white transition-colors duration-200"
+          >
+            Cookie Policy
+          </Link>
+        </p>
+        <p className="text-gray-500 text-sm mt-2">
+          Questions? Contact us at{" "}
+          <a
+            href="mailto:onlyreviews.team@gmail.com"
+            className="text-blue-400 hover:text-blue-300"
+          >
+            onlyreviews.team@gmail.com
+          </a>
         </p>
       </div>
     </footer>
