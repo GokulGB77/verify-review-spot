@@ -10,10 +10,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { supabase } from "@/integrations/supabase/client";
-
 import { UserCircle, ChevronDown } from "lucide-react";
-// Update the import path below if your supabase client is located elsewhere
+import { supabase } from "@/integrations/supabase/client";
 
 const Header = () => {
   const { user, signOut } = useAuth();
@@ -51,9 +49,17 @@ const Header = () => {
     await signOut();
   };
 
-  // Determine display name - use full name if available, or email as fallback
-  const displayName =
-    profile?.full_name || user?.email?.split("@")[0] || "Account";
+  // Extract first name from full name, or use fallback
+  const getFirstName = () => {
+    if (profile?.full_name) {
+      // Split by space and get the first part as the first name
+      return profile.full_name.split(" ")[0];
+    }
+    // Fallback to username from email or generic "Account"
+    return "Account";
+  };
+
+  const firstName = getFirstName();
 
   return (
     <header className="bg-white shadow-sm border-b">
@@ -93,7 +99,7 @@ const Header = () => {
                       className="flex items-center gap-2"
                     >
                       <UserCircle className="h-4 w-4" />
-                      <span className="max-w-[150px] truncate">{displayName}</span>
+                      <span className="max-w-[120px] truncate">{firstName}</span>
                       <ChevronDown className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
