@@ -15,9 +15,7 @@ import SearchResults from "@/pages/SearchResults";
 import EntityDashboard from "@/pages/EntityDashboard";
 import SuperAdminDashboard from "@/pages/SuperAdminDashboard";
 import ProfileSettings from "@/pages/ProfileSettings";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
 import Legal from "./pages/Legal";
-import TermsOfService from "./pages/TermsOfService";
 import NotFound from "@/pages/NotFound";
 import "./App.css";
 
@@ -44,8 +42,6 @@ function App() {
                 <Route path="/admin" element={<SuperAdminDashboard />} />
                 <Route path="/profile" element={<ProfileSettings />} />
                 <Route path="/legal" element={<Legal />} />
-                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                <Route path="/terms-of-service" element={<TermsOfService />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>
