@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import {
   Card,
@@ -10,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import  TypingAnimation  from "@/components/ui/typing-animation";
+import TypingAnimation from "@/components/ui/typing-animation";
 import {
   Search,
   Shield,
@@ -43,34 +42,43 @@ const Index = () => {
 
   // Get featured reviews (latest reviews with high ratings)
   const featuredReviews = businesses
-    .filter(business => business.rating && business.rating >= 4)
+    .filter((business) => business.rating && business.rating >= 4)
     .slice(0, 3)
-    .map(business => ({
+    .map((business) => ({
       id: business.id,
       businessName: business.name,
       rating: business.rating || 0,
       reviewCount: business.review_count || 0,
-      verificationLevel: business.verification_status === 'Verified' ? 'Verified Business' : 'Claimed Business',
+      verificationLevel:
+        business.verification_status === "Verified"
+          ? "Verified Business"
+          : "Claimed Business",
       category: business.category,
-      badge: business.verification_status === 'Verified' ? 'verified' : 'claimed',
+      badge:
+        business.verification_status === "Verified" ? "verified" : "claimed",
     }));
 
   // Get recently added entities (latest businesses)
   const recentlyAddedEntities = businesses
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .sort(
+      (a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    )
     .slice(0, 3)
-    .map(business => ({
+    .map((business) => ({
       id: business.id,
       businessName: business.name,
       category: business.category,
-      location: business.location || 'Location not specified',
-      addedDays: Math.floor((new Date().getTime() - new Date(business.created_at).getTime()) / (1000 * 60 * 60 * 24)),
-      description: business.description || 'No description available'
+      location: business.location || "Location not specified",
+      addedDays: Math.floor(
+        (new Date().getTime() - new Date(business.created_at).getTime()) /
+          (1000 * 60 * 60 * 24)
+      ),
+      description: business.description || "No description available",
     }));
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-
       {/* Hero Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
@@ -102,7 +110,7 @@ const Index = () => {
                 Search
               </Button>
             </div>
-            <div className="mt-8 text-center">
+            {/* <div className="mt-8 text-center">
               <Button
                 size="lg"
                 className="h-12  bg-blue-600 hover:bg-blue-800 mr-4"
@@ -117,11 +125,11 @@ const Index = () => {
               >
                 <Link to="/businesses">Browse All Entities</Link>
               </Button>
-            </div>
+            </div> */}
           </div>
 
           {/* Trust Indicators */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16 ">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16 mb-8">
             <div className="flex items-center justify-center space-x-3">
               <CheckCircle className="h-8 w-8 text-green-500" />
               <div className="text-left">
@@ -154,6 +162,42 @@ const Index = () => {
                   Transparent review history
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Pill-shaped container */}
+          <div className="flex items-center justify-center px-4">
+            <div className="flex items-center w-full max-w-10xl">
+              {/* Left extending line */}
+              <div className="flex-1 h-px bg-gray-300"></div>
+              {/* Pill container */}
+
+              <div className="bg-white bg-opacity-80 backdrop-blur-sm rounded-full px-8 py-4 mx-6 shadow-sm border border-gray-200">
+                <div className="flex items-center justify-center whitespace-nowrap">
+                  <span className="text-gray-700 text-sm font-medium mr-2">
+                    Bought something recently?
+                  </span>
+                  <button className="inline-flex items-center text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors duration-200">
+                    Write a review
+                    <svg
+                      className="ml-1 w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              {/* Right extending line */}
+              <div className="flex-1 h-px bg-gray-300"></div>
             </div>
           </div>
         </div>
@@ -214,7 +258,9 @@ const Index = () => {
                           />
                         ))}
                       </div>
-                      <span className="font-semibold">{review.rating.toFixed(1)}</span>
+                      <span className="font-semibold">
+                        {review.rating.toFixed(1)}
+                      </span>
                     </div>
                     <div className="flex items-center text-sm text-gray-600">
                       <Users className="h-4 w-4 mr-1" />
@@ -226,7 +272,9 @@ const Index = () => {
             </div>
           ) : (
             <div className="text-center py-8">
-              <p className="text-gray-500">No featured reviews available yet.</p>
+              <p className="text-gray-500">
+                No featured reviews available yet.
+              </p>
             </div>
           )}
 
@@ -307,7 +355,9 @@ const Index = () => {
             </div>
           ) : (
             <div className="text-center py-8">
-              <p className="text-gray-500">No recently added entities available.</p>
+              <p className="text-gray-500">
+                No recently added entities available.
+              </p>
             </div>
           )}
 
@@ -371,9 +421,7 @@ const Index = () => {
       </section>
 
       {/* CTA Section */}
-      <CTASection/>
-
-     
+      <CTASection />
     </div>
   );
 };
