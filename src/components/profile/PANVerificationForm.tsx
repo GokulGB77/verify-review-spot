@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -73,6 +72,13 @@ const PANVerificationForm = ({
                   alt="Uploaded PAN Card"
                   className="max-w-xs h-auto border rounded-lg shadow-sm"
                   style={{ maxHeight: '200px' }}
+                  onError={(e) => {
+                    console.error('Failed to load image:', profile.pan_image_url);
+                    e.currentTarget.style.display = 'none';
+                  }}
+                  onLoad={() => {
+                    console.log('Image loaded successfully:', profile.pan_image_url);
+                  }}
                 />
               </div>
             </div>

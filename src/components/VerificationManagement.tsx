@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Eye, Check, X } from 'lucide-react';
+import { Eye, Check, X, AlertCircle } from 'lucide-react';
 
 interface VerificationRequest {
   id: string;
@@ -27,6 +27,7 @@ const VerificationManagement = () => {
   const [loading, setLoading] = useState(true);
   const [selectedRequest, setSelectedRequest] = useState<VerificationRequest | null>(null);
   const [processing, setProcessing] = useState<string | null>(null);
+  const [imageError, setImageError] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -49,6 +50,7 @@ const VerificationManagement = () => {
         throw error;
       }
 
+      console.log('Fetched verification requests:', data);
       setVerificationRequests(data || []);
     } catch (error) {
       console.error('Error fetching verification requests:', error);
@@ -144,6 +146,16 @@ const VerificationManagement = () => {
     }
   };
 
+  const handleImageError = (imageUrl: string) => {
+    console.error('Failed to load image:', imageUrl);
+    setImageError(imageUrl);
+  };
+
+  const handleImageLoad = (imageUrl: string) => {
+    console.log('Image loaded successfully:', imageUrl);
+    setImageError(null);
+  };
+
   if (loading) {
     return (
       <Card>
@@ -200,7 +212,7 @@ const VerificationManagement = () => {
                           <Eye className="h-4 w-4" />
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="max-w-2xl">
+                      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                         <DialogHeader>
                           <DialogTitle>Verification Details</DialogTitle>
                           <DialogDescription>
@@ -236,17 +248,37 @@ const VerificationManagement = () => {
                               </div>
                             </div>
                             
-                            {selectedRequest.pan_image_url && (
+                            {selectedRequest.pan_image_url ? (
                               <div>
                                 <label className="text-sm font-medium">PAN Card Image:</label>
                                 <div className="mt-2">
-                                  <img
-                                    src={selectedRequest.pan_image_url}
-                                    alt="PAN Card"
-                                    className="max-w-full h-auto border rounded-lg"
-                                    style={{ maxHeight: '400px' }}
-                                  />
+                                  {imageError === selectedRequest.pan_image_url ? (
+                                    <div className="flex items-center gap-2 p-4 border rounded-lg bg-red-50 border-red-200">
+                                      <AlertCircle className="h-5 w-5 text-red-500" />
+                                      <div>
+                                        <p className="text-sm text-red-700 font-medium">
+                                          Failed to load image
+                                        </p>
+                                        <p className="text-xs text-red-600">
+                                          URL: {selectedRequest.pan_image_url}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <img
+                                      src={selectedRequest.pan_image_url}
+                                      alt="PAN Card"
+                                      className="max-w-full h-auto border rounded-lg shadow-sm"
+                                      style={{ maxHeight: '400px' }}
+                                      onError={() => handleImageError(selectedRequest.pan_image_url!)}
+                                      onLoad={() => handleImageLoad(selectedRequest.pan_image_url!)}
+                                    />
+                                  )}
                                 </div>
+                              </div>
+                            ) : (
+                              <div className="text-sm text-gray-500">
+                                No PAN card image uploaded
                               </div>
                             )}
 
