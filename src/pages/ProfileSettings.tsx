@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import {
   Card,
@@ -21,9 +22,12 @@ interface Profile {
   full_name: string | null;
   username: string | null;
   email: string | null;
-  pan_number: string | null; // Changed from aadhaar_number
-  mobile: string | null; // Changed from aadhaar_mobile
+  pan_number: string | null;
+  mobile: string | null;
+  full_name_pan: string | null;
+  phone: string | null;
   is_verified: boolean | null;
+  pan_image_url: string | null;
 }
 
 const ProfileSettings = () => {
@@ -35,7 +39,7 @@ const ProfileSettings = () => {
     full_name: "",
     username: "",
     phone: "",
-    full_name_pan: "", // Added
+    full_name_pan: "",
     pan_number: "",
     mobile: "",
   });
@@ -63,18 +67,14 @@ const ProfileSettings = () => {
 
       if (error) throw error;
 
-      setProfile({
-        ...data,
-        pan_number: (data as any).pan_number ?? data.aadhaar_number ?? null,
-        mobile: (data as any).mobile ?? data.aadhaar_mobile ?? null,
-      });
+      setProfile(data);
       setFormData({
         full_name: data.full_name || "",
         username: data.username || "",
-        phone: (data as any).phone || "",
-        pan_number: (data as any).pan_number || "",
-        mobile: (data as any).mobile || "",
-        full_name_pan: (data as any).full_name_pan || "",
+        phone: data.phone || "",
+        pan_number: data.pan_number || "",
+        mobile: data.mobile || "",
+        full_name_pan: data.full_name_pan || "",
       });
     } catch (error) {
       console.error("Error fetching profile:", error);
@@ -125,33 +125,35 @@ const ProfileSettings = () => {
     }
   };
 
-  // Handle both forms separately
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
 
     setIsSubmitting(true);
-    // Update only basic profile info
-    const { error } = await supabase
-      .from("profiles")
-      .update({
-        full_name: formData.full_name,
-        username: formData.username,
-        phone: formData.phone,
-      })
-      .eq("id", user.id);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          full_name: formData.full_name,
+          username: formData.username,
+          phone: formData.phone,
+        })
+        .eq("id", user.id);
 
-    setIsSubmitting(false);
-    if (error) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    } else {
+      if (error) throw error;
+
       toast({
         title: "Success",
         description: "Your profile has been updated.",
       });
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update profile.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -227,6 +229,9 @@ const ProfileSettings = () => {
         title: "Success",
         description: "Your verification details have been updated.",
       });
+
+      // Refresh profile data
+      await fetchProfile();
     } catch (error) {
       console.error("Error updating verification:", error);
       toast({
@@ -447,31 +452,29 @@ const ProfileSettings = () => {
                 </div>
 
                 {/* PAN Consent Message */}
-               
-                  <div className="mt-4 border border-gray-200 rounded-lg p-4 bg-gray-50">
-                    <div className="flex items-start space-x-3">
-                      <Checkbox
-                        id="pan-consent"
-                        checked={panConsent}
-                        onCheckedChange={(checked) =>
-                          setPanConsent(checked === true)
-                        }
-                        className="mt-1"
-                      />
-                       <div className="text-left mb-1">
-                        <Label
-                          htmlFor="pan-consent"
-                          className="font-medium cursor-pointer"
-                        >
-                          PAN Verification Consent
-                        </Label>
-                        <p className="text-sm text-gray-700 mt-1">
-                          I consent to upload my PAN card for identity verification. This document will be used solely to verify my full name, prevent duplicate accounts, and assign a 'Verified by PAN' badge to my profile for added credibility. It will be securely stored and permanently deleted after verification. This information will not be shared with any third party.
-                        </p>
-                      </div>
+                <div className="mt-4 border border-gray-200 rounded-lg p-4 bg-gray-50">
+                  <div className="flex items-start space-x-3">
+                    <Checkbox
+                      id="pan-consent"
+                      checked={panConsent}
+                      onCheckedChange={(checked) =>
+                        setPanConsent(checked === true)
+                      }
+                      className="mt-1"
+                    />
+                    <div className="text-left mb-1">
+                      <Label
+                        htmlFor="pan-consent"
+                        className="font-medium cursor-pointer"
+                      >
+                        PAN Verification Consent
+                      </Label>
+                      <p className="text-sm text-gray-700 mt-1">
+                        I consent to upload my PAN card for identity verification. This document will be used solely to verify my full name, prevent duplicate accounts, and assign a 'Verified by PAN' badge to my profile for added credibility. It will be securely stored and permanently deleted after verification. This information will not be shared with any third party.
+                      </p>
                     </div>
                   </div>
-                
+                </div>
 
                 {/* Why This Matters */}
                 <div className="border border-blue-100 rounded-lg p-4 bg-blue-50">
@@ -508,10 +511,10 @@ const ProfileSettings = () => {
                         !formData.mobile ||
                         !panConsent ||
                         !panFile ||
-                        isSubmitting
+                        loading
                       }
                     >
-                      {isSubmitting ? "Verifying..." : "Verify with PAN"}
+                      {loading ? "Verifying..." : "Verify with PAN"}
                     </Button>
                   </div>
                 )}

@@ -77,8 +77,13 @@ export type Database = {
           created_at: string
           email: string | null
           full_name: string | null
+          full_name_pan: string | null
           id: string
           is_verified: boolean | null
+          mobile: string | null
+          pan_image_url: string | null
+          pan_number: string | null
+          phone: string | null
           updated_at: string
           username: string | null
         }
@@ -89,8 +94,13 @@ export type Database = {
           created_at?: string
           email?: string | null
           full_name?: string | null
+          full_name_pan?: string | null
           id: string
           is_verified?: boolean | null
+          mobile?: string | null
+          pan_image_url?: string | null
+          pan_number?: string | null
+          phone?: string | null
           updated_at?: string
           username?: string | null
         }
@@ -101,8 +111,13 @@ export type Database = {
           created_at?: string
           email?: string | null
           full_name?: string | null
+          full_name_pan?: string | null
           id?: string
           is_verified?: boolean | null
+          mobile?: string | null
+          pan_image_url?: string | null
+          pan_number?: string | null
+          phone?: string | null
           updated_at?: string
           username?: string | null
         }
