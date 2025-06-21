@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -21,7 +20,6 @@ interface Profile {
   pan_image_url: string | null;
   pseudonym: string | null;
   pseudonym_set: boolean | null;
-  rejection_reason?: string | null;
 }
 
 const ProfileSettings = () => {
