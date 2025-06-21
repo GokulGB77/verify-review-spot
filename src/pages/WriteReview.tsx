@@ -1,20 +1,25 @@
-
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useState, useEffect } from "react";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Star, Upload, Shield, AlertCircle } from 'lucide-react';
+import { Star, Upload, Shield, AlertCircle, FileCheck } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useAuth } from '@/contexts/AuthContext';
-import { useCreateReview } from '@/hooks/useReviews';
-import { useBusiness } from '@/hooks/useBusinesses';
-import { useToast } from '@/hooks/use-toast';
-import Header from '@/components/common/Header';
+import { useAuth } from "@/contexts/AuthContext";
+import { useCreateReview } from "@/hooks/useReviews";
+import { useBusiness } from "@/hooks/useBusinesses";
+import { useToast } from "@/hooks/use-toast";
+import Header from "@/components/common/Header";
 
 const WriteReview = () => {
   const { id: businessId } = useParams();
@@ -22,19 +27,19 @@ const WriteReview = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const createReview = useCreateReview();
-  const { data: business } = useBusiness(businessId || '');
+  const { data: business } = useBusiness(businessId || "");
 
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
-  const [reviewText, setReviewText] = useState('');
-  const [businessName, setBusinessName] = useState('');
-  const [verificationLevel, setVerificationLevel] = useState('');
+  const [reviewText, setReviewText] = useState("");
+  const [businessName, setBusinessName] = useState("");
+  const [verificationLevel, setVerificationLevel] = useState("");
   const [proofFile, setProofFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (!user) {
-      navigate('/auth');
+      navigate("/auth");
       return;
     }
 
@@ -44,10 +49,26 @@ const WriteReview = () => {
   }, [user, business, navigate]);
 
   const verificationOptions = [
-    { value: 'verified-graduate', label: 'Verified Graduate', description: 'I am a graduate/student of this institution' },
-    { value: 'verified-employee', label: 'Verified Employee', description: 'I am/was an employee of this organization' },
-    { value: 'verified-user', label: 'Verified User', description: 'I have used their services' },
-    { value: 'unverified', label: 'Unverified', description: 'I prefer not to verify my connection' }
+    {
+      value: "verified-graduate",
+      label: "Verified Graduate",
+      description: "I am a graduate/student of this institution",
+    },
+    {
+      value: "verified-employee",
+      label: "Verified Employee",
+      description: "I am/was an employee of this organization",
+    },
+    {
+      value: "verified-user",
+      label: "Verified User",
+      description: "I have used their services",
+    },
+    {
+      value: "unverified",
+      label: "Unverified",
+      description: "I prefer not to verify my connection",
+    },
   ];
 
   const handleRating = (value: number) => {
@@ -66,9 +87,9 @@ const WriteReview = () => {
       toast({
         title: "Authentication Required",
         description: "Please log in to submit a review.",
-        variant: "destructive"
+        variant: "destructive",
       });
-      navigate('/auth');
+      navigate("/auth");
       return;
     }
 
@@ -76,7 +97,7 @@ const WriteReview = () => {
       toast({
         title: "Error",
         description: "No business selected for review.",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
@@ -85,7 +106,7 @@ const WriteReview = () => {
       toast({
         title: "Missing Information",
         description: "Please provide a rating and review text.",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
@@ -97,8 +118,8 @@ const WriteReview = () => {
         business_id: businessId,
         rating,
         content: reviewText,
-        user_badge: verificationLevel || 'Unverified User',
-        proof_provided: !!proofFile
+        user_badge: verificationLevel || "Unverified User",
+        proof_provided: !!proofFile,
       });
 
       toast({
@@ -110,8 +131,9 @@ const WriteReview = () => {
     } catch (error: any) {
       toast({
         title: "Submission Failed",
-        description: error.message || "Failed to submit review. Please try again.",
-        variant: "destructive"
+        description:
+          error.message || "Failed to submit review. Please try again.",
+        variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
@@ -124,10 +146,11 @@ const WriteReview = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Write a Review</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Write a Review
+          </h1>
           <p className="text-lg text-gray-600">
             Share your honest experience to help others make informed decisions
           </p>
@@ -148,7 +171,9 @@ const WriteReview = () => {
               <CardContent className="space-y-6">
                 {/* Business Name - Read only if from URL */}
                 <div>
-                  <Label htmlFor="business-name">Business/Institution Name *</Label>
+                  <Label htmlFor="business-name">
+                    Business/Institution Name *
+                  </Label>
                   <Input
                     id="business-name"
                     placeholder="Search or enter the name of the business..."
@@ -159,7 +184,10 @@ const WriteReview = () => {
                   />
                   {!businessId && (
                     <p className="text-sm text-gray-600 mt-1">
-                      Can't find your business? <Button variant="link" className="p-0 h-auto">Request to add it</Button>
+                      Can't find your business?{" "}
+                      <Button variant="link" className="p-0 h-auto">
+                        Request to add it
+                      </Button>
                     </p>
                   )}
                 </div>
@@ -173,8 +201,8 @@ const WriteReview = () => {
                         key={value}
                         className={`h-8 w-8 cursor-pointer transition-colors ${
                           value <= (hoverRating || rating)
-                            ? 'text-yellow-400 fill-current'
-                            : 'text-gray-300 hover:text-yellow-400'
+                            ? "text-yellow-400 fill-current"
+                            : "text-gray-300 hover:text-yellow-400"
                         }`}
                         onMouseEnter={() => setHoverRating(value)}
                         onMouseLeave={() => setHoverRating(0)}
@@ -182,7 +210,7 @@ const WriteReview = () => {
                       />
                     ))}
                     <span className="ml-2 text-lg font-semibold">
-                      {rating > 0 && `${rating} star${rating > 1 ? 's' : ''}`}
+                      {rating > 0 && `${rating} star${rating > 1 ? "s" : ""}`}
                     </span>
                   </div>
                 </div>
@@ -190,7 +218,10 @@ const WriteReview = () => {
                 {/* Verification Level */}
                 <div>
                   <Label>Your Connection to This Business</Label>
-                  <Select value={verificationLevel} onValueChange={setVerificationLevel}>
+                  <Select
+                    value={verificationLevel}
+                    onValueChange={setVerificationLevel}
+                  >
                     <SelectTrigger className="mt-1">
                       <SelectValue placeholder="How are you connected to this business?" />
                     </SelectTrigger>
@@ -199,7 +230,9 @@ const WriteReview = () => {
                         <SelectItem key={option.value} value={option.value}>
                           <div>
                             <div className="font-medium">{option.label}</div>
-                            <div className="text-sm text-gray-600">{option.description}</div>
+                            <div className="text-sm text-gray-600">
+                              {option.description}
+                            </div>
                           </div>
                         </SelectItem>
                       ))}
@@ -208,19 +241,25 @@ const WriteReview = () => {
                 </div>
 
                 {/* Proof Upload */}
-                {verificationLevel && verificationLevel !== 'unverified' && (
+                {verificationLevel && verificationLevel !== "unverified" && (
                   <div>
-                    <Label htmlFor="proof-upload">Proof of Connection (Optional)</Label>
+                    <Label htmlFor="proof-upload">
+                      Proof of Connection (Optional)
+                    </Label>
                     <div className="mt-2 border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
                       <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
                       <div className="text-sm text-gray-600">
-                        <label htmlFor="proof-upload" className="cursor-pointer text-blue-600 hover:text-blue-500">
+                        <label
+                          htmlFor="proof-upload"
+                          className="cursor-pointer text-blue-600 hover:text-blue-500"
+                        >
                           Upload a file
                         </label>
                         <span> or drag and drop</span>
                       </div>
                       <p className="text-xs text-gray-500 mt-1">
-                        ID card, certificate, email confirmation, etc. (PDF, JPG, PNG up to 10MB)
+                        ID card, certificate, email confirmation, etc. (PDF,
+                        JPG, PNG up to 10MB)
                       </p>
                       <input
                         id="proof-upload"
@@ -255,13 +294,13 @@ const WriteReview = () => {
 
                 {/* Submit Button */}
                 <div className="pt-4">
-                  <Button 
-                    onClick={handleSubmit} 
-                    size="lg" 
+                  <Button
+                    onClick={handleSubmit}
+                    size="lg"
                     className="w-full"
                     disabled={isSubmitting}
                   >
-                    {isSubmitting ? 'Submitting...' : 'Submit Review'}
+                    {isSubmitting ? "Submitting..." : "Submit Review"}
                   </Button>
                   <p className="text-sm text-gray-600 mt-2 text-center">
                     Your review will be published immediately
@@ -276,11 +315,9 @@ const WriteReview = () => {
             <div className="space-y-6">
               {/* Verification Info */}
               <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Shield className="h-5 w-5 mr-2 text-blue-600" />
-                    Verification Process
-                  </CardTitle>
+                <CardHeader className="flex flex-col items-center text-center">
+                  <Shield className="h-10 w-10 text-blue-600 mb-2" />
+                  <CardTitle>Verification Process</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
@@ -288,21 +325,27 @@ const WriteReview = () => {
                       <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0" />
                       <div className="text-sm">
                         <div className="font-medium">Identity Verification</div>
-                        <div className="text-gray-600">Account-based verification for all users</div>
+                        <div className="text-gray-600">
+                          Account-based verification for all users
+                        </div>
                       </div>
                     </div>
                     <div className="flex items-start space-x-2">
                       <div className="w-2 h-2 bg-green-600 rounded-full mt-2 flex-shrink-0" />
                       <div className="text-sm">
                         <div className="font-medium">Proof Verification</div>
-                        <div className="text-gray-600">Optional document verification</div>
+                        <div className="text-gray-600">
+                          Optional document verification
+                        </div>
                       </div>
                     </div>
                     <div className="flex items-start space-x-2">
                       <div className="w-2 h-2 bg-purple-600 rounded-full mt-2 flex-shrink-0" />
                       <div className="text-sm">
                         <div className="font-medium">Content Review</div>
-                        <div className="text-gray-600">Review content checked for authenticity</div>
+                        <div className="text-gray-600">
+                          Review content checked for authenticity
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -311,7 +354,8 @@ const WriteReview = () => {
 
               {/* Guidelines */}
               <Card>
-                <CardHeader>
+                <CardHeader className="flex flex-col items-center text-center">
+                  <FileCheck className="h-10 w-10 text-green-600 mb-2" />
                   <CardTitle>Review Guidelines</CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -344,7 +388,8 @@ const WriteReview = () => {
               <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  By submitting this review, you agree to our Terms of Service and confirm that your review is based on genuine experience.
+                  By submitting this review, you agree to our Terms of Service
+                  and confirm that your review is based on genuine experience.
                 </AlertDescription>
               </Alert>
             </div>
