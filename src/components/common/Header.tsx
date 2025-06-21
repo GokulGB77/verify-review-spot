@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -125,14 +126,9 @@ const Header = () => {
                 </DropdownMenu>
               </>
             ) : (
-              <>
-                <Button variant="ghost" asChild>
-                  <Link to="/auth">Sign In</Link>
-                </Button>
-                <Button asChild>
-                  <Link to="/auth">Sign Up</Link>
-                </Button>
-              </>
+              <Button asChild>
+                <Link to="/auth">Sign In with Google</Link>
+              </Button>
             )}
           </div>
         </div>

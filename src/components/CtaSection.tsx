@@ -26,7 +26,7 @@ const CTASection = () => {
             </Button>
           ) : (
             <Button size="lg" variant="secondary" asChild>
-              <Link to="/auth">Sign in to Review</Link>
+              <Link to="/auth">Sign in with Google</Link>
             </Button>
           )}
           <Button
