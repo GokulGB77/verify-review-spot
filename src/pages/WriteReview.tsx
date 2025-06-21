@@ -171,31 +171,37 @@ const WriteReview = () => {
               <CardContent className="space-y-6">
                 {/* Business Name - Read only if from URL */}
                 <div>
-                  <Label htmlFor="business-name">
-                    Business/Institution Name *
-                  </Label>
+                  <div className="text-left mb-1">
+                    <Label htmlFor="business-name">
+                      Entitiy/Business Name *
+                    </Label>
+                  </div>
                   <Input
                     id="business-name"
                     placeholder="Search or enter the name of the business..."
                     value={businessName}
                     onChange={(e) => setBusinessName(e.target.value)}
-                    className="mt-1"
                     disabled={!!businessId}
                   />
                   {!businessId && (
-                    <p className="text-sm text-gray-600 mt-1">
+                    <div className="text-sm mt-1">
                       Can't find your business?{" "}
-                      <Button variant="link" className="p-0 h-auto">
+                      <button
+                        type="button"
+                        className="text-blue-600 hover:underline"
+                      >
                         Request to add it
-                      </Button>
-                    </p>
+                      </button>
+                    </div>
                   )}
                 </div>
 
                 {/* Rating */}
                 <div>
-                  <Label>Overall Rating *</Label>
-                  <div className="flex items-center space-x-2 mt-2">
+                  <div className="text-left mb-1">
+                    <Label>Overall Rating *</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
                     {[1, 2, 3, 4, 5].map((value) => (
                       <Star
                         key={value}
@@ -217,7 +223,9 @@ const WriteReview = () => {
 
                 {/* Verification Level */}
                 <div>
-                  <Label>Your Connection to This Business</Label>
+                  <div className="text-left mb-1">
+                    <Label>Your Connection to This Entity/Business</Label>
+                  </div>
                   <Select
                     value={verificationLevel}
                     onValueChange={setVerificationLevel}
@@ -243,9 +251,11 @@ const WriteReview = () => {
                 {/* Proof Upload */}
                 {verificationLevel && verificationLevel !== "unverified" && (
                   <div>
-                    <Label htmlFor="proof-upload">
-                      Proof of Connection (Optional)
-                    </Label>
+                    <div className="text-left mb-1">
+                      <Label htmlFor="proof-upload">
+                        Proof of Connection (Optional)
+                      </Label>
+                    </div>
                     <div className="mt-2 border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
                       <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
                       <div className="text-sm text-gray-600">
@@ -279,7 +289,9 @@ const WriteReview = () => {
 
                 {/* Review Text */}
                 <div>
-                  <Label htmlFor="review-text">Your Review *</Label>
+                  <div className="text-left mb-1">
+                    <Label htmlFor="review-text">Your Review *</Label>
+                  </div>
                   <Textarea
                     id="review-text"
                     placeholder="Share your honest experience... What went well? What could be improved? Be specific and helpful for other users."
@@ -305,6 +317,16 @@ const WriteReview = () => {
                   <p className="text-sm text-gray-600 mt-2 text-center">
                     Your review will be published immediately
                   </p>
+
+                  {/* Legal Notice - Moved here from sidebar */}
+                  <Alert className="mt-4">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      By submitting this review, you agree to our Terms of
+                      Service and confirm that your review is based on genuine
+                      experience.
+                    </AlertDescription>
+                  </Alert>
                 </div>
               </CardContent>
             </Card>
@@ -383,15 +405,6 @@ const WriteReview = () => {
                   </div>
                 </CardContent>
               </Card>
-
-              {/* Legal Notice */}
-              <Alert>
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  By submitting this review, you agree to our Terms of Service
-                  and confirm that your review is based on genuine experience.
-                </AlertDescription>
-              </Alert>
             </div>
           </div>
         </div>
