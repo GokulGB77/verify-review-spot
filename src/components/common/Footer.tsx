@@ -63,8 +63,13 @@ const Footer = () => {
           <h3 className="font-semibold mb-4">Support</h3>
           <ul className="space-y-2 text-gray-400">
             <li>
-              <Link to="/help" className="hover:text-white">
-                Help Center
+              <Link to="/about" className="hover:text-white">
+                About Us
+              </Link>
+            </li>
+            <li>
+              <Link to="/faq" className="hover:text-white">
+                FAQ
               </Link>
             </li>
             <li>
@@ -84,24 +89,24 @@ const Footer = () => {
         <p className="mb-2">&copy; 2024 Review Spot. All rights reserved.</p>
         <p>
           <Link
-            to="/legal"
+            to="/legal?tab=privacy"
             className="hover:text-white transition-colors duration-200"
           >
             Privacy Policy
           </Link>
           <span className="mx-2">|</span>
           <Link
-            to="/terms-of-service"
+            to="/legal?tab=terms"
             className="hover:text-white transition-colors duration-200"
           >
             Terms of Service
           </Link>
           <span className="mx-2">|</span>
           <Link
-            to="/cookies"
+            to="/legal?tab=guidelines"
             className="hover:text-white transition-colors duration-200"
           >
-            Cookie Policy
+            Reviewer Guidelines
           </Link>
         </p>
         <p className="text-gray-500 text-sm mt-2">

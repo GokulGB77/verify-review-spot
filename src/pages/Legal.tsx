@@ -1,11 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ChevronRight, Shield, Users, FileText, Eye, Lock, AlertCircle, CheckCircle, Search, Filter } from 'lucide-react';
 
 const Legal = () => {
-  const [activeTab, setActiveTab] = useState('privacy');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabFromUrl = searchParams.get('tab');
+  
+  // Set initial tab from URL or default to 'privacy'
+  const [activeTab, setActiveTab] = useState(() => {
+    return ['privacy', 'terms', 'guidelines'].includes(tabFromUrl || '') 
+      ? tabFromUrl 
+      : 'privacy';
+  });
+
+  // Update tab when URL changes
+  useEffect(() => {
+    if (tabFromUrl && ['privacy', 'terms', 'guidelines'].includes(tabFromUrl)) {
+      setActiveTab(tabFromUrl);
+      // Scroll to top when tab changes from URL
+      window.scrollTo(0, 0);
+    }
+  }, [tabFromUrl]);
+  
+  // Handle tab change with scroll to top
+  const handleTabChange = (tabId) => {
+    setActiveTab(tabId);
+    setSearchParams({ tab: tabId }, { replace: true });
+    // Scroll to top when tab changes
+    window.scrollTo(0, 0);
+  };
 
   const tabs = [
     { id: 'privacy', label: 'Privacy Policy', icon: Lock, color: 'bg-blue-500' },
@@ -14,7 +40,7 @@ const Legal = () => {
   ];
 
   const PrivacyPolicy = () => (
-    <div className="space-y-6">
+    <div className="space-y-6 mr-8 mb-8">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center text-2xl">
@@ -182,7 +208,7 @@ const Legal = () => {
   );
 
   const TermsOfService = () => (
-    <div className="space-y-6">
+    <div className="space-y-6 mb-8 mr-8">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center text-2xl">
@@ -361,7 +387,7 @@ const Legal = () => {
   );
 
   const ReviewerGuidelines = () => (
-    <div className="space-y-6">
+    <div className="space-y-6 mb-8 mr-8">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center text-2xl">
@@ -569,76 +595,48 @@ const Legal = () => {
   };
 
   return (
-      <div className="flex gap-8">
-          {/* Sidebar Navigation */}
-          <div className="w-80 flex-shrink-0">
-            <Card className="sticky top-8">
-              <CardHeader>
-                <CardTitle className="flex items-center text-lg">
-                  <Shield className="h-5 w-5 text-gray-500 mr-2" />
-                  Legal Documents
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <nav className="space-y-1">
-                  {tabs.map((tab) => {
-                    const Icon = tab.icon;
-                    return (
-                      <button
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id)}
-                        className={`w-full flex items-center px-4 py-3 text-left rounded-none transition-colors ${
-                          activeTab === tab.id
-                            ? 'bg-gray-100 text-gray-900 border-r-2 border-blue-500'
-                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                        }`}
-                      >
-                        <Icon className="w-4 h-4 mr-3" />
-                        <span className="font-medium">{tab.label}</span>
-                        <ChevronRight className={`w-4 h-4 ml-auto transition-transform ${
-                          activeTab === tab.id ? 'rotate-90' : ''
-                        }`} />
-                      </button>
-                    );
-                  })}
-                </nav>
-              </CardContent>
-            </Card>
+    <div className="flex gap-8">
+      {/* Sidebar Navigation */}
+      <div className="w-80 flex-shrink-0">
+        <Card className="sticky top-8">
+          <CardHeader>
+            <CardTitle className="flex items-center text-lg">
+              <Shield className="h-5 w-5 text-gray-500 mr-2" />
+              Legal Documents
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <nav className="space-y-1">
+              {tabs.map((tab) => {
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => handleTabChange(tab.id)}
+                    className={`w-full flex items-center px-4 py-3 text-left rounded-none transition-colors ${
+                      activeTab === tab.id
+                        ? 'bg-gray-100 text-gray-900 border-r-2 border-blue-500'
+                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4 mr-3" />
+                    <span className="font-medium">{tab.label}</span>
+                    <ChevronRight className={`w-4 h-4 ml-auto transition-transform ${
+                      activeTab === tab.id ? 'rotate-90' : ''
+                    }`} />
+                  </button>
+                );
+              })}
+            </nav>
+          </CardContent>
+        </Card>
+      </div>
 
-            {/* Stats in Sidebar */}
-            <div className="mt-6 space-y-4">
-              <Card>
-                <CardContent className="p-4 text-center">
-                  <div className="text-xl font-bold text-blue-600">Jan 2025</div>
-                  <div className="text-xs text-gray-600">Last Updated</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-4 text-center">
-                  <div className="text-xl font-bold text-green-600">v1.0</div>
-                  <div className="text-xs text-gray-600">Current Version</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-4 text-center">
-                  <div className="text-xl font-bold text-purple-600">3</div>
-                  <div className="text-xs text-gray-600">Documents</div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-
-          {/* Content */}
-          <div className="flex-1 min-w-0">
-            {renderContent()}
-          </div>
-
-
-        </div>
-     
-    
-
-        
+      {/* Content */}
+      <div className="flex-1 min-w-0">
+        {renderContent()}
+      </div>
+    </div>
   );
 };
 
