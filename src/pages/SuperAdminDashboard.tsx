@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Users, Building2, MessageSquare, TrendingUp, Search, Filter } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import RoleManagement from '@/components/RoleManagement';
+import VerificationManagement from '@/components/VerificationManagement';
 
 const SuperAdminDashboard = () => {
   const { user } = useAuth();
@@ -125,9 +126,10 @@ const SuperAdminDashboard = () => {
         </div>
 
         <Tabs defaultValue="businesses" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="businesses">Businesses</TabsTrigger>
             <TabsTrigger value="reviews">Reviews</TabsTrigger>
+            <TabsTrigger value="verification">Verification</TabsTrigger>
             <TabsTrigger value="roles">Role Management</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
           </TabsList>
@@ -250,6 +252,10 @@ const SuperAdminDashboard = () => {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="verification">
+            <VerificationManagement />
           </TabsContent>
 
           <TabsContent value="roles">
