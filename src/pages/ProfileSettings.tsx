@@ -314,21 +314,11 @@ const ProfileSettings = () => {
       return;
     }
 
-    // Check if PAN image is uploaded
-    if (!panFile) {
-      toast({
-        title: "PAN Image Required",
-        description: "Please upload an image of your PAN card.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     console.log("Starting PAN verification");
     setLoading(true);
 
     try {
-      // First, upload the PAN image
+      // Upload PAN image only if file is provided
       let panImageUrl = null;
       if (panFile) {
         const fileExt = panFileName.split(".").pop();
@@ -347,20 +337,20 @@ const ProfileSettings = () => {
           console.error("File upload error:", uploadError);
           toast({
             title: "Upload Failed",
-            description: "Failed to upload PAN card image. Please try again.",
+            description: "Failed to upload PAN card image, but continuing with verification.",
             variant: "destructive",
           });
-          return;
-        }
+          // Continue without image instead of returning
+        } else {
+          // Get public URL only if upload was successful
+          const { data } = supabase.storage
+            .from("verification-docs")
+            .getPublicUrl(fileName);
 
-        // Get public URL
-        const { data } = supabase.storage
-          .from("verification-docs")
-          .getPublicUrl(fileName);
-
-        if (data) {
-          panImageUrl = data.publicUrl;
-          console.log("File uploaded successfully:", panImageUrl);
+          if (data) {
+            panImageUrl = data.publicUrl;
+            console.log("File uploaded successfully:", panImageUrl);
+          }
         }
       }
 
@@ -394,7 +384,7 @@ const ProfileSettings = () => {
         full_name_pan: formData.full_name_pan.trim(),
         pan_number: hashedPanNumber, // Store hashed PAN number
         mobile: formData.mobile.trim(),
-        pan_image_url: panImageUrl,
+        pan_image_url: panImageUrl, // Will be null if upload failed
         is_verified: false, // Set to false initially, will be verified manually
       };
 
@@ -425,7 +415,9 @@ const ProfileSettings = () => {
 
       toast({
         title: "Verification Submitted",
-        description: "Your verification details have been submitted. Verification is under process and you will get the verified user badge once we verify the details.",
+        description: panImageUrl 
+          ? "Your verification details have been submitted. Verification is under process and you will get the verified user badge once we verify the details."
+          : "Your verification details have been submitted without image. You can upload your PAN card image later. Verification is under process.",
       });
 
       // Refresh profile data

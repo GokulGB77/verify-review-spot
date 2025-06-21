@@ -46,7 +46,7 @@ const PANVerificationForm = ({
   profile,
 }: PANVerificationFormProps) => {
   // Check if user has submitted verification details
-  const hasSubmittedVerification = profile?.pan_number && profile?.full_name_pan && profile?.mobile && profile?.pan_image_url;
+  const hasSubmittedVerification = profile?.pan_number && profile?.full_name_pan && profile?.mobile;
   
   return (
     <form onSubmit={handleVerifyPAN} className="space-y-6">
@@ -109,10 +109,10 @@ const PANVerificationForm = ({
             />
           </div>
 
-          {/* PAN Card Upload */}
+          {/* PAN Card Upload - Made Optional */}
           <div>
             <div className="text-left mb-1">
-              <Label htmlFor="pan-upload">Upload PAN Card</Label>
+              <Label htmlFor="pan-upload">Upload PAN Card (Optional)</Label>
             </div>
             <div className="mt-1 border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
               <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
@@ -126,7 +126,7 @@ const PANVerificationForm = ({
                 <span> or drag and drop</span>
               </div>
               <p className="text-xs text-gray-500 mt-1">
-                Clear image of your PAN card (JPG, PNG, PDF up to 2MB)
+                Clear image of your PAN card (JPG, PNG, PDF up to 2MB) - You can add this later
               </p>
               <input
                 id="pan-upload"
@@ -157,7 +157,7 @@ const PANVerificationForm = ({
                   PAN Verification Consent
                 </Label>
                 <p className="text-sm text-gray-700 mt-1">
-                  I consent to upload my PAN card for identity verification. This document will be used solely to verify my full name, prevent duplicate accounts, and assign a 'Verified by PAN' badge to my profile for added credibility. It will be securely stored and permanently deleted after verification. This information will not be shared with any third party.
+                  I consent to submit my PAN details for identity verification. This information will be used solely to verify my identity, prevent duplicate accounts, and assign a 'Verified by PAN' badge to my profile for added credibility. This information will not be shared with any third party.
                 </p>
               </div>
             </div>
@@ -188,7 +188,6 @@ const PANVerificationForm = ({
                 !formData.mobile?.trim() ||
                 formData.mobile.length !== 10 ||
                 !panConsent ||
-                !panFile ||
                 loading
               }
             >
