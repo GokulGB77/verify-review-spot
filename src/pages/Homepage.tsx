@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import {
   Card,
@@ -58,23 +59,25 @@ const Index = () => {
         business.verification_status === "Verified" ? "verified" : "claimed",
     }));
 
-  // Get recently added entities (latest businesses)
-  const recentlyAddedEntities = businesses
-    .sort(
-      (a, b) =>
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-    )
-    .slice(0, 3)
+  // Get best entities (highest rated with minimum review count)
+  const bestEntities = businesses
+    .filter((business) => business.rating && business.rating >= 4.0 && business.review_count && business.review_count >= 5)
+    .sort((a, b) => {
+      // Sort by rating first, then by review count
+      if (b.rating !== a.rating) {
+        return (b.rating || 0) - (a.rating || 0);
+      }
+      return (b.review_count || 0) - (a.review_count || 0);
+    })
+    .slice(0, 8) // Show up to 8 best entities
     .map((business) => ({
       id: business.id,
-      businessName: business.name,
+      name: business.name,
       category: business.category,
-      location: business.location || "Location not specified",
-      addedDays: Math.floor(
-        (new Date().getTime() - new Date(business.created_at).getTime()) /
-          (1000 * 60 * 60 * 24)
-      ),
-      description: business.description || "No description available",
+      website: business.website,
+      rating: business.rating || 0,
+      reviewCount: business.review_count || 0,
+      verificationStatus: business.verification_status,
     }));
 
   return (
@@ -110,22 +113,6 @@ const Index = () => {
                 Search
               </Button>
             </div>
-            {/* <div className="mt-8 text-center">
-              <Button
-                size="lg"
-                className="h-12  bg-blue-600 hover:bg-blue-800 mr-4"
-              >
-                Write a Review
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className=" h-12  hover:bg-white hover:text-blue-600"
-                asChild
-              >
-                <Link to="/businesses">Browse All Entities</Link>
-              </Button>
-            </div> */}
           </div>
 
           {/* Trust Indicators */}
@@ -288,84 +275,107 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Recently Added Entities Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 ">
+      {/* Best Entities Section */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Recently Added Entities
-            </h2>
-            <p className="text-lg text-gray-600">
-              New businesses and organizations joining our platform
-            </p>
+          <div className="flex justify-between items-center mb-12">
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                Best Entities
+              </h2>
+              <p className="text-lg text-gray-600">
+                Top-rated businesses and organizations trusted by users
+              </p>
+            </div>
+            <Button variant="outline" asChild>
+              <Link to="/businesses">See more</Link>
+            </Button>
           </div>
 
-          {recentlyAddedEntities.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {recentlyAddedEntities.map((entity) => (
+          {bestEntities.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {bestEntities.map((entity) => (
                 <Card
                   key={entity.id}
-                  className="hover:shadow-lg transition-shadow cursor-pointer"
+                  className="hover:shadow-lg transition-all duration-300 cursor-pointer border border-gray-200"
+                  asChild
                 >
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <CardTitle className="text-lg">
-                          {entity.businessName}
-                        </CardTitle>
-                        <CardDescription>{entity.category}</CardDescription>
-                      </div>
-                      <Badge
-                        variant="outline"
-                        className="bg-blue-50 text-blue-700 border-blue-200"
-                      >
-                        New
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center space-x-2">
-                        <TrendingUp className="h-4 w-4 text-green-500" />
-                        <span className="text-sm text-gray-600">
-                          Added {entity.addedDays} days ago
-                        </span>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-sm font-medium text-gray-900">
-                          {entity.location}
+                  <Link to={`/business/${entity.id}`}>
+                    <CardContent className="p-6">
+                      <div className="space-y-4">
+                        {/* Entity Icon/Logo Placeholder */}
+                        <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center">
+                          <span className="text-2xl font-bold text-blue-600">
+                            {entity.name.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+
+                        {/* Entity Name */}
+                        <div>
+                          <h3 className="font-semibold text-lg text-gray-900 line-clamp-1">
+                            {entity.name}
+                          </h3>
+                          {entity.website && (
+                            <p className="text-sm text-blue-600 truncate">
+                              {entity.website.replace(/^https?:\/\//, '').replace(/^www\./, '')}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Rating */}
+                        <div className="flex items-center space-x-1">
+                          {[...Array(5)].map((_, i) => (
+                            <Star
+                              key={i}
+                              className={`h-4 w-4 ${
+                                i < Math.floor(entity.rating)
+                                  ? "text-green-500 fill-current"
+                                  : "text-gray-300"
+                              }`}
+                            />
+                          ))}
+                          <span className="font-semibold text-sm ml-2">
+                            {entity.rating.toFixed(1)}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            ({entity.reviewCount})
+                          </span>
+                        </div>
+
+                        {/* Category and Verification */}
+                        <div className="flex items-center justify-between">
+                          <Badge variant="secondary" className="text-xs">
+                            {entity.category}
+                          </Badge>
+                          {entity.verificationStatus === 'Verified' && (
+                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs">
+                              <CheckCircle className="h-3 w-3 mr-1" />
+                              Verified
+                            </Badge>
+                          )}
                         </div>
                       </div>
-                    </div>
-                    <p className="text-sm text-gray-600 mb-3">
-                      {entity.description}
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center text-sm text-gray-500">
-                        <Star className="h-4 w-4 mr-1 text-gray-400" />
-                        Awaiting first review
-                      </div>
-                      <Button size="sm" variant="outline" asChild>
-                        <Link to={`/business/${entity.id}`}>View Details</Link>
-                      </Button>
-                    </div>
-                  </CardContent>
+                    </CardContent>
+                  </Link>
                 </Card>
               ))}
             </div>
           ) : (
-            <div className="text-center py-8">
-              <p className="text-gray-500">
-                No recently added entities available.
-              </p>
+            <div className="text-center py-12">
+              <div className="bg-gray-50 rounded-lg p-8">
+                <TrendingUp className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  No top-rated entities yet
+                </h3>
+                <p className="text-gray-500 mb-4">
+                  Be the first to review and help others discover great businesses!
+                </p>
+                <Button asChild>
+                  <Link to="/write-review">Write a Review</Link>
+                </Button>
+              </div>
             </div>
           )}
-
-          <div className="text-center mt-8">
-            <Button variant="outline" size="lg" asChild>
-              <Link to="/businesses">View All Entities</Link>
-            </Button>
-          </div>
         </div>
       </section>
 
@@ -390,7 +400,7 @@ const Index = () => {
                 Verify Your Identity
               </h3>
               <p className="text-gray-600">
-                Complete Aadhaar verification to ensure authentic reviews from
+                Complete PAN verification to ensure authentic reviews from
                 real people
               </p>
             </div>
