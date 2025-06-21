@@ -1,9 +1,10 @@
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Upload, Lock, Shield, Clock, Image } from "lucide-react";
+import { Upload, Lock, Shield, Clock, Image, AlertCircle, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Profile {
@@ -12,6 +13,7 @@ interface Profile {
   full_name_pan: string | null;
   mobile: string | null;
   pan_image_url: string | null;
+  rejection_reason: string | null;
 }
 
 interface FormData {
@@ -48,6 +50,9 @@ const PANVerificationForm = ({
   // Check if user has submitted verification details
   const hasSubmittedVerification = profile?.pan_number && profile?.full_name_pan && profile?.mobile;
   
+  // Check if verification was rejected
+  const isRejected = profile?.is_verified === false;
+  
   // Function to get proper image URL
   const getImageUrl = (imageUrl: string | null) => {
     if (!imageUrl) return null;
@@ -65,6 +70,20 @@ const PANVerificationForm = ({
     return data.publicUrl;
   };
 
+  const handleReapply = () => {
+    // Clear the form for reapplication
+    handleInputChange("full_name_pan", "");
+    handleInputChange("pan_number", "");
+    handleInputChange("mobile", "");
+    
+    // Clear the file
+    const fileInput = document.getElementById('pan-upload') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+      handlePanFileUpload({ target: { files: null } } as any);
+    }
+  };
+
   return (
     <form onSubmit={handleVerifyPAN} className="space-y-6">
       {profile?.is_verified ? (
@@ -74,6 +93,35 @@ const PANVerificationForm = ({
             <strong>Your account is verified!</strong> This helps other users
             trust your reviews.
           </p>
+        </div>
+      ) : isRejected ? (
+        <div className="bg-red-50 p-4 rounded-md border border-red-100">
+          <div className="flex items-start space-x-3">
+            <AlertCircle className="h-5 w-5 text-red-600 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm text-red-700">
+                <strong>Verification Rejected</strong>
+              </p>
+              {profile?.rejection_reason && (
+                <div className="mt-2 p-3 bg-red-100 rounded border border-red-200">
+                  <p className="text-sm text-red-800 font-medium">Reason:</p>
+                  <p className="text-sm text-red-700 mt-1">{profile.rejection_reason}</p>
+                </div>
+              )}
+              <div className="mt-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleReapply}
+                  className="text-red-700 border-red-300 hover:bg-red-50"
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Reapply for Verification
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
       ) : hasSubmittedVerification ? (
         <div className="bg-yellow-50 p-4 rounded-md border border-yellow-100">
@@ -252,7 +300,7 @@ const PANVerificationForm = ({
                 loading
               }
             >
-              {loading ? "Submitting..." : "Submit for Verification"}
+              {loading ? "Submitting..." : isRejected ? "Resubmit for Verification" : "Submit for Verification"}
             </Button>
           </div>
         </>
