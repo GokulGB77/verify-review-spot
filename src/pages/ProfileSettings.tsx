@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -7,6 +8,7 @@ import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileTabs from "@/components/profile/ProfileTabs";
 import BasicDetailsForm from "@/components/profile/BasicDetailsForm";
 import PANVerificationForm from "@/components/profile/PANVerificationForm";
+import crypto from 'crypto';
 
 interface Profile {
   id: string;
@@ -41,6 +43,11 @@ const ProfileSettings = () => {
   const [activeTab, setActiveTab] = useState("details");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Hash PAN number for security
+  const hashPanNumber = (panNumber: string): string => {
+    return crypto.createHash('sha256').update(panNumber.toUpperCase()).digest('hex');
+  };
+
   useEffect(() => {
     if (user) {
       fetchProfile();
@@ -68,7 +75,7 @@ const ProfileSettings = () => {
       setFormData({
         full_name: data.full_name || "",
         phone: data.phone || "",
-        pan_number: data.pan_number || "",
+        pan_number: "", // Don't populate PAN number for security
         mobile: data.mobile || "",
         full_name_pan: data.full_name_pan || "",
         pseudonym: data.pseudonym || "",
@@ -266,12 +273,39 @@ const ProfileSettings = () => {
       return;
     }
 
+    // Validate required fields
+    if (!formData.full_name_pan.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter your full name as per PAN card.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.pan_number.trim() || formData.pan_number.length !== 10) {
+      toast({
+        title: "Invalid PAN Number",
+        description: "Please enter a valid 10-character PAN number.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.mobile.trim() || formData.mobile.length !== 10) {
+      toast({
+        title: "Invalid Mobile Number",
+        description: "Please enter a valid 10-digit mobile number.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Check consent
     if (!panConsent) {
       toast({
         title: "Consent Required",
-        description:
-          "Please agree to the PAN verification consent to continue.",
+        description: "Please agree to the PAN verification consent to continue.",
         variant: "destructive",
       });
       return;
@@ -296,6 +330,9 @@ const ProfileSettings = () => {
       if (panFile) {
         const fileExt = panFileName.split(".").pop();
         const fileName = `${user.id}-pan-${Date.now()}.${fileExt}`;
+        
+        console.log("Uploading file:", fileName);
+        
         const { error: uploadError, data: fileData } = await supabase.storage
           .from("verification-docs")
           .upload(fileName, panFile, {
@@ -305,29 +342,57 @@ const ProfileSettings = () => {
 
         if (uploadError) {
           console.error("File upload error:", uploadError);
-          throw uploadError;
+          toast({
+            title: "Upload Failed",
+            description: "Failed to upload PAN card image. Please try again.",
+            variant: "destructive",
+          });
+          return;
         }
 
-        // Get public URL or path to stored file
+        // Get public URL
         const { data } = supabase.storage
           .from("verification-docs")
           .getPublicUrl(fileName);
 
         if (data) {
           panImageUrl = data.publicUrl;
+          console.log("File uploaded successfully:", panImageUrl);
         }
       }
 
-      // Then update profile with all verification data
+      // Hash the PAN number for security
+      const hashedPanNumber = hashPanNumber(formData.pan_number);
+
+      // Check if PAN number already exists (compare hashed values)
+      const { data: existingPan, error: checkError } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("pan_number", hashedPanNumber)
+        .neq("id", user.id)
+        .maybeSingle();
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        console.error("PAN check error:", checkError);
+        throw checkError;
+      }
+
+      if (existingPan) {
+        toast({
+          title: "PAN Already Registered",
+          description: "This PAN number is already associated with another account.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Update profile with verification data
       const verificationData = {
-        full_name_pan: formData.full_name_pan.trim() || null,
-        pan_number: formData.pan_number.trim() || null,
-        mobile: formData.mobile.trim() || null,
+        full_name_pan: formData.full_name_pan.trim(),
+        pan_number: hashedPanNumber, // Store hashed PAN number
+        mobile: formData.mobile.trim(),
         pan_image_url: panImageUrl,
-        is_verified:
-          formData.pan_number && formData.mobile && panImageUrl
-            ? true
-            : profile?.is_verified,
+        is_verified: false, // Set to false initially, will be verified manually
       };
 
       console.log("Updating verification data:", verificationData);
@@ -339,46 +404,34 @@ const ProfileSettings = () => {
 
       if (error) {
         console.error("Verification update error:", error);
-        // Handle unique constraint violations
-        if (error.code === '23505') {
-          if (error.message.includes('unique_pan_number')) {
-            toast({
-              title: "PAN number already verified",
-              description: "This PAN number is already associated with another verified account.",
-              variant: "destructive",
-            });
-          } else if (error.message.includes('unique_mobile')) {
-            toast({
-              title: "Mobile number already in use",
-              description: "This mobile number is already associated with another account.",
-              variant: "destructive",
-            });
-          } else {
-            toast({
-              title: "Duplicate verification data",
-              description: "Some of the verification information provided is already in use.",
-              variant: "destructive",
-            });
-          }
-        } else {
-          throw error;
-        }
-        return;
+        throw error;
       }
 
-      console.log("Verification updated successfully");
+      console.log("Verification data submitted successfully");
+      
+      // Clear form data
+      setFormData(prev => ({
+        ...prev,
+        full_name_pan: "",
+        pan_number: "",
+        mobile: "",
+      }));
+      setPanFile(null);
+      setPanFileName("");
+      setPanConsent(false);
+
       toast({
-        title: "Success",
-        description: "Your verification details have been updated.",
+        title: "Verification Submitted",
+        description: "Your verification details have been submitted. Verification is under process and you will get the verified user badge once we verify the details.",
       });
 
       // Refresh profile data
       await fetchProfile();
     } catch (error) {
-      console.error("Error updating verification:", error);
+      console.error("Error submitting verification:", error);
       toast({
-        title: "Error",
-        description: "Failed to update verification details. Please try again.",
+        title: "Submission Failed",
+        description: "Failed to submit verification details. Please try again.",
         variant: "destructive",
       });
     } finally {
