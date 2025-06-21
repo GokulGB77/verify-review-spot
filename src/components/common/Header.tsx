@@ -15,7 +15,7 @@ import { UserCircle, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 const Header = () => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, loading } = useAuth();
   const { isSuperAdmin } = useUserRoles();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<{ full_name?: string | null } | null>(
@@ -73,6 +73,37 @@ const Header = () => {
 
   const firstName = getFirstName();
 
+  // Show loading state while auth is loading
+  if (loading) {
+    return (
+      <header className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center space-x-2">
+              <Link to="/" className="text-2xl font-bold text-blue-600">
+                Review Spot
+              </Link>
+            </div>
+            <nav className="hidden md:flex items-center space-x-6">
+              <Link
+                to="/businesses"
+                className="text-gray-700 hover:text-blue-600"
+              >
+                Browse Entities
+              </Link>
+              <Link to="/reviews" className="text-gray-700 hover:text-blue-600">
+                Reviews
+              </Link>
+            </nav>
+            <div className="flex items-center space-x-4">
+              <div className="w-20 h-10 bg-gray-200 animate-pulse rounded"></div>
+            </div>
+          </div>
+        </div>
+      </header>
+    );
+  }
+
   return (
     <header className="bg-white shadow-sm border-b">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -92,7 +123,7 @@ const Header = () => {
             <Link to="/reviews" className="text-gray-700 hover:text-blue-600">
               Reviews
             </Link>
-            {isSuperAdmin() && (
+            {user && isSuperAdmin() && (
               <Link to="/admin" className="text-gray-700 hover:text-blue-600">
                 Admin Dashboard
               </Link>
