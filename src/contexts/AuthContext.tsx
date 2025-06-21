@@ -35,6 +35,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.id);
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
@@ -56,6 +57,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               setShowPseudonymModal(true);
             }
           }
+        }
+
+        // Handle sign out
+        if (event === 'SIGNED_OUT') {
+          setShowPseudonymModal(false);
+          setPendingGoogleUser(null);
         }
       }
     );
@@ -106,7 +113,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    console.log('Signing out...');
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error('Sign out error:', error);
+    } else {
+      console.log('Sign out successful');
+      // Clear local state immediately
+      setUser(null);
+      setSession(null);
+      setShowPseudonymModal(false);
+      setPendingGoogleUser(null);
+    }
   };
 
   const handlePseudonymComplete = () => {

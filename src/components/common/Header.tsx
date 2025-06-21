@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRoles } from "@/hooks/useUserRoles";
@@ -17,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 const Header = () => {
   const { user, signOut } = useAuth();
   const { isSuperAdmin } = useUserRoles();
+  const navigate = useNavigate();
   const [profile, setProfile] = useState<{ full_name?: string | null } | null>(
     null
   );
@@ -25,6 +26,9 @@ const Header = () => {
   useEffect(() => {
     if (user) {
       fetchProfile();
+    } else {
+      // Clear profile when user signs out
+      setProfile(null);
     }
   }, [user]);
 
@@ -47,7 +51,14 @@ const Header = () => {
   };
 
   const handleSignOut = async () => {
-    await signOut();
+    try {
+      console.log('Header: Starting sign out process');
+      await signOut();
+      console.log('Header: Sign out completed, navigating to home');
+      navigate('/');
+    } catch (error) {
+      console.error('Header: Sign out error:', error);
+    }
   };
 
   // Extract first name from full name, or use fallback
