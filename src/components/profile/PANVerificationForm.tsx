@@ -13,7 +13,7 @@ interface Profile {
   full_name_pan: string | null;
   mobile: string | null;
   pan_image_url: string | null;
-  rejection_reason: string | null;
+  rejection_reason?: string | null;
 }
 
 interface FormData {
