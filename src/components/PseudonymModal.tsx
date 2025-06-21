@@ -25,13 +25,33 @@ const PseudonymModal = ({ open, user, onComplete }: PseudonymModalProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
+  const validatePseudonym = (value: string) => {
+    const trimmed = value.trim();
+    if (!trimmed) return false;
+    
+    // Check format: only letters, numbers, underscore, and hyphen
+    const isValidFormat = /^[a-zA-Z0-9_-]+$/.test(trimmed);
+    return isValidFormat;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!pseudonym.trim()) {
+    const trimmedPseudonym = pseudonym.trim();
+    
+    if (!trimmedPseudonym) {
       toast({
         title: 'Pseudonym required',
         description: 'Please enter a pseudonym to continue.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!validatePseudonym(trimmedPseudonym)) {
+      toast({
+        title: 'Invalid pseudonym format',
+        description: 'Pseudonym can only contain letters, numbers, underscores, and hyphens. No spaces allowed.',
         variant: 'destructive',
       });
       return;
@@ -44,7 +64,7 @@ const PseudonymModal = ({ open, user, onComplete }: PseudonymModalProps) => {
       const { data: existingUser, error: checkError } = await supabase
         .from('profiles')
         .select('id')
-        .eq('pseudonym', pseudonym.trim())
+        .eq('pseudonym', trimmedPseudonym)
         .single();
 
       if (checkError && checkError.code !== 'PGRST116') {
@@ -65,12 +85,25 @@ const PseudonymModal = ({ open, user, onComplete }: PseudonymModalProps) => {
       const { error } = await supabase
         .from('profiles')
         .update({
-          pseudonym: pseudonym.trim(),
+          pseudonym: trimmedPseudonym,
           pseudonym_set: true,
         })
         .eq('id', user.id);
 
-      if (error) throw error;
+      if (error) {
+        // Handle unique constraint violation
+        if (error.code === '23505') {
+          toast({
+            title: 'Pseudonym unavailable',
+            description: 'This pseudonym is already taken. Please choose another one.',
+            variant: 'destructive',
+          });
+        } else {
+          throw error;
+        }
+        setIsSubmitting(false);
+        return;
+      }
 
       toast({
         title: 'Pseudonym set successfully',
@@ -108,12 +141,12 @@ const PseudonymModal = ({ open, user, onComplete }: PseudonymModalProps) => {
               type="text"
               value={pseudonym}
               onChange={(e) => setPseudonym(e.target.value)}
-              placeholder="Enter your pseudonym"
+              placeholder="Enter your pseudonym (letters, numbers, _, - only)"
               className="mt-1"
               required
             />
             <p className="text-sm text-gray-500 mt-1">
-              This cannot be changed once set.
+              Only letters, numbers, underscores, and hyphens allowed. No spaces. This cannot be changed once set.
             </p>
           </div>
           

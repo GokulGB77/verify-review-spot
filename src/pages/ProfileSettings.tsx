@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import {
   Card,
@@ -89,6 +90,15 @@ const ProfileSettings = () => {
     }
   };
 
+  const validatePseudonym = (value: string) => {
+    const trimmed = value.trim();
+    if (!trimmed) return true; // Allow empty pseudonym
+    
+    // Check format: only letters, numbers, underscore, and hyphen
+    const isValidFormat = /^[a-zA-Z0-9_-]+$/.test(trimmed);
+    return isValidFormat;
+  };
+
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({
       ...prev,
@@ -133,6 +143,17 @@ const ProfileSettings = () => {
 
     setIsSubmitting(true);
     try {
+      // Validate pseudonym format
+      if (formData.pseudonym && !validatePseudonym(formData.pseudonym)) {
+        toast({
+          title: "Invalid pseudonym format",
+          description: "Pseudonym can only contain letters, numbers, underscores, and hyphens. No spaces allowed.",
+          variant: "destructive",
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
       // Check if pseudonym is being updated and if it's unique
       if (formData.pseudonym !== profile?.pseudonym && formData.pseudonym.trim()) {
         const { data: existingUser, error: checkError } = await supabase
@@ -176,7 +197,40 @@ const ProfileSettings = () => {
         .update(updateData)
         .eq("id", user.id);
 
-      if (error) throw error;
+      if (error) {
+        // Handle unique constraint violations
+        if (error.code === '23505') {
+          if (error.message.includes('unique_email')) {
+            toast({
+              title: "Email already in use",
+              description: "This email is already associated with another account.",
+              variant: "destructive",
+            });
+          } else if (error.message.includes('unique_phone')) {
+            toast({
+              title: "Phone number already in use",
+              description: "This phone number is already associated with another account.",
+              variant: "destructive",
+            });
+          } else if (error.message.includes('unique_pseudonym')) {
+            toast({
+              title: "Pseudonym unavailable",
+              description: "This pseudonym is already taken. Please choose another one.",
+              variant: "destructive",
+            });
+          } else {
+            toast({
+              title: "Duplicate data",
+              description: "Some of the information provided is already in use.",
+              variant: "destructive",
+            });
+          }
+        } else {
+          throw error;
+        }
+        setIsSubmitting(false);
+        return;
+      }
 
       toast({
         title: "Success",
@@ -263,7 +317,34 @@ const ProfileSettings = () => {
         })
         .eq("id", user.id);
 
-      if (error) throw error;
+      if (error) {
+        // Handle unique constraint violations
+        if (error.code === '23505') {
+          if (error.message.includes('unique_pan_number')) {
+            toast({
+              title: "PAN number already verified",
+              description: "This PAN number is already associated with another verified account.",
+              variant: "destructive",
+            });
+          } else if (error.message.includes('unique_mobile')) {
+            toast({
+              title: "Mobile number already in use",
+              description: "This mobile number is already associated with another account.",
+              variant: "destructive",
+            });
+          } else {
+            toast({
+              title: "Duplicate verification data",
+              description: "Some of the verification information provided is already in use.",
+              variant: "destructive",
+            });
+          }
+        } else {
+          throw error;
+        }
+        setLoading(false);
+        return;
+      }
 
       toast({
         title: "Success",
@@ -400,11 +481,12 @@ const ProfileSettings = () => {
                     onChange={(e) =>
                       handleInputChange("pseudonym", e.target.value)
                     }
-                    placeholder="Enter your pseudonym"
+                    placeholder="Enter your pseudonym (letters, numbers, _, - only)"
                     disabled={profile?.pseudonym_set || false}
                   />
                   <p className="text-sm text-gray-500 mt-1">
                     This name will be used for your reviews to keep your real name private.
+                    Only letters, numbers, underscores, and hyphens allowed. No spaces.
                     {profile?.pseudonym_set && " This cannot be changed once set."}
                   </p>
                 </div>
