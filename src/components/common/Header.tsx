@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -7,17 +8,52 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuTrigger
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { supabase } from "@/integrations/supabase/client";
+
 import { UserCircle, ChevronDown } from "lucide-react";
+// Update the import path below if your supabase client is located elsewhere
 
 const Header = () => {
   const { user, signOut } = useAuth();
   const { isSuperAdmin } = useUserRoles();
+  const [profile, setProfile] = useState<{ full_name?: string | null } | null>(
+    null
+  );
+
+  // Fetch user profile when user changes
+  useEffect(() => {
+    if (user) {
+      fetchProfile();
+    }
+  }, [user]);
+
+  const fetchProfile = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", user.id)
+        .single();
+
+      if (error) throw error;
+
+      setProfile(data);
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+    }
+  };
 
   const handleSignOut = async () => {
     await signOut();
   };
+
+  // Determine display name - use full name if available, or email as fallback
+  const displayName =
+    profile?.full_name || user?.email?.split("@")[0] || "Account";
 
   return (
     <header className="bg-white shadow-sm border-b">
@@ -29,7 +65,10 @@ const Header = () => {
             </Link>
           </div>
           <nav className="hidden md:flex items-center space-x-6">
-            <Link to="/businesses" className="text-gray-700 hover:text-blue-600">
+            <Link
+              to="/businesses"
+              className="text-gray-700 hover:text-blue-600"
+            >
               Browse Entities
             </Link>
             <Link to="/reviews" className="text-gray-700 hover:text-blue-600">
@@ -49,21 +88,31 @@ const Header = () => {
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      className="flex items-center gap-2"
+                    >
                       <UserCircle className="h-4 w-4" />
-                      <span>My Account</span>
+                      <span className="max-w-[150px] truncate">{displayName}</span>
                       <ChevronDown className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48">
                     <DropdownMenuItem asChild>
-                      <Link to="/my-reviews" className="w-full cursor-pointer">My Reviews</Link>
+                      <Link to="/my-reviews" className="w-full cursor-pointer">
+                        My Reviews
+                      </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link to="/profile" className="w-full cursor-pointer">Profile</Link>
+                      <Link to="/profile" className="w-full cursor-pointer">
+                        Profile
+                      </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
+                    <DropdownMenuItem
+                      onClick={handleSignOut}
+                      className="cursor-pointer"
+                    >
                       Sign Out
                     </DropdownMenuItem>
                   </DropdownMenuContent>
