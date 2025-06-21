@@ -202,7 +202,6 @@ const BusinessDirectory = () => {
           </div>
         )}
       </div>
-      <Footer />
     </div>
   );
 };
