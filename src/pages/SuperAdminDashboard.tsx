@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Users, Building2, MessageSquare, TrendingUp, Search, Filter } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import RoleManagement from '@/components/RoleManagement';
 
 const SuperAdminDashboard = () => {
   const { user } = useAuth();
@@ -124,9 +125,10 @@ const SuperAdminDashboard = () => {
         </div>
 
         <Tabs defaultValue="businesses" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="businesses">Businesses</TabsTrigger>
             <TabsTrigger value="reviews">Reviews</TabsTrigger>
+            <TabsTrigger value="roles">Role Management</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
           </TabsList>
 
@@ -248,6 +250,10 @@ const SuperAdminDashboard = () => {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="roles">
+            <RoleManagement />
           </TabsContent>
 
           <TabsContent value="analytics">
