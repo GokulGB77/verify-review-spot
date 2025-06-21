@@ -7,7 +7,6 @@ import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileTabs from "@/components/profile/ProfileTabs";
 import BasicDetailsForm from "@/components/profile/BasicDetailsForm";
 import PANVerificationForm from "@/components/profile/PANVerificationForm";
-import crypto from 'crypto';
 
 interface Profile {
   id: string;
@@ -41,15 +40,6 @@ const ProfileSettings = () => {
   const [panFileName, setPanFileName] = useState<string>("");
   const [activeTab, setActiveTab] = useState("details");
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Hash PAN number using Web Crypto API for security
-  const hashPanNumber = async (panNumber: string): Promise<string> => {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(panNumber.toUpperCase());
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  };
 
   useEffect(() => {
     if (user) {
@@ -354,14 +344,11 @@ const ProfileSettings = () => {
         }
       }
 
-      // Hash the PAN number for security using Web Crypto API
-      const hashedPanNumber = await hashPanNumber(formData.pan_number);
-
-      // Check if PAN number already exists (compare hashed values)
+      // Check if PAN number already exists (using direct comparison for now)
       const { data: existingPan, error: checkError } = await supabase
         .from("profiles")
         .select("id")
-        .eq("pan_number", hashedPanNumber)
+        .eq("pan_number", formData.pan_number.toUpperCase())
         .neq("id", user.id)
         .maybeSingle();
 
@@ -382,7 +369,7 @@ const ProfileSettings = () => {
       // Update profile with verification data
       const verificationData = {
         full_name_pan: formData.full_name_pan.trim(),
-        pan_number: hashedPanNumber, // Store hashed PAN number
+        pan_number: formData.pan_number.toUpperCase(), // Store PAN number directly
         mobile: formData.mobile.trim(),
         pan_image_url: panImageUrl, // Will be null if upload failed
         is_verified: false, // Set to false initially, will be verified manually
