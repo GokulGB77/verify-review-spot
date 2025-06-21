@@ -75,6 +75,7 @@ const PANVerificationForm = ({
     handleInputChange("full_name_pan", "");
     handleInputChange("pan_number", "");
     handleInputChange("mobile", "");
+    setPanConsent(false);
     
     // Clear the file
     const fileInput = document.getElementById('pan-upload') as HTMLInputElement;
@@ -95,31 +96,178 @@ const PANVerificationForm = ({
           </p>
         </div>
       ) : isRejected ? (
-        <div className="bg-red-50 p-4 rounded-md border border-red-100">
-          <div className="flex items-start space-x-3">
-            <AlertCircle className="h-5 w-5 text-red-600 mt-0.5" />
-            <div className="flex-1">
-              <p className="text-sm text-red-700">
-                <strong>Verification Rejected</strong>
-              </p>
-              {profile?.rejection_reason && (
-                <div className="mt-2 p-3 bg-red-100 rounded border border-red-200">
-                  <p className="text-sm text-red-800 font-medium">Reason:</p>
-                  <p className="text-sm text-red-700 mt-1">{profile.rejection_reason}</p>
+        <div className="space-y-4">
+          <div className="bg-red-50 p-4 rounded-md border border-red-100">
+            <div className="flex items-start space-x-3">
+              <AlertCircle className="h-5 w-5 text-red-600 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm text-red-700">
+                  <strong>Verification Rejected</strong>
+                </p>
+                {profile?.rejection_reason && (
+                  <div className="mt-2 p-3 bg-red-100 rounded border border-red-200">
+                    <p className="text-sm text-red-800 font-medium">Reason:</p>
+                    <p className="text-sm text-red-700 mt-1">{profile.rejection_reason}</p>
+                  </div>
+                )}
+                <div className="mt-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleReapply}
+                    className="text-red-700 border-red-300 hover:bg-red-50"
+                  >
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Start Fresh Application
+                  </Button>
                 </div>
-              )}
-              <div className="mt-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleReapply}
-                  className="text-red-700 border-red-300 hover:bg-red-50"
-                >
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Reapply for Verification
-                </Button>
               </div>
+            </div>
+          </div>
+
+          {/* Show form fields for reapplication */}
+          <div className="space-y-6">
+            <div className="bg-blue-50 p-4 rounded-md border border-blue-100">
+              <p className="text-sm text-blue-700">
+                <strong>Reapply for Verification</strong> - Please provide your details again to submit a new verification request.
+              </p>
+            </div>
+
+            <div>
+              <div className="text-left mb-1">
+                <Label htmlFor="full_name_pan">Full Name as per PAN</Label>
+              </div>
+              <Input
+                id="full_name_pan"
+                type="text"
+                value={formData.full_name_pan || ""}
+                onChange={(e) => handleInputChange("full_name_pan", e.target.value)}
+                placeholder="Enter your full name exactly as it appears on your PAN card"
+              />
+            </div>
+
+            <div>
+              <div className="text-left mb-1">
+                <Label htmlFor="pan_number">PAN Card Number</Label>
+              </div>
+              <Input
+                id="pan_number"
+                type="text"
+                value={formData.pan_number}
+                onChange={(e) => handleInputChange("pan_number", e.target.value.toUpperCase())}
+                placeholder="Enter your 10-character PAN number"
+                maxLength={10}
+                className="uppercase"
+              />
+            </div>
+
+            <div>
+              <div className="text-left mb-1">
+                <Label htmlFor="mobile">Mobile Number (for verification)</Label>
+              </div>
+              <Input
+                id="mobile"
+                type="tel"
+                value={formData.mobile}
+                onChange={(e) => handleInputChange("mobile", e.target.value)}
+                placeholder="Enter mobile number linked to your PAN"
+                maxLength={10}
+              />
+            </div>
+
+            {/* PAN Card Upload */}
+            <div>
+              <div className="text-left mb-1">
+                <Label htmlFor="pan-upload">Upload PAN Card Image</Label>
+              </div>
+              <div className="mt-1 border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+                {panFile ? (
+                  <div className="space-y-3">
+                    <Image className="h-12 w-12 text-green-500 mx-auto" />
+                    <div className="text-sm text-green-600 font-medium">
+                      ✓ {panFileName} selected
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      File ready for upload
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const input = document.getElementById('pan-upload') as HTMLInputElement;
+                        if (input) {
+                          input.value = '';
+                          input.dispatchEvent(new Event('change', { bubbles: true }));
+                        }
+                      }}
+                    >
+                      Choose Different File
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                    <div className="text-sm text-gray-600">
+                      <label
+                        htmlFor="pan-upload"
+                        className="cursor-pointer text-blue-600 hover:text-blue-500"
+                      >
+                        Upload a file
+                      </label>
+                      <span> or drag and drop</span>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Clear image of your PAN card (JPG, PNG, PDF up to 2MB)
+                    </p>
+                  </>
+                )}
+                <input
+                  id="pan-upload"
+                  type="file"
+                  className="hidden"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  onChange={handlePanFileUpload}
+                />
+              </div>
+            </div>
+
+            {/* PAN Consent Message */}
+            <div className="mt-4 border border-gray-200 rounded-lg p-4 bg-gray-50">
+              <div className="flex items-start space-x-3">
+                <Checkbox
+                  id="pan-consent"
+                  checked={panConsent}
+                  onCheckedChange={(checked) => setPanConsent(checked === true)}
+                  className="mt-1"
+                />
+                <div className="text-left mb-1">
+                  <Label htmlFor="pan-consent" className="font-medium cursor-pointer">
+                    PAN Verification Consent
+                  </Label>
+                  <p className="text-sm text-gray-700 mt-1">
+                    I consent to submit my PAN details for identity verification. This information will be used solely to verify my identity, prevent duplicate accounts, and assign a 'Verified by PAN' badge to my profile for added credibility. This information will not be shared with any third party.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end">
+              <Button
+                type="submit"
+                disabled={
+                  !formData.full_name_pan?.trim() ||
+                  !formData.pan_number?.trim() ||
+                  formData.pan_number.length !== 10 ||
+                  !formData.mobile?.trim() ||
+                  formData.mobile.length !== 10 ||
+                  !panConsent ||
+                  loading
+                }
+              >
+                {loading ? "Submitting..." : "Resubmit for Verification"}
+              </Button>
             </div>
           </div>
         </div>
@@ -300,7 +448,7 @@ const PANVerificationForm = ({
                 loading
               }
             >
-              {loading ? "Submitting..." : isRejected ? "Resubmit for Verification" : "Submit for Verification"}
+              {loading ? "Submitting..." : "Submit for Verification"}
             </Button>
           </div>
         </>
