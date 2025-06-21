@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -43,9 +42,13 @@ const ProfileSettings = () => {
   const [activeTab, setActiveTab] = useState("details");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Hash PAN number for security
-  const hashPanNumber = (panNumber: string): string => {
-    return crypto.createHash('sha256').update(panNumber.toUpperCase()).digest('hex');
+  // Hash PAN number using Web Crypto API for security
+  const hashPanNumber = async (panNumber: string): Promise<string> => {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(panNumber.toUpperCase());
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
   };
 
   useEffect(() => {
@@ -361,8 +364,8 @@ const ProfileSettings = () => {
         }
       }
 
-      // Hash the PAN number for security
-      const hashedPanNumber = hashPanNumber(formData.pan_number);
+      // Hash the PAN number for security using Web Crypto API
+      const hashedPanNumber = await hashPanNumber(formData.pan_number);
 
       // Check if PAN number already exists (compare hashed values)
       const { data: existingPan, error: checkError } = await supabase
