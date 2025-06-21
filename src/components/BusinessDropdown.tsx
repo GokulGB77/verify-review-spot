@@ -15,15 +15,7 @@ interface BusinessDropdownProps {
 
 const BusinessDropdown = ({ value, onChange, placeholder = "Select business..." }: BusinessDropdownProps) => {
   const [open, setOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
   const { data: businesses, isLoading } = useBusinesses();
-
-  // Filter businesses based on search term
-  const filteredBusinesses = businesses?.filter(business =>
-    business.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    business.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    business.category.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || [];
 
   // Find selected business for display
   const selectedBusiness = businesses?.find(business => business.id === value);
@@ -39,7 +31,7 @@ const BusinessDropdown = ({ value, onChange, placeholder = "Select business..." 
         >
           {selectedBusiness ? (
             <span className="truncate">
-              {selectedBusiness.name} ({selectedBusiness.id.slice(0, 8)}...)
+              {selectedBusiness.name} (ID: {selectedBusiness.id.slice(0, 8)}...)
             </span>
           ) : (
             placeholder
@@ -47,28 +39,27 @@ const BusinessDropdown = ({ value, onChange, placeholder = "Select business..." 
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-full p-0">
+      <PopoverContent className="w-full p-0" align="start">
         <Command>
           <CommandInput 
-            placeholder="Search businesses..." 
-            value={searchTerm}
-            onValueChange={setSearchTerm}
+            placeholder="Search by business name or ID..." 
           />
           <CommandList>
             {isLoading ? (
               <CommandEmpty>Loading businesses...</CommandEmpty>
-            ) : filteredBusinesses.length === 0 ? (
+            ) : !businesses || businesses.length === 0 ? (
               <CommandEmpty>No businesses found.</CommandEmpty>
             ) : (
               <CommandGroup>
-                {filteredBusinesses.map((business) => (
+                {businesses.map((business) => (
                   <CommandItem
                     key={business.id}
-                    value={business.id}
-                    onSelect={(currentValue) => {
-                      onChange(currentValue === value ? "" : currentValue);
+                    value={`${business.name} ${business.id} ${business.category}`}
+                    onSelect={() => {
+                      onChange(business.id);
                       setOpen(false);
                     }}
+                    className="cursor-pointer"
                   >
                     <Check
                       className={cn(
