@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useUserRoles } from '@/hooks/useUserRoles';
+import BusinessDropdown from './BusinessDropdown';
 
 type UserRole = 'super_admin' | 'entity_admin' | 'user';
 
@@ -22,6 +23,15 @@ const RoleManagement = () => {
   const handleAssignRole = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !selectedRole) return;
+
+    if (selectedRole === 'entity_admin' && !entityId) {
+      toast({
+        title: 'Business required',
+        description: 'Please select a business for entity admin role.',
+        variant: 'destructive',
+      });
+      return;
+    }
 
     setLoading(true);
     
@@ -110,13 +120,11 @@ const RoleManagement = () => {
 
           {selectedRole === 'entity_admin' && (
             <div>
-              <Label htmlFor="entityId">Entity ID (Business ID)</Label>
-              <Input
-                id="entityId"
+              <Label htmlFor="businessDropdown">Select Business</Label>
+              <BusinessDropdown
                 value={entityId}
-                onChange={(e) => setEntityId(e.target.value)}
-                placeholder="Enter business ID for entity admin"
-                required
+                onChange={setEntityId}
+                placeholder="Search and select a business..."
               />
             </div>
           )}
