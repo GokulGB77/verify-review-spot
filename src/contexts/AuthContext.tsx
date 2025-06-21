@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import PseudonymModal from '@/components/PseudonymModal';
 
 interface AuthContextType {
   user: User | null;
@@ -27,14 +28,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showPseudonymModal, setShowPseudonymModal] = useState(false);
+  const [pendingGoogleUser, setPendingGoogleUser] = useState<User | null>(null);
 
   useEffect(() => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+
+        // Handle Google sign-in pseudonym requirement
+        if (event === 'SIGNED_IN' && session?.user) {
+          const isGoogleProvider = session.user.app_metadata?.provider === 'google';
+          
+          if (isGoogleProvider) {
+            // Check if user already has a pseudonym
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('pseudonym, pseudonym_set')
+              .eq('id', session.user.id)
+              .single();
+
+            if (!profile?.pseudonym_set) {
+              setPendingGoogleUser(session.user);
+              setShowPseudonymModal(true);
+            }
+          }
+        }
       }
     );
 
@@ -87,6 +109,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await supabase.auth.signOut();
   };
 
+  const handlePseudonymComplete = () => {
+    setShowPseudonymModal(false);
+    setPendingGoogleUser(null);
+  };
+
   const value = {
     user,
     session,
@@ -97,5 +124,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signOut,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+      {showPseudonymModal && pendingGoogleUser && (
+        <PseudonymModal
+          open={showPseudonymModal}
+          user={pendingGoogleUser}
+          onComplete={handlePseudonymComplete}
+        />
+      )}
+    </AuthContext.Provider>
+  );
 };

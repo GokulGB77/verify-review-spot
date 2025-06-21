@@ -84,6 +84,8 @@ export type Database = {
           pan_image_url: string | null
           pan_number: string | null
           phone: string | null
+          pseudonym: string | null
+          pseudonym_set: boolean | null
           updated_at: string
           username: string | null
         }
@@ -101,6 +103,8 @@ export type Database = {
           pan_image_url?: string | null
           pan_number?: string | null
           phone?: string | null
+          pseudonym?: string | null
+          pseudonym_set?: boolean | null
           updated_at?: string
           username?: string | null
         }
@@ -118,6 +122,8 @@ export type Database = {
           pan_image_url?: string | null
           pan_number?: string | null
           phone?: string | null
+          pseudonym?: string | null
+          pseudonym_set?: boolean | null
           updated_at?: string
           username?: string | null
         }

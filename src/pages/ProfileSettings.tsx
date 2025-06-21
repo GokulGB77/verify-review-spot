@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import {
   Card,
@@ -28,6 +27,8 @@ interface Profile {
   phone: string | null;
   is_verified: boolean | null;
   pan_image_url: string | null;
+  pseudonym: string | null;
+  pseudonym_set: boolean | null;
 }
 
 const ProfileSettings = () => {
@@ -42,6 +43,7 @@ const ProfileSettings = () => {
     full_name_pan: "",
     pan_number: "",
     mobile: "",
+    pseudonym: "",
   });
   const [panConsent, setPanConsent] = useState(false);
   const [panFile, setPanFile] = useState<File | null>(null);
@@ -75,6 +77,7 @@ const ProfileSettings = () => {
         pan_number: data.pan_number || "",
         mobile: data.mobile || "",
         full_name_pan: data.full_name_pan || "",
+        pseudonym: data.pseudonym || "",
       });
     } catch (error) {
       console.error("Error fetching profile:", error);
@@ -130,13 +133,47 @@ const ProfileSettings = () => {
 
     setIsSubmitting(true);
     try {
+      // Check if pseudonym is being updated and if it's unique
+      if (formData.pseudonym !== profile?.pseudonym && formData.pseudonym.trim()) {
+        const { data: existingUser, error: checkError } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("pseudonym", formData.pseudonym.trim())
+          .neq("id", user.id)
+          .single();
+
+        if (checkError && checkError.code !== 'PGRST116') {
+          throw checkError;
+        }
+
+        if (existingUser) {
+          toast({
+            title: "Pseudonym unavailable",
+            description: "This pseudonym is already taken. Please choose another one.",
+            variant: "destructive",
+          });
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
+      const updateData: any = {
+        full_name: formData.full_name,
+        username: formData.username,
+        phone: formData.phone,
+      };
+
+      // Only update pseudonym if it hasn't been set before or if it's empty
+      if (!profile?.pseudonym_set || !formData.pseudonym.trim()) {
+        updateData.pseudonym = formData.pseudonym.trim() || null;
+        if (formData.pseudonym.trim()) {
+          updateData.pseudonym_set = true;
+        }
+      }
+
       const { error } = await supabase
         .from("profiles")
-        .update({
-          full_name: formData.full_name,
-          username: formData.username,
-          phone: formData.phone,
-        })
+        .update(updateData)
         .eq("id", user.id);
 
       if (error) throw error;
@@ -145,6 +182,9 @@ const ProfileSettings = () => {
         title: "Success",
         description: "Your profile has been updated.",
       });
+
+      // Refresh profile data
+      await fetchProfile();
     } catch (error) {
       console.error("Error updating profile:", error);
       toast({
@@ -340,6 +380,33 @@ const ProfileSettings = () => {
                     }
                     placeholder="Enter your username"
                   />
+                </div>
+
+                <div>
+                  <div className="text-left mb-1">
+                    <Label htmlFor="pseudonym">
+                      Pseudonym
+                      {profile?.pseudonym_set && (
+                        <span className="text-sm text-gray-500 ml-2">
+                          (Cannot be changed)
+                        </span>
+                      )}
+                    </Label>
+                  </div>
+                  <Input
+                    id="pseudonym"
+                    type="text"
+                    value={formData.pseudonym}
+                    onChange={(e) =>
+                      handleInputChange("pseudonym", e.target.value)
+                    }
+                    placeholder="Enter your pseudonym"
+                    disabled={profile?.pseudonym_set || false}
+                  />
+                  <p className="text-sm text-gray-500 mt-1">
+                    This name will be used for your reviews to keep your real name private.
+                    {profile?.pseudonym_set && " This cannot be changed once set."}
+                  </p>
                 </div>
 
                 <div>
