@@ -91,7 +91,7 @@ const Index = () => {
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                 <Input
-                  placeholder="Search for institutes, courses, or services..."
+                  placeholder="Search for entities..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10 h-12 text-lg"
