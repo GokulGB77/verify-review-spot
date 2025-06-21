@@ -46,7 +46,7 @@ const Homepage = () => {
         businessName: business?.name || 'Unknown Business',
         businessCategory: business?.category || 'Unknown Category',
         businessLocation: business?.location || 'Location not specified',
-        userName: 'Anonymous User', // We'll need to implement user profiles later
+        userName: 'Anonymous Reviewer', // Generic fallback
         userBadge: getValidUserBadge(review.user_badge),
         rating: review.rating,
         date: new Date(review.created_at).toLocaleDateString(),
@@ -56,6 +56,7 @@ const Homepage = () => {
         proofProvided: review.proof_provided || false,
         upvotes: review.upvotes || 0,
         downvotes: review.downvotes || 0,
+        pseudonym: null, // We'll need to fetch this from profiles if needed
       };
     });
     
@@ -103,7 +104,6 @@ const Homepage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Page Header */}
         <div className="mb-8">
@@ -259,7 +259,6 @@ const Homepage = () => {
           </div>
         )}
       </div>
-
     </div>
   );
 };

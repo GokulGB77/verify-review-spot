@@ -10,7 +10,6 @@ interface Profile {
 
 interface FormData {
   full_name: string;
-  username: string;
   pseudonym: string;
   phone: string;
 }
@@ -42,19 +41,6 @@ const BasicDetailsForm = ({
           value={formData.full_name}
           onChange={(e) => handleInputChange("full_name", e.target.value)}
           placeholder="Enter your full name"
-        />
-      </div>
-
-      <div>
-        <div className="text-left mb-1">
-          <Label htmlFor="username">Username</Label>
-        </div>
-        <Input
-          id="username"
-          type="text"
-          value={formData.username}
-          onChange={(e) => handleInputChange("username", e.target.value)}
-          placeholder="Enter your username"
         />
       </div>
 

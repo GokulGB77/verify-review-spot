@@ -20,6 +20,7 @@ interface ReviewCardProps {
   businessResponseDate?: string;
   title?: string;
   isVerified?: boolean;
+  pseudonym?: string | null;
 }
 
 const ReviewCard = ({
@@ -35,7 +36,8 @@ const ReviewCard = ({
   businessResponse,
   businessResponseDate,
   title,
-  isVerified = false
+  isVerified = false,
+  pseudonym
 }: ReviewCardProps) => {
   const [upvotes, setUpvotes] = useState(initialUpvotes);
   const [downvotes, setDownvotes] = useState(initialDownvotes);
@@ -91,17 +93,20 @@ const ReviewCard = ({
       <Shield className="h-4 w-4 mr-1" />;
   };
 
+  // Display pseudonym if set, otherwise show generic term
+  const displayName = pseudonym || 'Anonymous Reviewer';
+
   return (
     <Card className="w-full mb-4">
       <CardHeader>
         <div className="flex items-start justify-between">
           <div className="flex items-center space-x-3">
             <Avatar>
-              <AvatarFallback>{userName.charAt(0).toUpperCase()}</AvatarFallback>
+              <AvatarFallback>{displayName.charAt(0).toUpperCase()}</AvatarFallback>
             </Avatar>
             <div>
               <div className="flex items-center space-x-2">
-                <span className="font-semibold text-gray-900">{userName}</span>
+                <span className="font-semibold text-gray-900">{displayName}</span>
                 <Badge 
                   variant="outline" 
                   className={`${getVerificationColor(userBadge)} flex items-center`}

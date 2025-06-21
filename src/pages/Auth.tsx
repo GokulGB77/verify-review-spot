@@ -14,7 +14,6 @@ const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
-  const [username, setUsername] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -37,7 +36,7 @@ const Auth = () => {
     try {
       let result;
       if (isSignUp) {
-        if (!fullName.trim() || !username.trim()) {
+        if (!fullName.trim()) {
           toast({
             title: 'Missing Information',
             description: 'Please fill in all required fields.',
@@ -45,7 +44,7 @@ const Auth = () => {
           });
           return;
         }
-        result = await signUp(email, password, fullName, username);
+        result = await signUp(email, password, fullName);
       } else {
         result = await signIn(email, password);
       }
@@ -100,7 +99,6 @@ const Auth = () => {
     setEmail('');
     setPassword('');
     setFullName('');
-    setUsername('');
   };
 
   return (
@@ -131,30 +129,17 @@ const Auth = () => {
           <CardContent className="space-y-6">
             <form onSubmit={handleEmailAuth} className="space-y-4">
               {isSignUp && (
-                <>
-                  <div>
-                    <Label htmlFor="fullName">Full Name</Label>
-                    <Input
-                      id="fullName"
-                      type="text"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      required
-                      placeholder="Enter your full name"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="username">Username</Label>
-                    <Input
-                      id="username"
-                      type="text"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      required
-                      placeholder="Choose a username"
-                    />
-                  </div>
-                </>
+                <div>
+                  <Label htmlFor="fullName">Full Name</Label>
+                  <Input
+                    id="fullName"
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    required
+                    placeholder="Enter your full name"
+                  />
+                </div>
               )}
               
               <div>

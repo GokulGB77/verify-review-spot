@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -12,7 +11,6 @@ import PANVerificationForm from "@/components/profile/PANVerificationForm";
 interface Profile {
   id: string;
   full_name: string | null;
-  username: string | null;
   email: string | null;
   pan_number: string | null;
   mobile: string | null;
@@ -31,7 +29,6 @@ const ProfileSettings = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [formData, setFormData] = useState({
     full_name: "",
-    username: "",
     phone: "",
     full_name_pan: "",
     pan_number: "",
@@ -70,7 +67,6 @@ const ProfileSettings = () => {
       setProfile(data);
       setFormData({
         full_name: data.full_name || "",
-        username: data.username || "",
         phone: data.phone || "",
         pan_number: data.pan_number || "",
         mobile: data.mobile || "",
@@ -188,7 +184,6 @@ const ProfileSettings = () => {
 
       const updateData: any = {
         full_name: formData.full_name.trim() || null,
-        username: formData.username.trim() || null,
         phone: formData.phone.trim() || null,
       };
 

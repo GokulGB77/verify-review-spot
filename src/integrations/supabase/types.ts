@@ -87,7 +87,6 @@ export type Database = {
           pseudonym: string | null
           pseudonym_set: boolean | null
           updated_at: string
-          username: string | null
         }
         Insert: {
           aadhaar_mobile?: string | null
@@ -106,7 +105,6 @@ export type Database = {
           pseudonym?: string | null
           pseudonym_set?: boolean | null
           updated_at?: string
-          username?: string | null
         }
         Update: {
           aadhaar_mobile?: string | null
@@ -125,7 +123,6 @@ export type Database = {
           pseudonym?: string | null
           pseudonym_set?: boolean | null
           updated_at?: string
-          username?: string | null
         }
         Relationships: []
       }
