@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import {
   Card,
@@ -295,12 +294,8 @@ const Index = () => {
           {bestEntities.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {bestEntities.map((entity) => (
-                <Card
-                  key={entity.id}
-                  className="hover:shadow-lg transition-all duration-300 cursor-pointer border border-gray-200"
-                  asChild
-                >
-                  <Link to={`/business/${entity.id}`}>
+                <Link key={entity.id} to={`/business/${entity.id}`}>
+                  <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer border border-gray-200">
                     <CardContent className="p-6">
                       <div className="space-y-4">
                         {/* Entity Icon/Logo Placeholder */}
@@ -356,8 +351,8 @@ const Index = () => {
                         </div>
                       </div>
                     </CardContent>
-                  </Link>
-                </Card>
+                  </Card>
+                </Link>
               ))}
             </div>
           ) : (
