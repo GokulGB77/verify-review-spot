@@ -19,6 +19,8 @@ import {
   TrendingUp,
   Lock,
   Eye,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import Header from "@/components/common/Header";
@@ -40,7 +42,25 @@ const Index = () => {
     }
   };
 
-  // Get featured reviews (latest reviews with high ratings)
+  // Get recent reviews with business information
+  const recentReviews = allReviews
+    .slice(0, 8) // Show up to 8 recent reviews
+    .map((review) => {
+      const business = businesses.find(b => b.id === review.business_id);
+      return {
+        id: review.id,
+        userName: review.profiles?.username || review.profiles?.full_name || 'Anonymous User',
+        rating: review.rating || 0,
+        content: review.content || '',
+        businessName: business?.name || 'Unknown Business',
+        businessWebsite: business?.website || '',
+        userBadge: review.user_badge || 'Unverified User',
+        date: new Date(review.created_at).toLocaleDateString(),
+        businessCategory: business?.category || 'Business',
+      };
+    });
+
+  // Get best entities (highest rated with minimum review count)
   const featuredReviews = businesses
     .filter((business) => business.rating && business.rating >= 4)
     .slice(0, 3)
@@ -78,6 +98,19 @@ const Index = () => {
       reviewCount: business.review_count || 0,
       verificationStatus: business.verification_status,
     }));
+
+  const getUserInitials = (name: string) => {
+    return name.split(' ').map(n => n.charAt(0)).join('').toUpperCase().slice(0, 2);
+  };
+
+  const getAvatarColor = (name: string) => {
+    const colors = [
+      'bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-red-500', 
+      'bg-yellow-500', 'bg-indigo-500', 'bg-pink-500', 'bg-gray-500'
+    ];
+    const index = name.length % colors.length;
+    return colors[index];
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -189,68 +222,80 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Featured Reviews Section */}
+      {/* Recent Reviews Section */}
       <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Recently Reviewed
-            </h2>
-            <p className="text-lg text-gray-600">
-              See what verified users are saying
-            </p>
+          <div className="flex justify-between items-center mb-12">
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                Recent reviews
+              </h2>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Button variant="ghost" size="icon" className="rounded-full">
+                <ChevronLeft className="h-5 w-5" />
+              </Button>
+              <Button variant="ghost" size="icon" className="rounded-full">
+                <ChevronRight className="h-5 w-5" />
+              </Button>
+            </div>
           </div>
 
-          {featuredReviews.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {featuredReviews.map((review) => (
-                <Card
-                  key={review.id}
-                  className="hover:shadow-lg transition-shadow cursor-pointer"
-                >
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <CardTitle className="text-lg">
-                          {review.businessName}
-                        </CardTitle>
-                        <CardDescription>{review.category}</CardDescription>
+          {recentReviews.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {recentReviews.map((review) => (
+                <Card key={review.id} className="hover:shadow-lg transition-shadow">
+                  <CardContent className="p-6">
+                    <div className="space-y-4">
+                      {/* User Info */}
+                      <div className="flex items-center space-x-3">
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold ${getAvatarColor(review.userName)}`}>
+                          {getUserInitials(review.userName)}
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-gray-900">
+                            {review.userName}
+                          </h3>
+                          <div className="flex items-center">
+                            {[...Array(5)].map((_, i) => (
+                              <Star
+                                key={i}
+                                className={`h-4 w-4 ${
+                                  i < Math.floor(review.rating)
+                                    ? "text-yellow-400 fill-current"
+                                    : "text-gray-300"
+                                }`}
+                              />
+                            ))}
+                          </div>
+                        </div>
                       </div>
-                      <Badge
-                        variant={
-                          review.badge === "verified" ? "default" : "secondary"
-                        }
-                        className={
-                          review.badge === "verified"
-                            ? "bg-green-100 text-green-800"
-                            : ""
-                        }
-                      >
-                        {review.verificationLevel}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center space-x-2 mb-2">
-                      <div className="flex items-center">
-                        {[...Array(5)].map((_, i) => (
-                          <Star
-                            key={i}
-                            className={`h-4 w-4 ${
-                              i < Math.floor(review.rating)
-                                ? "text-yellow-400 fill-current"
-                                : "text-gray-300"
-                            }`}
-                          />
-                        ))}
+
+                      {/* Review Content */}
+                      <p className="text-gray-700 text-sm leading-relaxed line-clamp-4">
+                        {review.content}
+                      </p>
+
+                      {/* Business Info */}
+                      <div className="pt-4 border-t border-gray-100">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-6 h-6 bg-gray-200 rounded flex items-center justify-center">
+                            <span className="text-xs font-bold text-gray-600">
+                              {review.businessName.charAt(0)}
+                            </span>
+                          </div>
+                          <div>
+                            <div className="font-semibold text-sm text-gray-900">
+                              {review.businessName}
+                            </div>
+                            {review.businessWebsite && (
+                              <div className="text-xs text-gray-500">
+                                {review.businessWebsite.replace(/^https?:\/\//, '').replace(/^www\./, '')}
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                      <span className="font-semibold">
-                        {review.rating.toFixed(1)}
-                      </span>
-                    </div>
-                    <div className="flex items-center text-sm text-gray-600">
-                      <Users className="h-4 w-4 mr-1" />
-                      {review.reviewCount} reviews
                     </div>
                   </CardContent>
                 </Card>
@@ -259,7 +304,7 @@ const Index = () => {
           ) : (
             <div className="text-center py-8">
               <p className="text-gray-500">
-                No featured reviews available yet.
+                No recent reviews available yet.
               </p>
             </div>
           )}
