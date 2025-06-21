@@ -1,22 +1,21 @@
-
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
-import { Badge } from '@/components/ui/badge';
-import { Shield, User } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { Badge } from "@/components/ui/badge";
+import { Shield, User } from "lucide-react";
 
 interface Profile {
   id: string;
   full_name: string | null;
   username: string | null;
   email: string | null;
-  aadhaar_number: string | null;
-  aadhaar_mobile: string | null;
+  pan_number: string | null;  // Changed from aadhaar_number
+  mobile: string | null;      // Changed from aadhaar_mobile
   is_verified: boolean | null;
 }
 
@@ -26,10 +25,10 @@ const ProfileSettings = () => {
   const [loading, setLoading] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [formData, setFormData] = useState({
-    full_name: '',
-    username: '',
-    aadhaar_number: '',
-    aadhaar_mobile: ''
+    full_name: "",
+    username: "",
+    pan_number: "",    // Changed from aadhaar_number
+    mobile: "",        // Changed from aadhaar_mobile
   });
 
   useEffect(() => {
@@ -43,34 +42,38 @@ const ProfileSettings = () => {
 
     try {
       const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
         .single();
 
       if (error) throw error;
 
-      setProfile(data);
+      setProfile({
+        ...data,
+        pan_number: (data as any).pan_number ?? data.aadhaar_number ?? null,
+        mobile: (data as any).mobile ?? data.aadhaar_mobile ?? null,
+      });
       setFormData({
-        full_name: data.full_name || '',
-        username: data.username || '',
-        aadhaar_number: data.aadhaar_number || '',
-        aadhaar_mobile: data.aadhaar_mobile || ''
+        full_name: data.full_name || "",
+        username: data.username || "",
+        pan_number: (data as any).pan_number  || "",
+        mobile: (data as any).mobile || "",
       });
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      console.error("Error fetching profile:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to load profile data.',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to load profile data.",
+        variant: "destructive",
       });
     }
   };
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
@@ -82,30 +85,33 @@ const ProfileSettings = () => {
 
     try {
       const { error } = await supabase
-        .from('profiles')
+        .from("profiles")
         .update({
           full_name: formData.full_name,
           username: formData.username,
-          aadhaar_number: formData.aadhaar_number || null,
-          aadhaar_mobile: formData.aadhaar_mobile || null,
-          is_verified: formData.aadhaar_number && formData.aadhaar_mobile ? true : profile?.is_verified
+          pan_number: formData.pan_number || null,   // Changed from aadhaar_number
+          mobile: formData.mobile || null,           // Changed from aadhaar_mobile
+          is_verified:
+            formData.pan_number && formData.mobile   // Changed condition
+              ? true
+              : profile?.is_verified,
         })
-        .eq('id', user.id);
+        .eq("id", user.id);
 
       if (error) throw error;
 
       toast({
-        title: 'Profile updated',
-        description: 'Your profile has been updated successfully.',
+        title: "Profile updated",
+        description: "Your profile has been updated successfully.",
       });
 
       fetchProfile(); // Refresh profile data
     } catch (error) {
-      console.error('Error updating profile:', error);
+      console.error("Error updating profile:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to update profile. Please try again.',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to update profile. Please try again.",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -143,35 +149,49 @@ const ProfileSettings = () => {
           <CardContent>
             <form onSubmit={handleUpdateProfile} className="space-y-6">
               <div>
-                <Label htmlFor="email">Email Address</Label>
+                <div className="text-left mb-1">
+                  <Label htmlFor="email">Email Address</Label>
+                </div>
                 <Input
                   id="email"
                   type="email"
-                  value={profile?.email || ''}
+                  value={profile?.email || ""}
                   disabled
                   className="bg-gray-100"
                 />
-                <p className="text-sm text-gray-500 mt-1">Email cannot be changed</p>
+                <div className="text-left mb-1">
+                <p className="text-sm text-gray-500 mt-1">
+                  Email cannot be changed
+                </p>
+                  </div>
               </div>
 
               <div>
+                <div className="text-left mb-1">
                 <Label htmlFor="full_name">Full Name</Label>
+                  </div>
                 <Input
                   id="full_name"
                   type="text"
                   value={formData.full_name}
-                  onChange={(e) => handleInputChange('full_name', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("full_name", e.target.value)
+                  }
                   placeholder="Enter your full name"
                 />
               </div>
 
               <div>
+                <div className="text-left mb-1">
                 <Label htmlFor="username">Username</Label>
+                  </div>
                 <Input
                   id="username"
                   type="text"
                   value={formData.username}
-                  onChange={(e) => handleInputChange('username', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("username", e.target.value)
+                  }
                   placeholder="Enter your username"
                 />
               </div>
@@ -182,35 +202,45 @@ const ProfileSettings = () => {
                   Verification Details
                 </h3>
                 <p className="text-sm text-gray-600 mb-4">
-                  Add your Aadhaar details to get verified user status and display verified badge on your reviews.
+                  Add your PAN Card details to get verified user status and
+                  display verified badge on your reviews.
                 </p>
 
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="aadhaar_number">Aadhaar Number</Label>
+                    <div className="text-left mb-1">
+                    <Label htmlFor="pan_number">PAN Card Number</Label>
+                    </div> 
                     <Input
-                      id="aadhaar_number"
+                      id="pan_number"
                       type="text"
-                      value={formData.aadhaar_number}
-                      onChange={(e) => handleInputChange('aadhaar_number', e.target.value)}
-                      placeholder="Enter your 12-digit Aadhaar number"
-                      maxLength={12}
+                      value={formData.pan_number}
+                      onChange={(e) =>
+                        handleInputChange("pan_number", e.target.value)
+                      }
+                      placeholder="Enter your 10-digit PAN number"
+                      maxLength={10}
+                      className="uppercase"
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="aadhaar_mobile">Aadhaar Linked Mobile</Label>
+                    <div className="text-left mb-1">
+                    <Label htmlFor="mobile">Mobile Number</Label>
+                  </div>
                     <Input
-                      id="aadhaar_mobile"
+                      id="mobile"
                       type="tel"
-                      value={formData.aadhaar_mobile}
-                      onChange={(e) => handleInputChange('aadhaar_mobile', e.target.value)}
-                      placeholder="Enter your Aadhaar linked mobile number"
+                      value={formData.mobile}
+                      onChange={(e) =>
+                        handleInputChange("mobile", e.target.value)
+                      }
+                      placeholder="Enter your mobile number"
                       maxLength={10}
                     />
                   </div>
 
-                  {formData.aadhaar_number && formData.aadhaar_mobile && (
+                  {formData.pan_number && formData.mobile && (
                     <div className="bg-green-50 p-3 rounded-md">
                       <p className="text-sm text-green-700">
                         ✓ Once you save, you'll receive verified user status!
@@ -221,7 +251,7 @@ const ProfileSettings = () => {
               </div>
 
               <Button type="submit" disabled={loading} className="w-full">
-                {loading ? 'Updating...' : 'Update Profile'}
+                {loading ? "Updating..." : "Update Profile"}
               </Button>
             </form>
           </CardContent>
