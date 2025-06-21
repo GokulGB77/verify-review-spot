@@ -22,7 +22,7 @@ interface VerificationRequest {
   email: string | null;
   created_at: string;
   updated_at: string;
-  rejection_reason: string | null;
+  rejection_reason?: string | null;
 }
 
 const VerificationManagement = () => {
