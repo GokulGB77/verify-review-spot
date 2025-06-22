@@ -115,10 +115,9 @@ const SuperAdminDashboard = () => {
   ];
 
   const AppSidebar = () => (
-    <Sidebar>
+    <Sidebar className="mt-20 w-64 bg-white border-r border-gray-200">
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Admin Dashboard</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map((item) => (
