@@ -136,7 +136,11 @@ export type Database = {
           downvotes: number | null
           id: string
           proof_provided: boolean | null
+          proof_rejection_reason: string | null
           proof_url: string | null
+          proof_verified: boolean | null
+          proof_verified_at: string | null
+          proof_verified_by: string | null
           rating: number
           updated_at: string
           upvotes: number | null
@@ -152,7 +156,11 @@ export type Database = {
           downvotes?: number | null
           id?: string
           proof_provided?: boolean | null
+          proof_rejection_reason?: string | null
           proof_url?: string | null
+          proof_verified?: boolean | null
+          proof_verified_at?: string | null
+          proof_verified_by?: string | null
           rating: number
           updated_at?: string
           upvotes?: number | null
@@ -168,7 +176,11 @@ export type Database = {
           downvotes?: number | null
           id?: string
           proof_provided?: boolean | null
+          proof_rejection_reason?: string | null
           proof_url?: string | null
+          proof_verified?: boolean | null
+          proof_verified_at?: string | null
+          proof_verified_by?: string | null
           rating?: number
           updated_at?: string
           upvotes?: number | null

@@ -11,10 +11,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Users, Building2, MessageSquare, TrendingUp, Search, Filter } from 'lucide-react';
+import { Users, Building2, MessageSquare, TrendingUp, Search, Filter, Shield } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import RoleManagement from '@/components/RoleManagement';
 import VerificationManagement from '@/components/VerificationManagement';
+import ProofVerificationManagement from '@/components/ProofVerificationManagement';
 
 const SuperAdminDashboard = () => {
   const { user } = useAuth();
@@ -126,9 +127,10 @@ const SuperAdminDashboard = () => {
         </div>
 
         <Tabs defaultValue="businesses" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="businesses">Businesses</TabsTrigger>
             <TabsTrigger value="reviews">Reviews</TabsTrigger>
+            <TabsTrigger value="proof-verification">Proof Verification</TabsTrigger>
             <TabsTrigger value="verification">Verification</TabsTrigger>
             <TabsTrigger value="roles">Role Management</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
@@ -252,6 +254,10 @@ const SuperAdminDashboard = () => {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="proof-verification">
+            <ProofVerificationManagement />
           </TabsContent>
 
           <TabsContent value="verification">

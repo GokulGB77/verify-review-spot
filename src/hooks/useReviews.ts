@@ -70,6 +70,7 @@ export const useCreateReview = () => {
       content: string;
       user_badge?: string;
       proof_provided?: boolean;
+      proof_url?: string;
     }) => {
       if (!user?.id) throw new Error('User must be authenticated');
       

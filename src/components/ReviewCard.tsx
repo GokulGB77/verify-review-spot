@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Star, ThumbsUp, ThumbsDown, Shield, CheckCircle } from 'lucide-react';
+import { Star, ThumbsUp, ThumbsDown, Shield, CheckCircle, Clock } from 'lucide-react';
 import { useState } from 'react';
 
 interface ReviewCardProps {
@@ -13,6 +13,7 @@ interface ReviewCardProps {
   content: string;
   userBadge: 'Verified Graduate' | 'Verified Employee' | 'Verified User' | 'Unverified User';
   proofProvided: boolean;
+  proofVerified?: boolean | null;
   upvotes: number;
   downvotes: number;
   date: string;
@@ -30,6 +31,7 @@ const ReviewCard = ({
   content,
   userBadge,
   proofProvided,
+  proofVerified,
   upvotes: initialUpvotes,
   downvotes: initialDownvotes,
   date,
@@ -71,6 +73,50 @@ const ReviewCard = ({
     }
   };
 
+  const getVerificationDisplay = () => {
+    // If no proof was provided, show original badge
+    if (!proofProvided) {
+      return {
+        badge: userBadge,
+        color: getVerificationColor(userBadge),
+        icon: getVerificationIcon(userBadge)
+      };
+    }
+
+    // If proof was provided but not yet verified
+    if (proofVerified === null) {
+      return {
+        badge: 'Proof Submitted - Under Verification',
+        color: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+        icon: <Clock className="h-4 w-4 mr-1" />
+      };
+    }
+
+    // If proof was verified and approved
+    if (proofVerified === true) {
+      return {
+        badge: userBadge,
+        color: getVerificationColor(userBadge),
+        icon: getVerificationIcon(userBadge)
+      };
+    }
+
+    // If proof was rejected
+    if (proofVerified === false) {
+      return {
+        badge: 'Proof Rejected - Unverified User',
+        color: 'bg-red-100 text-red-800 border-red-200',
+        icon: null
+      };
+    }
+
+    return {
+      badge: userBadge,
+      color: getVerificationColor(userBadge),
+      icon: getVerificationIcon(userBadge)
+    };
+  };
+
   const getVerificationColor = (level: string) => {
     switch (level) {
       case 'Verified Graduate':
@@ -95,6 +141,7 @@ const ReviewCard = ({
 
   // Display pseudonym if set, otherwise show generic term
   const displayName = pseudonym || 'Anonymous Reviewer';
+  const verification = getVerificationDisplay();
 
   return (
     <Card className="w-full mb-4">
@@ -109,16 +156,11 @@ const ReviewCard = ({
                 <span className="font-semibold text-gray-900">{displayName}</span>
                 <Badge 
                   variant="outline" 
-                  className={`${getVerificationColor(userBadge)} flex items-center`}
+                  className={`${verification.color} flex items-center`}
                 >
-                  {getVerificationIcon(userBadge)}
-                  {userBadge}
+                  {verification.icon}
+                  {verification.badge}
                 </Badge>
-                {proofProvided && (
-                  <Badge variant="outline" className="bg-orange-100 text-orange-800 border-orange-200">
-                    Proof Provided
-                  </Badge>
-                )}
               </div>
               <div className="flex items-center mt-1">
                 <div className="flex items-center mr-2">
