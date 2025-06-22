@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -283,78 +284,7 @@ const WriteReview = () => {
           </p>
         </div>
 
-        {/* Show existing original review if it exists */}
-        {originalReview && selectedBusinessForReview && (
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <MessageSquare className="h-5 w-5" />
-                <span>Your Original Review</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center space-x-2">
-                  <div className="flex items-center">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`h-4 w-4 ${
-                          i < originalReview.rating
-                            ? 'text-yellow-400 fill-current'
-                            : 'text-gray-300'
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  <span className="font-semibold">{originalReview.rating}/5</span>
-                  <Badge variant="outline">{originalReview.user_badge}</Badge>
-                </div>
-                <p className="text-gray-700">{originalReview.content}</p>
-                <p className="text-sm text-gray-500">
-                  Posted on {new Date(originalReview.created_at).toLocaleDateString()}
-                </p>
-              </div>
-
-              {/* Show existing updates */}
-              {reviewUpdates.length > 0 && (
-                <div className="mt-6 pt-6 border-t">
-                  <h4 className="font-semibold mb-4">Previous Updates:</h4>
-                  <div className="space-y-4">
-                    {reviewUpdates.map((update, index) => (
-                      <div key={update.id} className="bg-gray-50 p-4 rounded-lg">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm font-medium">Update #{update.update_number}</span>
-                          <span className="text-sm text-gray-500">
-                            {new Date(update.created_at).toLocaleDateString()}
-                          </span>
-                        </div>
-                        <div className="flex items-center space-x-2 mb-2">
-                          <div className="flex items-center">
-                            {[...Array(5)].map((_, i) => (
-                              <Star
-                                key={i}
-                                className={`h-3 w-3 ${
-                                  i < update.rating
-                                    ? 'text-yellow-400 fill-current'
-                                    : 'text-gray-300'
-                                }`}
-                              />
-                            ))}
-                          </div>
-                          <span className="text-sm">{update.rating}/5</span>
-                        </div>
-                        <p className="text-sm text-gray-700">{update.content}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Search for business section */}
+        {/* Search for business section OR Selected business section - Always at top */}
         {showSearchResults ? (
           <Card className="mb-6">
             <CardHeader>
@@ -457,7 +387,78 @@ const WriteReview = () => {
           </Card>
         )}
 
-        {/* Review form */}
+        {/* Show existing original review if it exists - Now comes after business details */}
+        {originalReview && selectedBusinessForReview && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <MessageSquare className="h-5 w-5" />
+                <span>Your Original Review</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <div className="flex items-center">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`h-4 w-4 ${
+                          i < originalReview.rating
+                            ? 'text-yellow-400 fill-current'
+                            : 'text-gray-300'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <span className="font-semibold">{originalReview.rating}/5</span>
+                  <Badge variant="outline">{originalReview.user_badge}</Badge>
+                </div>
+                <p className="text-gray-700">{originalReview.content}</p>
+                <p className="text-sm text-gray-500">
+                  Posted on {new Date(originalReview.created_at).toLocaleDateString()}
+                </p>
+              </div>
+
+              {/* Show existing updates */}
+              {reviewUpdates.length > 0 && (
+                <div className="mt-6 pt-6 border-t">
+                  <h4 className="font-semibold mb-4">Previous Updates:</h4>
+                  <div className="space-y-4">
+                    {reviewUpdates.map((update, index) => (
+                      <div key={update.id} className="bg-gray-50 p-4 rounded-lg">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium">Update #{update.update_number}</span>
+                          <span className="text-sm text-gray-500">
+                            {new Date(update.created_at).toLocaleDateString()}
+                          </span>
+                        </div>
+                        <div className="flex items-center space-x-2 mb-2">
+                          <div className="flex items-center">
+                            {[...Array(5)].map((_, i) => (
+                              <Star
+                                key={i}
+                                className={`h-3 w-3 ${
+                                  i < update.rating
+                                    ? 'text-yellow-400 fill-current'
+                                    : 'text-gray-300'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                          <span className="text-sm">{update.rating}/5</span>
+                        </div>
+                        <p className="text-sm text-gray-700">{update.content}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Review form - Always at bottom */}
         {selectedBusinessForReview && (
           <Card>
             <CardHeader>
