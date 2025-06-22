@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,7 +11,6 @@ import { useBusiness } from '@/hooks/useBusinesses';
 import { useReviews } from '@/hooks/useReviews';
 import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/common/Header';
-import { getDisplayName } from '@/utils/displayName';
 
 const BusinessProfile = () => {
   const { id } = useParams();
@@ -90,7 +90,7 @@ const BusinessProfile = () => {
     return {
       id: latestReview.id,
       userId: userId,
-      userName: getDisplayName(latestReview.profiles),
+      userName: 'Anonymous User',
       rating: latestReview.rating,
       content: latestReview.content,
       userBadge: getValidUserBadge(latestReview.user_badge),
@@ -103,8 +103,7 @@ const BusinessProfile = () => {
       hasUpdates,
       totalUpdates,
       updateNumber: latestReview.update_number || 0,
-      allReviews: data.allReviews.sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()),
-      profiles: latestReview.profiles
+      allReviews: data.allReviews.sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
     };
   }).filter(Boolean);
 
@@ -301,7 +300,7 @@ const BusinessProfile = () => {
                             {review.allReviews.map((historicalReview: any, index: number) => {
                               const transformedHistorical = {
                                 id: historicalReview.id,
-                                userName: getDisplayName(historicalReview.profiles),
+                                userName: 'Anonymous User',
                                 rating: historicalReview.rating,
                                 content: historicalReview.content,
                                 userBadge: getValidUserBadge(historicalReview.user_badge),
@@ -310,8 +309,7 @@ const BusinessProfile = () => {
                                 downvotes: historicalReview.downvotes || 0,
                                 date: new Date(historicalReview.created_at).toLocaleDateString(),
                                 businessResponse: historicalReview.business_response,
-                                businessResponseDate: historicalReview.business_response_date ? new Date(historicalReview.business_response_date).toLocaleDateString() : undefined,
-                                profiles: historicalReview.profiles
+                                businessResponseDate: historicalReview.business_response_date ? new Date(historicalReview.business_response_date).toLocaleDateString() : undefined
                               };
                               
                               const isOriginal = !historicalReview.parent_review_id;

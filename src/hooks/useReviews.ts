@@ -8,8 +8,6 @@ export type Review = Tables<'reviews'> & {
   profiles?: {
     username: string | null;
     full_name: string | null;
-    pseudonym: string | null;
-    display_name_preference: string | null;
   } | null;
 };
 
@@ -19,15 +17,7 @@ export const useReviews = (businessId?: string) => {
     queryFn: async () => {
       let query = supabase
         .from('reviews')
-        .select(`
-          *,
-          profiles (
-            username,
-            full_name,
-            pseudonym,
-            display_name_preference
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (businessId) {
@@ -37,22 +27,7 @@ export const useReviews = (businessId?: string) => {
       const { data, error } = await query;
       
       if (error) throw error;
-      
-      // Type assertion to handle the Supabase response properly
-      return (data || []).map(review => {
-        const profiles = review.profiles;
-        
-        // Check if profiles is valid and not an error object
-        const isValidProfiles = profiles && 
-          typeof profiles === 'object' && 
-          profiles !== null && 
-          !('error' in profiles);
-        
-        return {
-          ...review,
-          profiles: isValidProfiles ? (profiles as NonNullable<typeof profiles>) : null
-        };
-      }) as Review[];
+      return data as Review[];
     },
   });
 };

@@ -380,9 +380,9 @@ const VerificationManagement = () => {
                                           Open Image in New Tab
                                         </Button>
                                       </div>
-                                      {/* <div className="text-xs text-gray-500 space-y-1">
+                                      <div className="text-xs text-gray-500 space-y-1">
                                         <p><strong>Original URL:</strong> {selectedRequest.pan_image_url}</p>
-                                      </div> */}
+                                      </div>
                                     </div>
                                   </div>
                                 ) : (

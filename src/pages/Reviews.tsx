@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,7 +11,6 @@ import Header from "@/components/common/Header";
 import Footer from "@/components/common/Footer";
 import { useReviews } from '@/hooks/useReviews';
 import { useBusinesses } from '@/hooks/useBusinesses';
-import { getDisplayName } from '@/utils/displayName';
 
 const Homepage = () => {
   const [searchQuery, setSearchQuery] = useState('');
