@@ -14,9 +14,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { toast } from "@/hooks/use-toast";
-import { Search, Star, Building, CheckCircle, Upload, X } from 'lucide-react';
+import { Search, Star, Building, CheckCircle, Upload, X, MessageSquare } from 'lucide-react';
 import { useBusinesses, useBusiness } from '@/hooks/useBusinesses';
-import { useUserReviewForBusiness, useCreateReview } from '@/hooks/useReviews';
+import { useUserOriginalReviewForBusiness, useUserReviewUpdatesForBusiness, useCreateReview } from '@/hooks/useReviews';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -36,7 +36,8 @@ const WriteReview = () => {
   const { user } = useAuth();
   const { data: businesses = [] } = useBusinesses();
   const { data: selectedBusiness } = useBusiness(id || '');
-  const { data: existingReview } = useUserReviewForBusiness(id || '');
+  const { data: originalReview } = useUserOriginalReviewForBusiness(id || '');
+  const { data: reviewUpdates = [] } = useUserReviewUpdatesForBusiness(id || '');
   const createReviewMutation = useCreateReview();
   
   const [searchQuery, setSearchQuery] = useState('');
@@ -58,8 +59,6 @@ const WriteReview = () => {
   });
 
   const watchedUserBadge = form.watch('user_badge');
-
-  // Check if the selected verification status requires proof
   const requiresProof = ['Verified Graduate', 'Verified Employee'].includes(watchedUserBadge);
 
   // Set business when coming from a specific business page
@@ -73,13 +72,13 @@ const WriteReview = () => {
 
   // Populate form with existing review data
   useEffect(() => {
-    if (existingReview) {
-      form.setValue('rating', existingReview.rating);
-      form.setValue('content', existingReview.content);
-      form.setValue('user_badge', (existingReview.user_badge as any) || 'Unverified User');
-      form.setValue('proof_provided', existingReview.proof_provided || false);
+    if (originalReview) {
+      form.setValue('rating', originalReview.rating);
+      form.setValue('content', originalReview.content);
+      form.setValue('user_badge', (originalReview.user_badge as any) || 'Unverified User');
+      form.setValue('proof_provided', originalReview.proof_provided || false);
     }
-  }, [existingReview, form]);
+  }, [originalReview, form]);
 
   // Filter businesses based on search query
   const filteredBusinesses = businesses.filter(business => {
@@ -104,7 +103,6 @@ const WriteReview = () => {
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // Check file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         toast({
           title: "File too large",
@@ -114,7 +112,6 @@ const WriteReview = () => {
         return;
       }
       
-      // Check file type
       const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
       if (!allowedTypes.includes(file.type)) {
         toast({
@@ -136,14 +133,12 @@ const WriteReview = () => {
   };
 
   const handleSubmitAttempt = (data: FormData) => {
-    // Check if verification status requires proof but no file is uploaded
     if (requiresProof && !uploadedFile) {
       setShowWarningDialog(true);
       setPendingSubmit(true);
       return;
     }
     
-    // Proceed with normal submission
     onSubmit(data);
   };
 
@@ -151,7 +146,6 @@ const WriteReview = () => {
     setShowWarningDialog(false);
     setPendingSubmit(false);
     
-    // Set badge to Unverified User and proceed
     const formData = form.getValues();
     formData.user_badge = 'Unverified User';
     formData.proof_provided = false;
@@ -172,7 +166,6 @@ const WriteReview = () => {
     try {
       let proofUrl = null;
       
-      // Upload proof file if provided
       if (uploadedFile && data.proof_provided) {
         const fileExt = uploadedFile.name.split('.').pop();
         const fileName = `${user.id}/${Date.now()}.${fileExt}`;
@@ -194,19 +187,22 @@ const WriteReview = () => {
         proofUrl = uploadData.path;
       }
 
+      const isUpdate = !!originalReview;
+      
       await createReviewMutation.mutateAsync({
         business_id: data.business_id,
         rating: data.rating,
         content: data.content.trim(),
         proof_provided: data.proof_provided,
         user_badge: data.user_badge,
-        proof_url: proofUrl
+        proof_url: proofUrl,
+        is_update: isUpdate
       });
 
       toast({
-        title: existingReview ? "Review Updated" : "Review Submitted",
-        description: existingReview 
-          ? "Your review has been updated successfully!" 
+        title: isUpdate ? "Review Update Added" : "Review Submitted",
+        description: isUpdate 
+          ? "Your review update has been added successfully!" 
           : "Thank you for sharing your experience!",
       });
 
@@ -266,24 +262,88 @@ const WriteReview = () => {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            {existingReview ? 'Update Your Review' : 'Write a Review'}
+            {originalReview ? 'Add Review Update' : 'Write a Review'}
           </h1>
           <p className="text-lg text-gray-600">
-            {existingReview 
-              ? 'You can update your existing review below' 
+            {originalReview 
+              ? 'Add an update to your existing review to share new experiences' 
               : 'Share your honest experience to help others make informed decisions'
             }
           </p>
-          {existingReview && (
-            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-blue-800 text-sm">
-                <strong>Note:</strong> You already have a review for this business. 
-                Making changes here will update your existing review.
-              </p>
-            </div>
-          )}
         </div>
 
+        {/* Show existing original review if it exists */}
+        {originalReview && selectedBusinessForReview && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <MessageSquare className="h-5 w-5" />
+                <span>Your Original Review</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <div className="flex items-center">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`h-4 w-4 ${
+                          i < originalReview.rating
+                            ? 'text-yellow-400 fill-current'
+                            : 'text-gray-300'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <span className="font-semibold">{originalReview.rating}/5</span>
+                  <Badge variant="outline">{originalReview.user_badge}</Badge>
+                </div>
+                <p className="text-gray-700">{originalReview.content}</p>
+                <p className="text-sm text-gray-500">
+                  Posted on {new Date(originalReview.created_at).toLocaleDateString()}
+                </p>
+              </div>
+
+              {/* Show existing updates */}
+              {reviewUpdates.length > 0 && (
+                <div className="mt-6 pt-6 border-t">
+                  <h4 className="font-semibold mb-4">Previous Updates:</h4>
+                  <div className="space-y-4">
+                    {reviewUpdates.map((update, index) => (
+                      <div key={update.id} className="bg-gray-50 p-4 rounded-lg">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium">Update #{update.update_number}</span>
+                          <span className="text-sm text-gray-500">
+                            {new Date(update.created_at).toLocaleDateString()}
+                          </span>
+                        </div>
+                        <div className="flex items-center space-x-2 mb-2">
+                          <div className="flex items-center">
+                            {[...Array(5)].map((_, i) => (
+                              <Star
+                                key={i}
+                                className={`h-3 w-3 ${
+                                  i < update.rating
+                                    ? 'text-yellow-400 fill-current'
+                                    : 'text-gray-300'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                          <span className="text-sm">{update.rating}/5</span>
+                        </div>
+                        <p className="text-sm text-gray-700">{update.content}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Search for business section */}
         {showSearchResults ? (
           <Card className="mb-6">
             <CardHeader>
@@ -386,13 +446,16 @@ const WriteReview = () => {
           </Card>
         )}
 
+        {/* Review form */}
         {selectedBusinessForReview && (
           <Card>
             <CardHeader>
-              <CardTitle>{existingReview ? 'Update Your Review' : 'Your Review'}</CardTitle>
+              <CardTitle>
+                {originalReview ? `Add Update #${reviewUpdates.length + 1}` : 'Your Review'}
+              </CardTitle>
               <CardDescription>
-                {existingReview 
-                  ? `Update your review for ${selectedBusinessForReview.name}`
+                {originalReview 
+                  ? `Add an update to your review for ${selectedBusinessForReview.name}`
                   : `Share your honest experience with ${selectedBusinessForReview.name}`
                 }
               </CardDescription>
@@ -423,10 +486,15 @@ const WriteReview = () => {
                     name="content"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Your Review *</FormLabel>
+                        <FormLabel>
+                          {originalReview ? 'Your Update' : 'Your Review'} *
+                        </FormLabel>
                         <FormControl>
                           <Textarea
-                            placeholder="Share your experience... What did you like or dislike? How was the service? Any specific details that might help others?"
+                            placeholder={originalReview 
+                              ? "Share what's new in your experience... Any changes since your last review? New observations?"
+                              : "Share your experience... What did you like or dislike? How was the service? Any specific details that might help others?"
+                            }
                             className="min-h-[120px]"
                             {...field}
                           />
@@ -553,8 +621,8 @@ const WriteReview = () => {
                     </Button>
                     <Button type="submit" disabled={form.formState.isSubmitting}>
                       {form.formState.isSubmitting 
-                        ? (existingReview ? 'Updating...' : 'Submitting...') 
-                        : (existingReview ? 'Update Review' : 'Submit Review')
+                        ? (originalReview ? 'Adding Update...' : 'Submitting...') 
+                        : (originalReview ? 'Add Update' : 'Submit Review')
                       }
                     </Button>
                   </div>

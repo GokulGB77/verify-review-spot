@@ -59,11 +59,11 @@ export const useUserReviews = () => {
   });
 };
 
-export const useUserReviewForBusiness = (businessId: string) => {
+export const useUserOriginalReviewForBusiness = (businessId: string) => {
   const { user } = useAuth();
   
   return useQuery({
-    queryKey: ['user-review', user?.id, businessId],
+    queryKey: ['user-original-review', user?.id, businessId],
     queryFn: async () => {
       if (!user?.id || !businessId) return null;
       
@@ -72,10 +72,45 @@ export const useUserReviewForBusiness = (businessId: string) => {
         .select('*')
         .eq('user_id', user.id)
         .eq('business_id', businessId)
+        .is('parent_review_id', null)
         .maybeSingle();
       
       if (error) throw error;
       return data;
+    },
+    enabled: !!user?.id && !!businessId,
+  });
+};
+
+export const useUserReviewUpdatesForBusiness = (businessId: string) => {
+  const { user } = useAuth();
+  
+  return useQuery({
+    queryKey: ['user-review-updates', user?.id, businessId],
+    queryFn: async () => {
+      if (!user?.id || !businessId) return [];
+      
+      // First get the original review
+      const { data: originalReview, error: originalError } = await supabase
+        .from('reviews')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('business_id', businessId)
+        .is('parent_review_id', null)
+        .maybeSingle();
+      
+      if (originalError) throw originalError;
+      if (!originalReview) return [];
+      
+      // Then get all updates for this review
+      const { data: updates, error: updatesError } = await supabase
+        .from('reviews')
+        .select('*')
+        .eq('parent_review_id', originalReview.id)
+        .order('created_at', { ascending: true });
+      
+      if (updatesError) throw updatesError;
+      return updates || [];
     },
     enabled: !!user?.id && !!businessId,
   });
@@ -93,42 +128,65 @@ export const useCreateReview = () => {
       user_badge?: string;
       proof_provided?: boolean;
       proof_url?: string;
+      is_update?: boolean;
     }) => {
       if (!user?.id) throw new Error('User must be authenticated');
       
-      // First check if user already has a review for this business
-      const { data: existingReview } = await supabase
+      // Check if user already has an original review for this business
+      const { data: existingOriginalReview } = await supabase
         .from('reviews')
-        .select('id')
+        .select('id, update_number')
         .eq('user_id', user.id)
         .eq('business_id', review.business_id)
+        .is('parent_review_id', null)
         .maybeSingle();
       
-      if (existingReview) {
-        // Update existing review
+      if (existingOriginalReview && !review.is_update) {
+        throw new Error('You already have a review for this business. You can only add updates.');
+      }
+      
+      if (review.is_update && !existingOriginalReview) {
+        throw new Error('Cannot create an update without an original review.');
+      }
+      
+      if (review.is_update && existingOriginalReview) {
+        // Get the current highest update number for this review chain
+        const { data: latestUpdate } = await supabase
+          .from('reviews')
+          .select('update_number')
+          .eq('parent_review_id', existingOriginalReview.id)
+          .order('update_number', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        
+        const nextUpdateNumber = (latestUpdate?.update_number || 0) + 1;
+        
+        // Create update review
         const { data, error } = await supabase
           .from('reviews')
-          .update({
-            rating: review.rating,
-            content: review.content,
-            user_badge: review.user_badge || 'Unverified User',
-            proof_provided: review.proof_provided || false,
-            proof_url: review.proof_url,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', existingReview.id)
+          .insert([{
+            ...review,
+            user_id: user.id,
+            parent_review_id: existingOriginalReview.id,
+            is_update: true,
+            update_number: nextUpdateNumber,
+            user_badge: review.user_badge || 'Unverified User'
+          }])
           .select()
           .single();
         
         if (error) throw error;
         return data;
       } else {
-        // Create new review
+        // Create original review
         const { data, error } = await supabase
           .from('reviews')
           .insert([{
             ...review,
             user_id: user.id,
+            parent_review_id: null,
+            is_update: false,
+            update_number: 0,
             user_badge: review.user_badge || 'Unverified User'
           }])
           .select()
@@ -141,7 +199,8 @@ export const useCreateReview = () => {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['reviews'] });
       queryClient.invalidateQueries({ queryKey: ['user-reviews'] });
-      queryClient.invalidateQueries({ queryKey: ['user-review'] });
+      queryClient.invalidateQueries({ queryKey: ['user-original-review'] });
+      queryClient.invalidateQueries({ queryKey: ['user-review-updates'] });
       queryClient.invalidateQueries({ queryKey: ['businesses'] });
       queryClient.invalidateQueries({ queryKey: ['business', data.business_id] });
     },

@@ -135,6 +135,8 @@ export type Database = {
           created_at: string
           downvotes: number | null
           id: string
+          is_update: boolean | null
+          parent_review_id: string | null
           proof_provided: boolean | null
           proof_rejection_reason: string | null
           proof_url: string | null
@@ -142,6 +144,7 @@ export type Database = {
           proof_verified_at: string | null
           proof_verified_by: string | null
           rating: number
+          update_number: number | null
           updated_at: string
           upvotes: number | null
           user_badge: string | null
@@ -155,6 +158,8 @@ export type Database = {
           created_at?: string
           downvotes?: number | null
           id?: string
+          is_update?: boolean | null
+          parent_review_id?: string | null
           proof_provided?: boolean | null
           proof_rejection_reason?: string | null
           proof_url?: string | null
@@ -162,6 +167,7 @@ export type Database = {
           proof_verified_at?: string | null
           proof_verified_by?: string | null
           rating: number
+          update_number?: number | null
           updated_at?: string
           upvotes?: number | null
           user_badge?: string | null
@@ -175,6 +181,8 @@ export type Database = {
           created_at?: string
           downvotes?: number | null
           id?: string
+          is_update?: boolean | null
+          parent_review_id?: string | null
           proof_provided?: boolean | null
           proof_rejection_reason?: string | null
           proof_url?: string | null
@@ -182,6 +190,7 @@ export type Database = {
           proof_verified_at?: string | null
           proof_verified_by?: string | null
           rating?: number
+          update_number?: number | null
           updated_at?: string
           upvotes?: number | null
           user_badge?: string | null
@@ -193,6 +202,13 @@ export type Database = {
             columns: ["business_id"]
             isOneToOne: false
             referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_parent_review_id_fkey"
+            columns: ["parent_review_id"]
+            isOneToOne: false
+            referencedRelation: "reviews"
             referencedColumns: ["id"]
           },
         ]
