@@ -122,48 +122,52 @@ const ProofVerificationManagement = () => {
     }
 
     try {
-      // First, try to construct the proper Supabase URL
-      let finalUrl = proofUrl;
+      // Extract the file path from the URL
+      let filePath = proofUrl;
       
-      if (!proofUrl.startsWith('http')) {
-        // If it's just a file path, construct the full Supabase URL
-        const { data } = supabase.storage
-          .from('verification-docs')
-          .getPublicUrl(proofUrl);
-        
-        finalUrl = data.publicUrl;
-        console.log('Constructed public URL:', finalUrl);
+      // If it's a full URL, extract just the file path part
+      if (proofUrl.includes('/verification-docs/')) {
+        filePath = proofUrl.split('/verification-docs/')[1];
+      } else if (proofUrl.includes('verification-docs/')) {
+        filePath = proofUrl.split('verification-docs/')[1];
       }
       
-      // Try to create a signed URL for better access
-      if (proofUrl.includes('verification-docs')) {
-        const filePath = proofUrl.includes('/verification-docs/') 
-          ? proofUrl.split('/verification-docs/')[1] 
-          : proofUrl.split('verification-docs/')[1] || proofUrl;
-        
-        console.log('Extracted file path:', filePath);
-        
-        const { data: signedData, error: signedError } = await supabase.storage
+      console.log('File path:', filePath);
+      
+      // First try to get a signed URL for better security
+      const { data: signedData, error: signedError } = await supabase.storage
+        .from('verification-docs')
+        .createSignedUrl(filePath, 3600); // 1 hour expiry
+      
+      let finalUrl = proofUrl; // fallback to original URL
+      
+      if (signedData?.signedUrl && !signedError) {
+        finalUrl = signedData.signedUrl;
+        console.log('Using signed URL:', finalUrl);
+      } else {
+        console.log('Signed URL error:', signedError);
+        // Fallback to public URL
+        const { data: publicData } = supabase.storage
           .from('verification-docs')
-          .createSignedUrl(filePath, 3600);
+          .getPublicUrl(filePath);
         
-        if (signedData?.signedUrl && !signedError) {
-          finalUrl = signedData.signedUrl;
-          console.log('Using signed URL:', finalUrl);
-        } else {
-          console.log('Signed URL error:', signedError, 'Using public URL instead');
+        if (publicData?.publicUrl) {
+          finalUrl = publicData.publicUrl;
+          console.log('Using public URL:', finalUrl);
         }
       }
       
+      // Open the document in a new tab
       console.log('Opening URL:', finalUrl);
       window.open(finalUrl, '_blank');
       
     } catch (error) {
       console.error('Error opening proof document:', error);
-      
-      // Fallback: try to open the original URL directly
-      console.log('Fallback: trying original URL:', proofUrl);
-      window.open(proofUrl, '_blank');
+      toast({
+        title: 'Error',
+        description: 'Failed to open proof document. Please try again.',
+        variant: 'destructive',
+      });
     }
   };
 
