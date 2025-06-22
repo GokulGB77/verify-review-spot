@@ -125,16 +125,16 @@ const BusinessProfile = () => {
     };
   }).filter(Boolean);
 
-  // Calculate rating distribution using all individual reviews
-  const allIndividualReviews = reviews.map(review => ({
+  // Calculate rating distribution using only the latest review from each user
+  const latestReviewsForRating = transformedReviews.map(review => ({
     rating: review.rating
   }));
   
   const ratingCounts = [1, 2, 3, 4, 5].map(rating => 
-    allIndividualReviews.filter(review => review.rating === rating).length
+    latestReviewsForRating.filter(review => review.rating === rating).length
   );
   
-  const totalReviews = allIndividualReviews.length;
+  const totalReviews = latestReviewsForRating.length;
   const ratingDistribution = ratingCounts.map((count, index) => ({
     stars: index + 1,
     count,
@@ -240,7 +240,7 @@ const BusinessProfile = () => {
                       />
                     ))}
                   </div>
-                  <div className="text-gray-600">{business.review_count || 0} reviews</div>
+                  <div className="text-gray-600">{totalReviews} reviews</div>
                   {user ? (
                     <Button className="w-full mt-4" asChild>
                       <Link to={`/business/${id}/write-review`}>
@@ -518,7 +518,7 @@ const BusinessProfile = () => {
                   <div className="space-y-4">
                     <div className="flex justify-between">
                       <span>Total Reviews</span>
-                      <span className="font-semibold">{business.review_count || 0}</span>
+                      <span className="font-semibold">{totalReviews}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Verified Reviews</span>
