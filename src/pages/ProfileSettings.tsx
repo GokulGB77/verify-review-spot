@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -13,6 +14,7 @@ interface Profile {
   full_name: string | null;
   email: string | null;
   pseudonym: string | null;
+  pseudonym_set: boolean | null;
   display_name_preference: string | null;
   is_verified: boolean | null;
   main_badge: string | null;

@@ -17,38 +17,44 @@ export const useReviews = (businessId?: string) => {
   return useQuery({
     queryKey: ['reviews', businessId],
     queryFn: async () => {
+      // First get the reviews
       let query = supabase
         .from('reviews')
-        .select(`
-          *,
-          profiles (
-            full_name,
-            pseudonym,
-            display_name_preference,
-            main_badge
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (businessId) {
         query = query.eq('business_id', businessId);
       }
 
-      const { data, error } = await query;
+      const { data: reviews, error } = await query;
       
       if (error) throw error;
+      if (!reviews) return [];
       
-      // Transform the data to ensure type safety
-      return (data || []).map(item => ({
-        ...item,
-        profiles: item.profiles ? {
-          username: null, // Not selected in query
-          full_name: item.profiles.full_name,
-          pseudonym: item.profiles.pseudonym,
-          display_name_preference: item.profiles.display_name_preference,
-          main_badge: item.profiles.main_badge,
-        } : null
-      })) as Review[];
+      // Then get the profile information for each review
+      const reviewsWithProfiles = await Promise.all(
+        reviews.map(async (review) => {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('full_name, pseudonym, display_name_preference, main_badge')
+            .eq('id', review.user_id)
+            .maybeSingle();
+          
+          return {
+            ...review,
+            profiles: profile ? {
+              username: null,
+              full_name: profile.full_name,
+              pseudonym: profile.pseudonym,
+              display_name_preference: profile.display_name_preference,
+              main_badge: profile.main_badge,
+            } : null
+          };
+        })
+      );
+      
+      return reviewsWithProfiles as Review[];
     },
   });
 };
