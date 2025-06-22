@@ -430,8 +430,8 @@ const BusinessProfile = () => {
                     <div className="flex justify-between">
                       <span>Verified Reviews</span>
                       <span className="font-semibold">
-                        {transformedReviews.filter(r => r.userBadge !== 'Unverified User').length} 
-                        ({transformedReviews.length > 0 ? Math.round((transformedReviews.filter(r => r.userBadge !== 'Unverified User').length / transformedReviews.length) * 100) : 0}%)
+                        {transformedReviews.filter(r => r.mainBadge === 'Verified User').length} 
+                        ({transformedReviews.length > 0 ? Math.round((transformedReviews.filter(r => r.mainBadge === 'Verified User').length / transformedReviews.length) * 100) : 0}%)
                       </span>
                     </div>
                     <div className="flex justify-between">
