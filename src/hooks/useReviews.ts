@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
@@ -7,8 +8,6 @@ export type Review = Tables<'reviews'> & {
   profiles?: {
     username: string | null;
     full_name: string | null;
-    pseudonym: string | null;
-    display_name_preference: string | null;
   } | null;
 };
 
@@ -18,15 +17,7 @@ export const useReviews = (businessId?: string) => {
     queryFn: async () => {
       let query = supabase
         .from('reviews')
-        .select(`
-          *,
-          profiles (
-            username,
-            full_name,
-            pseudonym,
-            display_name_preference
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (businessId) {
@@ -36,21 +27,7 @@ export const useReviews = (businessId?: string) => {
       const { data, error } = await query;
       
       if (error) throw error;
-      
-      // Transform the data to match our Review type
-      const transformedData = (data || []).map(review => ({
-        ...review,
-        profiles: review.profiles && typeof review.profiles === 'object' && !('error' in review.profiles) 
-          ? review.profiles as {
-              username: string | null;
-              full_name: string | null;
-              pseudonym: string | null;
-              display_name_preference: string | null;
-            }
-          : null
-      }));
-      
-      return transformedData as Review[];
+      return data as Review[];
     },
   });
 };
