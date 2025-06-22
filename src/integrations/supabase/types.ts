@@ -75,6 +75,7 @@ export type Database = {
           aadhaar_number: string | null
           avatar_url: string | null
           created_at: string
+          display_name_preference: string | null
           email: string | null
           full_name: string | null
           full_name_pan: string | null
@@ -93,6 +94,7 @@ export type Database = {
           aadhaar_number?: string | null
           avatar_url?: string | null
           created_at?: string
+          display_name_preference?: string | null
           email?: string | null
           full_name?: string | null
           full_name_pan?: string | null
@@ -111,6 +113,7 @@ export type Database = {
           aadhaar_number?: string | null
           avatar_url?: string | null
           created_at?: string
+          display_name_preference?: string | null
           email?: string | null
           full_name?: string | null
           full_name_pan?: string | null
