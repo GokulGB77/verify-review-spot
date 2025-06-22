@@ -1,10 +1,10 @@
-
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Star, ThumbsUp, ThumbsDown, Shield, CheckCircle, Clock } from 'lucide-react';
 import { useState } from 'react';
+import { getDisplayName } from '@/utils/displayName';
 
 interface ReviewCardProps {
   id: string;
@@ -22,6 +22,7 @@ interface ReviewCardProps {
   title?: string;
   isVerified?: boolean;
   pseudonym?: string | null;
+  profiles?: any;
 }
 
 const ReviewCard = ({
@@ -39,8 +40,9 @@ const ReviewCard = ({
   businessResponseDate,
   title,
   isVerified = false,
-  pseudonym
-}: ReviewCardProps) => {
+  pseudonym,
+  profiles
+}: ReviewCardProps & { profiles?: any }) => {
   const [upvotes, setUpvotes] = useState(initialUpvotes);
   const [downvotes, setDownvotes] = useState(initialDownvotes);
   const [userVote, setUserVote] = useState<'up' | 'down' | null>(null);
@@ -139,8 +141,8 @@ const ReviewCard = ({
       <Shield className="h-4 w-4 mr-1" />;
   };
 
-  // Display pseudonym if set, otherwise show generic term
-  const displayName = pseudonym || 'Anonymous Reviewer';
+  // Use the display name utility function
+  const displayName = profiles ? getDisplayName(profiles) : (pseudonym || userName || 'Anonymous Reviewer');
   const verification = getVerificationDisplay();
 
   return (
