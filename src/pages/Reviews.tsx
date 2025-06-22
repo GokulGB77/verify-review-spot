@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -80,7 +79,7 @@ const Homepage = () => {
         title: `Review for ${business?.name || 'Business'}`,
         content: review.content,
         isVerified: mainBadge === 'Verified User',
-        proofProvided: review.proof_provided || false,
+        proofProvided: !!review.proof_url, // Check if proof_url exists instead of proof_provided
         upvotes: review.upvotes || 0,
         downvotes: review.downvotes || 0,
         pseudonym: review.profiles?.pseudonym,

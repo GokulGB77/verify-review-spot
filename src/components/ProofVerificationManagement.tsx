@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -20,7 +19,6 @@ interface ReviewWithProof {
   rating: number;
   content: string;
   user_badge: string;
-  proof_provided: boolean;
   proof_url: string;
   proof_verified: boolean | null;
   proof_verified_by: string | null;
@@ -39,7 +37,7 @@ const ProofVerificationManagement = () => {
   const [selectedReview, setSelectedReview] = useState<ReviewWithProof | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
 
-  // Fetch reviews with submitted proofs
+  // Fetch reviews with submitted proofs - now filter by proof_url existence
   const { data: reviewsWithProof, isLoading } = useQuery({
     queryKey: ['reviews-with-proof'],
     queryFn: async () => {
@@ -51,7 +49,7 @@ const ProofVerificationManagement = () => {
             name
           )
         `)
-        .eq('proof_provided', true)
+        .not('proof_url', 'is', null)
         .order('created_at', { ascending: false });
       
       if (error) throw error;

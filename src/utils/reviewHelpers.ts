@@ -78,7 +78,7 @@ export const transformReviews = (reviews: any[]) => {
       content: latestReview.content,
       mainBadge: getMainBadge(latestReview),
       reviewSpecificBadge: getReviewSpecificBadge(latestReview),
-      proofProvided: latestReview.proof_provided || false,
+      proofProvided: !!latestReview.proof_url, // Check if proof_url exists
       upvotes: latestReview.upvotes || 0,
       downvotes: latestReview.downvotes || 0,
       date: new Date(latestReview.created_at).toLocaleDateString(),
