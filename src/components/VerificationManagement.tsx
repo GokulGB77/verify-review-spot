@@ -192,8 +192,12 @@ const VerificationManagement = () => {
     } else if (request.is_verified === false) {
       return <Badge variant="destructive">Rejected</Badge>;
     } else {
-      return <Badge variant="outline">Pending</Badge>;
+      return <Badge variant="outline" className="bg-yellow-100 text-yellow-800">Pending</Badge>;
     }
+  };
+
+  const isPending = (request: VerificationRequest) => {
+    return request.is_verified === null;
   };
 
   const handleImageError = (imageUrl: string) => {
@@ -365,7 +369,7 @@ const VerificationManagement = () => {
                                   </div>
                                 )}
 
-                                {selectedRequest.is_verified !== true && (
+                                {isPending(selectedRequest) && (
                                   <div className="flex gap-2 pt-4">
                                     <Button
                                       onClick={() => handleApproveVerification(selectedRequest.id)}
@@ -390,7 +394,7 @@ const VerificationManagement = () => {
                           </DialogContent>
                         </Dialog>
                         
-                        {request.is_verified !== true && (
+                        {isPending(request) && (
                           <>
                             <Button
                               size="sm"
