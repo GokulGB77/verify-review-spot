@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -45,12 +44,17 @@ const BusinessProfile = () => {
     );
   }
 
-  // Helper function to ensure userBadge is a valid type
-  const getValidUserBadge = (badge: string | null): 'Verified Graduate' | 'Verified Employee' | 'Verified User' | 'Unverified User' => {
-    if (!badge) return 'Unverified User';
-    
-    const validBadges = ['Verified Graduate', 'Verified Employee', 'Verified User', 'Unverified User'];
-    return validBadges.includes(badge) ? badge as any : 'Unverified User';
+  // Helper function to ensure mainBadge is a valid type
+  const getValidMainBadge = (badge: string | null): 'Verified User' | 'Unverified User' => {
+    return badge === 'Verified User' ? 'Verified User' : 'Unverified User';
+  };
+
+  // Helper function to ensure reviewSpecificBadge is a valid type
+  const getValidReviewSpecificBadge = (badge: string | null): 'Verified Employee' | 'Verified Student' | null => {
+    if (badge === 'Verified Employee' || badge === 'Verified Student') {
+      return badge;
+    }
+    return null;
   };
 
   // Group reviews by user and get the latest version for each user
@@ -93,7 +97,8 @@ const BusinessProfile = () => {
       userName: 'Anonymous User',
       rating: latestReview.rating,
       content: latestReview.content,
-      userBadge: getValidUserBadge(latestReview.user_badge),
+      mainBadge: getValidMainBadge(latestReview.profiles?.main_badge),
+      reviewSpecificBadge: getValidReviewSpecificBadge(latestReview.review_specific_badge),
       proofProvided: latestReview.proof_provided || false,
       upvotes: latestReview.upvotes || 0,
       downvotes: latestReview.downvotes || 0,
@@ -103,7 +108,8 @@ const BusinessProfile = () => {
       hasUpdates,
       totalUpdates,
       updateNumber: latestReview.update_number || 0,
-      allReviews: data.allReviews.sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+      allReviews: data.allReviews.sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()),
+      pseudonym: latestReview.profiles?.pseudonym
     };
   }).filter(Boolean);
 
@@ -303,13 +309,15 @@ const BusinessProfile = () => {
                                 userName: 'Anonymous User',
                                 rating: historicalReview.rating,
                                 content: historicalReview.content,
-                                userBadge: getValidUserBadge(historicalReview.user_badge),
+                                mainBadge: getValidMainBadge(historicalReview.profiles?.main_badge),
+                                reviewSpecificBadge: getValidReviewSpecificBadge(historicalReview.review_specific_badge),
                                 proofProvided: historicalReview.proof_provided || false,
                                 upvotes: historicalReview.upvotes || 0,
                                 downvotes: historicalReview.downvotes || 0,
                                 date: new Date(historicalReview.created_at).toLocaleDateString(),
                                 businessResponse: historicalReview.business_response,
-                                businessResponseDate: historicalReview.business_response_date ? new Date(historicalReview.business_response_date).toLocaleDateString() : undefined
+                                businessResponseDate: historicalReview.business_response_date ? new Date(historicalReview.business_response_date).toLocaleDateString() : undefined,
+                                pseudonym: historicalReview.profiles?.pseudonym
                               };
                               
                               const isOriginal = !historicalReview.parent_review_id;
