@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -32,19 +33,6 @@ const Homepage = () => {
     return 'Anonymous Reviewer';
   };
 
-  // Helper function to ensure mainBadge is a valid type
-  const getValidMainBadge = (badge: string | null): 'Verified User' | 'Unverified User' => {
-    return badge === 'Verified User' ? 'Verified User' : 'Unverified User';
-  };
-
-  // Helper function to ensure reviewSpecificBadge is a valid type
-  const getValidReviewSpecificBadge = (badge: string | null): 'Verified Employee' | 'Verified Student' | null => {
-    if (badge === 'Verified Employee' || badge === 'Verified Student') {
-      return badge;
-    }
-    return null;
-  };
-
   // Create a map of business ID to business details for easy lookup
   const businessMap = businesses.reduce((acc, business) => {
     acc[business.id] = business;
@@ -55,7 +43,7 @@ const Homepage = () => {
     let filtered = allReviews.map(review => {
       const business = businessMap[review.business_id];
       const displayName = getDisplayName(review);
-      const mainBadge = getValidMainBadge(review.profiles?.main_badge);
+      const mainBadge = review.profiles?.main_badge || 'Unverified User';
       
       return {
         id: review.id,
@@ -64,8 +52,8 @@ const Homepage = () => {
         businessCategory: business?.category || 'Unknown Category',
         businessLocation: business?.location || 'Location not specified',
         userName: displayName,
-        mainBadge: mainBadge,
-        reviewSpecificBadge: getValidReviewSpecificBadge(review.review_specific_badge),
+        mainBadge: mainBadge as 'Verified User' | 'Unverified User',
+        reviewSpecificBadge: review.review_specific_badge as 'Verified Employee' | 'Verified Student' | null,
         rating: review.rating,
         date: new Date(review.created_at).toLocaleDateString(),
         title: `Review for ${business?.name || 'Business'}`,

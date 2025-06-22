@@ -23,7 +23,6 @@ interface Profile {
   pseudonym_set: boolean | null;
   rejection_reason?: string | null;
   display_name_preference: string | null;
-  main_badge: string | null;
 }
 
 const ProfileSettings = () => {
