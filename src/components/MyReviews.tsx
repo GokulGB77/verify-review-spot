@@ -1,7 +1,9 @@
 
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Star, Calendar } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { Star, Calendar, History } from 'lucide-react';
 import { useUserReviews } from '@/hooks/useReviews';
 import { useAuth } from '@/contexts/AuthContext';
 import { Link } from 'react-router-dom';
@@ -9,6 +11,7 @@ import { Link } from 'react-router-dom';
 const MyReviews = () => {
   const { user } = useAuth();
   const { data: reviews, isLoading, error } = useUserReviews();
+  const [viewingHistory, setViewingHistory] = useState<Record<string, boolean>>({});
 
   if (!user) {
     return (
@@ -45,53 +48,177 @@ const MyReviews = () => {
     );
   }
 
+  // Group reviews by business and get the latest version for each business
+  const groupedReviews = reviews.reduce((acc, review) => {
+    const businessId = review.business_id;
+    
+    if (!acc[businessId]) {
+      acc[businessId] = {
+        original: null,
+        updates: [],
+        allReviews: [],
+        businessInfo: review.businesses
+      };
+    }
+    
+    acc[businessId].allReviews.push(review);
+    
+    if (!review.parent_review_id) {
+      acc[businessId].original = review;
+    } else {
+      acc[businessId].updates.push(review);
+    }
+    
+    return acc;
+  }, {} as Record<string, any>);
+
+  // Transform grouped reviews for display
+  const transformedReviews = Object.entries(groupedReviews).map(([businessId, data]) => {
+    // Sort updates by update_number to get the latest
+    const sortedUpdates = data.updates.sort((a: any, b: any) => b.update_number - a.update_number);
+    const latestReview = sortedUpdates.length > 0 ? sortedUpdates[0] : data.original;
+    
+    if (!latestReview) return null;
+    
+    const hasUpdates = data.updates.length > 0;
+    const totalUpdates = data.updates.length;
+    
+    return {
+      businessId,
+      review: latestReview,
+      businessInfo: data.businessInfo,
+      hasUpdates,
+      totalUpdates,
+      updateNumber: latestReview.update_number || 0,
+      allReviews: data.allReviews.sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+    };
+  }).filter(Boolean);
+
+  const toggleHistory = (businessId: string) => {
+    setViewingHistory(prev => ({
+      ...prev,
+      [businessId]: !prev[businessId]
+    }));
+  };
+
   return (
     <div className="space-y-4">
       <h2 className="text-2xl font-bold mb-6">My Reviews</h2>
-      {reviews.map((review) => (
-        <Card key={review.id} className="w-full">
-          <CardHeader>
-            <div className="flex items-start justify-between">
-              <div>
-                <CardTitle className="text-lg">
-                  {review.businesses?.name || 'Unknown Business'}
-                </CardTitle>
-                <Badge variant="outline" className="mt-1">
-                  {review.businesses?.category || 'Unknown Category'}
-                </Badge>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="flex items-center">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`h-4 w-4 ${
-                        i < review.rating
-                          ? 'text-yellow-400 fill-current'
-                          : 'text-gray-300'
-                      }`}
-                    />
-                  ))}
+      {transformedReviews.map((item) => (
+        <div key={item.businessId} className="space-y-2">
+          {/* Latest Review */}
+          <Card className="w-full relative">
+            <CardHeader>
+              <div className="flex items-start justify-between">
+                <div>
+                  <CardTitle className="text-lg">
+                    {item.businessInfo?.name || 'Unknown Business'}
+                  </CardTitle>
+                  <Badge variant="outline" className="mt-1">
+                    {item.businessInfo?.category || 'Unknown Category'}
+                  </Badge>
                 </div>
-                <span className="font-semibold">{review.rating}/5</span>
+                <div className="flex items-center space-x-2">
+                  <div className="flex items-center">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`h-4 w-4 ${
+                          i < item.review.rating
+                            ? 'text-yellow-400 fill-current'
+                            : 'text-gray-300'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <span className="font-semibold">{item.review.rating}/5</span>
+                  {item.hasUpdates && (
+                    <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200">
+                      Update #{item.updateNumber}
+                    </Badge>
+                  )}
+                </div>
               </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <p className="text-gray-700 mb-3 leading-relaxed">{review.content}</p>
-            <div className="flex items-center justify-between text-sm text-gray-500">
-              <div className="flex items-center space-x-2">
-                <Calendar className="h-4 w-4" />
-                <span>{new Date(review.created_at).toLocaleDateString()}</span>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-700 mb-3 leading-relaxed">{item.review.content}</p>
+              <div className="flex items-center justify-between text-sm text-gray-500">
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-2">
+                    <Calendar className="h-4 w-4" />
+                    <span>{new Date(item.review.created_at).toLocaleDateString()}</span>
+                  </div>
+                  {item.review.user_badge && (
+                    <Badge variant="outline" className="text-xs">
+                      {item.review.user_badge}
+                    </Badge>
+                  )}
+                </div>
+                {item.hasUpdates && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => toggleHistory(item.businessId)}
+                    className="h-8 px-2"
+                  >
+                    <History className="h-4 w-4 mr-1" />
+                    {viewingHistory[item.businessId] ? 'Hide' : 'View'} History ({item.totalUpdates + 1})
+                  </Button>
+                )}
               </div>
-              {review.user_badge && (
-                <Badge variant="outline" className="text-xs">
-                  {review.user_badge}
-                </Badge>
-              )}
+            </CardContent>
+          </Card>
+          
+          {/* Review History */}
+          {item.hasUpdates && viewingHistory[item.businessId] && (
+            <div className="ml-8 border-l-2 border-gray-200 pl-6 space-y-4">
+              <div className="text-sm font-medium text-gray-700 mb-3">
+                Review History (oldest to newest)
+              </div>
+              {item.allReviews.map((historicalReview: any, index: number) => {
+                const isOriginal = !historicalReview.parent_review_id;
+                const versionLabel = isOriginal ? 'Original Review' : `Update #${historicalReview.update_number}`;
+                
+                return (
+                  <div key={historicalReview.id} className="relative">
+                    <div className="absolute -left-8 top-4 w-4 h-4 bg-gray-300 rounded-full border-2 border-white"></div>
+                    <div className="bg-gray-50 p-3 rounded-lg">
+                      <div className="flex items-center justify-between mb-2">
+                        <Badge 
+                          variant="outline" 
+                          className={isOriginal ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}
+                        >
+                          {versionLabel}
+                        </Badge>
+                        <span className="text-xs text-gray-500">
+                          {new Date(historicalReview.created_at).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-2">
+                          <div className="flex items-center">
+                            {[...Array(5)].map((_, i) => (
+                              <Star
+                                key={i}
+                                className={`h-3 w-3 ${
+                                  i < historicalReview.rating
+                                    ? 'text-yellow-400 fill-current'
+                                    : 'text-gray-300'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                          <span className="text-sm font-medium">{historicalReview.rating}/5</span>
+                        </div>
+                        <p className="text-sm text-gray-700">{historicalReview.content}</p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          </CardContent>
-        </Card>
+          )}
+        </div>
       ))}
     </div>
   );
