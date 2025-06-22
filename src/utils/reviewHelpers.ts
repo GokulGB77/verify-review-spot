@@ -28,6 +28,13 @@ export const getDisplayName = (review: any) => {
   return 'Anonymous User';
 };
 
+// Define the grouped review structure type
+interface GroupedReviewData {
+  original: any | null;
+  updates: any[];
+  allReviews: any[];
+}
+
 // Transform grouped reviews for display
 export const transformReviews = (reviews: any[]) => {
   // Group reviews by user and get the latest version for each user
@@ -51,10 +58,10 @@ export const transformReviews = (reviews: any[]) => {
     }
     
     return acc;
-  }, {} as Record<string, any>);
+  }, {} as Record<string, GroupedReviewData>);
 
   // Transform grouped reviews for display
-  return Object.entries(groupedReviews).map(([userId, data]) => {
+  return Object.entries(groupedReviews).map(([userId, data]: [string, GroupedReviewData]) => {
     const sortedUpdates = data.updates.sort((a: any, b: any) => b.update_number - a.update_number);
     const latestReview = sortedUpdates.length > 0 ? sortedUpdates[0] : data.original;
     
