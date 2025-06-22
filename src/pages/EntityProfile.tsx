@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -150,19 +149,19 @@ const BusinessProfile = () => {
   };
 
   // Helper function to render review content with "See more" functionality
-  const ReviewContent = ({ content, maxLength = 200 }: { content: string; maxLength?: number }) => {
+  const ReviewContent = ({ content, maxLength = 120 }: { content: string; maxLength?: number }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const shouldTruncate = content.length > maxLength;
     
     return (
       <div>
-        <p className="text-gray-700 leading-relaxed">
+        <p className="text-gray-700 text-sm leading-relaxed">
           {shouldTruncate && !isExpanded ? `${content.slice(0, maxLength)}...` : content}
         </p>
         {shouldTruncate && (
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="text-blue-600 hover:text-blue-800 text-sm font-medium mt-1"
+            className="text-blue-600 hover:text-blue-800 text-xs font-medium mt-1"
           >
             {isExpanded ? 'See less' : 'See more'}
           </button>
@@ -308,39 +307,39 @@ const BusinessProfile = () => {
                     <p className="text-gray-500">Loading reviews...</p>
                   </div>
                 ) : transformedReviews.length > 0 ? (
-                  <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                     {transformedReviews.map((review) => (
-                      <div key={review.userId} className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+                      <div key={review.userId} className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 h-fit">
                         {/* User Info and Rating */}
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex items-center space-x-2">
+                            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-xs">
                               {review.userName.charAt(0).toUpperCase()}
                             </div>
                             <div>
-                              <div className="flex items-center space-x-2 mb-1">
-                                <span className="font-medium text-gray-900">{review.userName}</span>
+                              <div className="flex items-center space-x-1 mb-1">
+                                <span className="font-medium text-gray-900 text-sm">{review.userName}</span>
                                 {review.hasUpdates && (
-                                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs">
+                                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs px-1 py-0">
                                     Update #{review.updateNumber}
                                   </Badge>
                                 )}
                               </div>
-                              <div className="flex items-center space-x-2">
+                              <div className="flex items-center space-x-1">
                                 <Badge 
                                   variant="outline" 
-                                  className={`text-xs ${
+                                  className={`text-xs px-1 py-0 ${
                                     review.mainBadge === 'Verified User' 
                                       ? 'bg-green-50 text-green-700 border-green-200' 
                                       : 'bg-gray-50 text-gray-600 border-gray-200'
                                   }`}
                                 >
-                                  {review.mainBadge === 'Verified User' && <CheckCircle className="h-3 w-3 mr-1" />}
-                                  {review.mainBadge}
+                                  {review.mainBadge === 'Verified User' && <CheckCircle className="h-2 w-2 mr-1" />}
+                                  {review.mainBadge === 'Verified User' ? 'Verified' : 'Unverified'}
                                 </Badge>
                                 {review.reviewSpecificBadge && (
-                                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs">
-                                    {review.reviewSpecificBadge}
+                                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs px-1 py-0">
+                                    {review.reviewSpecificBadge === 'Verified Employee' ? 'Employee' : 'Student'}
                                   </Badge>
                                 )}
                               </div>
@@ -351,7 +350,7 @@ const BusinessProfile = () => {
                               {[...Array(5)].map((_, i) => (
                                 <Star
                                   key={i}
-                                  className={`h-4 w-4 ${
+                                  className={`h-3 w-3 ${
                                     i < review.rating
                                       ? 'text-green-500 fill-current'
                                       : 'text-gray-300'
@@ -359,70 +358,70 @@ const BusinessProfile = () => {
                                 />
                               ))}
                             </div>
-                            <span className="text-sm text-gray-500">{review.date}</span>
+                            <span className="text-xs text-gray-500">{review.date}</span>
                           </div>
                         </div>
 
                         {/* Review Content */}
-                        <div className="mb-4">
+                        <div className="mb-3">
                           <ReviewContent content={review.content} />
                         </div>
 
                         {/* Business Response */}
                         {review.businessResponse && (
-                          <div className="bg-gray-50 rounded-lg p-4 mb-4 border-l-4 border-blue-400">
-                            <div className="flex items-center space-x-2 mb-2">
-                              <MessageSquare className="h-4 w-4 text-blue-600" />
-                              <span className="text-sm font-medium text-blue-900">Response from {business.name}</span>
+                          <div className="bg-gray-50 rounded p-2 mb-3 border-l-2 border-blue-400">
+                            <div className="flex items-center space-x-1 mb-1">
+                              <MessageSquare className="h-3 w-3 text-blue-600" />
+                              <span className="text-xs font-medium text-blue-900">Business Response</span>
                               <span className="text-xs text-gray-500">{review.businessResponseDate}</span>
                             </div>
-                            <p className="text-gray-700 text-sm">{review.businessResponse}</p>
+                            <p className="text-gray-700 text-xs">{review.businessResponse}</p>
                           </div>
                         )}
 
                         {/* Review History Button */}
                         {review.hasUpdates && (
-                          <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                          <div className="pt-2 border-t border-gray-100">
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => toggleHistory(review.userId)}
-                              className="text-gray-600 hover:text-gray-900"
+                              className="text-gray-600 hover:text-gray-900 h-6 text-xs px-2"
                             >
-                              <History className="h-4 w-4 mr-2" />
-                              {viewingHistory[review.userId] ? 'Hide' : 'View'} Review History ({review.totalUpdates + 1})
+                              <History className="h-3 w-3 mr-1" />
+                              {viewingHistory[review.userId] ? 'Hide' : 'View'} History ({review.totalUpdates + 1})
                             </Button>
                           </div>
                         )}
 
                         {/* Review History */}
                         {review.hasUpdates && viewingHistory[review.userId] && (
-                          <div className="mt-6 pt-6 border-t border-gray-200">
-                            <div className="text-sm font-medium text-gray-700 mb-4">
-                              Review History (oldest to newest)
+                          <div className="mt-3 pt-3 border-t border-gray-200">
+                            <div className="text-xs font-medium text-gray-700 mb-2">
+                              Review History
                             </div>
-                            <div className="space-y-4">
+                            <div className="space-y-2">
                               {review.allReviews.map((historicalReview: any, index: number) => {
                                 const isOriginal = !historicalReview.parent_review_id;
-                                const versionLabel = isOriginal ? 'Original Review' : `Update #${historicalReview.update_number}`;
+                                const versionLabel = isOriginal ? 'Original' : `Update #${historicalReview.update_number}`;
                                 
                                 return (
-                                  <div key={historicalReview.id} className="bg-gray-50 rounded-lg p-4">
-                                    <div className="flex items-center justify-between mb-3">
+                                  <div key={historicalReview.id} className="bg-gray-50 rounded p-2">
+                                    <div className="flex items-center justify-between mb-1">
                                       <Badge 
                                         variant="outline" 
-                                        className={`text-xs ${
+                                        className={`text-xs px-1 py-0 ${
                                           isOriginal ? 'bg-green-50 text-green-700 border-green-200' : 'bg-blue-50 text-blue-700 border-blue-200'
                                         }`}
                                       >
                                         {versionLabel}
                                       </Badge>
-                                      <div className="flex items-center space-x-2">
+                                      <div className="flex items-center space-x-1">
                                         <div className="flex items-center space-x-1">
                                           {[...Array(5)].map((_, i) => (
                                             <Star
                                               key={i}
-                                              className={`h-3 w-3 ${
+                                              className={`h-2 w-2 ${
                                                 i < historicalReview.rating
                                                   ? 'text-green-500 fill-current'
                                                   : 'text-gray-300'
@@ -435,7 +434,7 @@ const BusinessProfile = () => {
                                         </span>
                                       </div>
                                     </div>
-                                    <ReviewContent content={historicalReview.content} maxLength={150} />
+                                    <ReviewContent content={historicalReview.content} maxLength={80} />
                                   </div>
                                 );
                               })}
