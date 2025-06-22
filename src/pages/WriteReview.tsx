@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, DialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { toast } from "@/hooks/use-toast";
 import { Search, Star, Building, CheckCircle, Upload, X, MessageSquare } from 'lucide-react';
 import { useBusinesses, useBusiness } from '@/hooks/useBusinesses';
@@ -25,7 +25,7 @@ const formSchema = z.object({
   rating: z.number().min(1, "Please provide a rating").max(5),
   content: z.string().min(10, "Review must be at least 10 characters long").max(500),
   proof_provided: z.boolean().default(false),
-  user_badge: z.enum(['Verified Graduate', 'Verified Employee', 'Verified User', 'Unverified User']).default('Unverified User')
+  user_badge: z.enum(['Verified Graduate', 'Verified Employee']).optional()
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -54,12 +54,12 @@ const WriteReview = () => {
       rating: 0,
       content: '',
       proof_provided: false,
-      user_badge: 'Unverified User'
+      user_badge: undefined
     },
   });
 
   const watchedUserBadge = form.watch('user_badge');
-  const requiresProof = ['Verified Graduate', 'Verified Employee'].includes(watchedUserBadge);
+  const requiresProof = watchedUserBadge && ['Verified Graduate', 'Verified Employee'].includes(watchedUserBadge);
 
   // Set business when coming from a specific business page
   useEffect(() => {
@@ -147,7 +147,7 @@ const WriteReview = () => {
     setPendingSubmit(false);
     
     const formData = form.getValues();
-    formData.user_badge = 'Unverified User';
+    formData.user_badge = undefined; // Reset to default verification status
     formData.proof_provided = false;
     onSubmit(formData);
   };
@@ -194,7 +194,7 @@ const WriteReview = () => {
         rating: data.rating,
         content: data.content.trim(),
         proof_provided: data.proof_provided,
-        user_badge: data.user_badge,
+        user_badge: data.user_badge || 'Unverified User', // Default to appropriate status
         proof_url: proofUrl,
         is_update: isUpdate
       });
@@ -507,26 +507,28 @@ const WriteReview = () => {
                     )}
                   />
 
-                  {/* Verification Level */}
+                  {/* Verification Level - Only show enhanced verification options */}
                   <FormField
                     control={form.control}
                     name="user_badge"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Your Verification Status</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormLabel>Enhanced Verification (Optional)</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value || ""}>
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Select your verification status" />
+                              <SelectValue placeholder="Select if you want to verify additional credentials" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
                             <SelectItem value="Verified Graduate">Verified Graduate/Alumni</SelectItem>
                             <SelectItem value="Verified Employee">Verified Employee/Staff</SelectItem>
-                            <SelectItem value="Verified User">Verified User</SelectItem>
-                            <SelectItem value="Unverified User">Unverified User</SelectItem>
                           </SelectContent>
                         </Select>
+                        <FormDescription>
+                          Your basic verification status is determined by your PAN verification. 
+                          These options are for additional credential verification that requires proof documents.
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
