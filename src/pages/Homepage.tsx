@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import {
   Card,
@@ -10,14 +9,18 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import TypingAnimation from "@/components/ui/typing-animation";
 import {
   Search,
+  Shield,
+  CheckCircle,
   Star,
-  TrendingUp,
   Users,
-  Building2,
-  ArrowRight,
-  MapPin,
+  TrendingUp,
+  Lock,
+  Eye,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import Header from "@/components/common/Header";
@@ -25,15 +28,13 @@ import Footer from "@/components/common/Footer";
 import CTASection from "@/components/CtaSection";
 import { useBusinesses } from "@/hooks/useBusinesses";
 import { useReviews } from "@/hooks/useReviews";
-import { getDisplayName, getMainBadge, getReviewSpecificBadge, transformReviews } from "@/utils/reviewHelpers";
-import SingleReviewCard from "@/components/business/SingleReviewCard";
+import { getDisplayName } from "@/utils/reviewHelpers";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
-
-  const { data: businesses = [], isLoading: businessesLoading } = useBusinesses();
-  const { data: allReviews = [], isLoading: reviewsLoading } = useReviews();
+  const { data: businesses = [] } = useBusinesses();
+  const { data: allReviews = [] } = useReviews();
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
@@ -41,211 +42,516 @@ const Index = () => {
     }
   };
 
-  // Get latest 6 reviews for display
-  const getLatestReviews = () => {
-    // Transform all reviews using the helper function
-    const transformedReviews = transformReviews(allReviews);
+  // Group reviews by user and business, showing only the latest review/update
+  const getLatestReviewsGrouped = () => {
+    const reviewGroups = new Map();
+
+    allReviews.forEach((review) => {
+      const key = `${review.user_id}-${review.business_id}`;
+      
+      if (!reviewGroups.has(key)) {
+        reviewGroups.set(key, []);
+      }
+      
+      reviewGroups.get(key).push(review);
+    });
+
+    // For each group, get the latest review (original + all updates sorted by date)
+    const latestReviews = [];
     
-    // Sort by date and take the first 6
-    return transformedReviews
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      .slice(0, 6)
-      .map(review => {
-        // Find the business for this review
-        const business = businesses.find(b => b.id === allReviews.find(r => r.user_id === review.userId)?.business_id);
-        return {
-          ...review,
-          businessName: business?.name || "Unknown Business",
-          businessId: business?.id || "",
-        };
+    reviewGroups.forEach((reviews) => {
+      // Sort by created_at to get the latest
+      const sortedReviews = reviews.sort((a, b) => 
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+      
+      const latestReview = sortedReviews[0];
+      const business = businesses.find((b) => b.id === latestReview.business_id);
+      
+      latestReviews.push({
+        id: latestReview.id,
+        userName: getDisplayName(latestReview),
+        rating: latestReview.rating || 0,
+        content: latestReview.content || "",
+        businessName: business?.name || "Unknown Business",
+        businessWebsite: business?.website || "",
+        userBadge: latestReview.user_badge || "Unverified User",
+        date: new Date(latestReview.created_at).toLocaleDateString(),
+        businessCategory: business?.category || "Business",
+        isUpdate: latestReview.is_update || false,
+        updateCount: reviews.filter(r => r.is_update).length,
+        created_at: latestReview.created_at,
       });
+    });
+
+    // Sort by creation date and return first 8
+    return latestReviews
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .slice(0, 8);
   };
 
-  const featuredBusinesses = businesses.slice(0, 6);
-  const latestReviews = getLatestReviews();
+  // Get recent reviews with business information (grouped by user-business)
+  const recentReviews = getLatestReviewsGrouped();
 
-  const stats = {
-    totalBusinesses: businesses.length,
-    totalReviews: allReviews.length,
-    verifiedReviews: allReviews.filter(review => getMainBadge(review) === 'Verified User').length,
-    averageRating: allReviews.length > 0 
-      ? (allReviews.reduce((sum, review) => sum + (review.rating || 0), 0) / allReviews.length).toFixed(1)
-      : "0.0"
+  // Get best entities (highest rated with minimum review count)
+  const featuredReviews = businesses
+    .filter((business) => business.rating && business.rating >= 4)
+    .slice(0, 3)
+    .map((business) => ({
+      id: business.id,
+      businessName: business.name,
+      rating: business.rating || 0,
+      reviewCount: business.review_count || 0,
+      verificationLevel:
+        business.verification_status === "Verified"
+          ? "Verified Business"
+          : "Claimed Business",
+      category: business.category,
+      badge:
+        business.verification_status === "Verified" ? "verified" : "claimed",
+    }));
+
+  // Get best entities (highest rated with minimum review count)
+  const bestEntities = businesses
+    .filter(
+      (business) =>
+        business.rating &&
+        business.rating >= 4.0 &&
+        business.review_count &&
+        business.review_count >= 5
+    )
+    .sort((a, b) => {
+      // Sort by rating first, then by review count
+      if (b.rating !== a.rating) {
+        return (b.rating || 0) - (a.rating || 0);
+      }
+      return (b.review_count || 0) - (a.review_count || 0);
+    })
+    .slice(0, 8) // Show up to 8 best entities
+    .map((business) => ({
+      id: business.id,
+      name: business.name,
+      category: business.category,
+      website: business.website,
+      rating: business.rating || 0,
+      reviewCount: business.review_count || 0,
+      verificationStatus: business.verification_status,
+    }));
+
+  const getUserInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((n) => n.charAt(0))
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  const getAvatarColor = (name: string) => {
+    const colors = [
+      "bg-blue-500",
+      "bg-green-500",
+      "bg-purple-500",
+      "bg-red-500",
+      "bg-yellow-500",
+      "bg-indigo-500",
+      "bg-pink-500",
+      "bg-gray-500",
+    ];
+    const index = name.length % colors.length;
+    return colors[index];
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      <Header />
-      
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {/* Hero Section */}
-      <section className="relative py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto text-center">
-          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-            Find{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
-              Verified
-            </span>{" "}
-            Reviews
+      <section className="py-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto text-center">
+          <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+            Authentic Reviews You Can
+            <span className="text-blue-600"> Trust</span>
           </h1>
-          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Discover authentic reviews from real users. Make informed decisions with our verified review platform.
+          <p className="text-xl text-gray-600 mb-4 max-w-2xl mx-auto">
+            Discover verified reviews from real users. No fake reviews, no
+            manipulation. Just honest experiences backed by proof.
           </p>
-          
+
+          <TypingAnimation />
+
           {/* Search Bar */}
           <div className="max-w-2xl mx-auto mb-12">
-            <div className="flex gap-4">
+            <div className="flex gap-2">
               <div className="flex-1 relative">
-                <Search className="absolute left-4 top-4 h-5 w-5 text-gray-400" />
+                <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                 <Input
-                  placeholder="Search for businesses, services, or products..."
+                  placeholder="Search for entities..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-12 h-14 text-lg border-2 border-gray-200 focus:border-blue-500 shadow-lg"
-                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                  className="pl-10 h-12 text-lg"
+                  onKeyPress={(e) => e.key === "Enter" && handleSearch()}
                 />
               </div>
-              <Button onClick={handleSearch} size="lg" className="h-14 px-8 shadow-lg">
+              <Button onClick={handleSearch} size="lg" className="h-12">
                 Search
               </Button>
             </div>
           </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-blue-600">{stats.totalBusinesses}</div>
-              <div className="text-gray-600">Businesses</div>
+          {/* Trust Indicators */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16 mb-8">
+            <div className="flex items-center justify-center space-x-3">
+              <CheckCircle className="h-8 w-8 text-green-500" />
+              <div className="text-left">
+                <div className="font-semibold text-gray-900">
+                  Verified Users
+                </div>
+                <div className="text-sm text-gray-600">
+                  Real identity verification
+                </div>
+              </div>
             </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-green-600">{stats.totalReviews}</div>
-              <div className="text-gray-600">Reviews</div>
+            <div className="flex items-center justify-center space-x-3">
+              <Lock className="h-8 w-8 text-red-500" />
+              <div className="text-left">
+                <div className="font-semibold text-gray-900">
+                  Immutable Reviews
+                </div>
+                <div className="text-sm text-gray-600">
+                  Can't delete, only add updates
+                </div>
+              </div>
             </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-purple-600">{stats.verifiedReviews}</div>
-              <div className="text-gray-600">Verified</div>
+            <div className="flex items-center justify-center space-x-3">
+              <Eye className="h-8 w-8 text-indigo-500" />
+              <div className="text-left">
+                <div className="font-semibold text-gray-900">
+                  Publicly Auditable
+                </div>
+                <div className="text-sm text-gray-600">
+                  Transparent review history
+                </div>
+              </div>
             </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-yellow-600">{stats.averageRating}</div>
-              <div className="text-gray-600">Avg Rating</div>
+          </div>
+        </div>
+
+        {/* Pill-shaped container */}
+        <div className="flex items-center justify-center px-4 pt-4">
+          <div className="flex items-center w-full max-w-10xl">
+            {/* Left extending line */}
+            <div className="flex-1 h-px bg-gray-300"></div>
+            {/* Pill container */}
+
+            <div className="bg-white bg-opacity-80 backdrop-blur-sm rounded-full px-8 py-4 mx-6 shadow-sm border border-gray-200">
+              <div className="flex items-center justify-center whitespace-nowrap">
+                <span className="text-gray-700 text-sm font-medium mr-2">
+                  Tried something new — maybe a course or a product?
+                </span>
+                <Link 
+                  to="/write-review"
+                  className="inline-flex items-center text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors duration-200"
+                >
+                  Share your review.
+                  <svg
+                    className="ml-1 w-4 h-4 mt-0.5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
+                </Link>
+              </div>
             </div>
+
+            {/* Right extending line */}
+            <div className="flex-1 h-px bg-gray-300"></div>
           </div>
         </div>
       </section>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
-        {/* Recent Reviews Section */}
-        <section className="mb-16">
-          <div className="flex items-center justify-between mb-8">
+      {/* Recent Reviews Section */}
+      <section className="py-12 px-4 sm:px-6 lg:px-8 bg-white">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex justify-between items-center mb-4">
             <div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">Latest Reviews</h2>
-              <p className="text-gray-600">See what people are saying about businesses</p>
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                Recent reviews
+              </h2>
             </div>
-            <Button variant="outline" asChild>
-              <Link to="/reviews">
-                View All Reviews <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
+            <div className="flex items-center space-x-2">
+              <Button variant="ghost" size="icon" className="rounded-full">
+                <ChevronLeft className="h-5 w-5" />
+              </Button>
+              <Button variant="ghost" size="icon" className="rounded-full">
+                <ChevronRight className="h-5 w-5" />
+              </Button>
+            </div>
           </div>
-          
-          {reviewsLoading ? (
-            <div className="text-center py-12">
-              <p className="text-gray-500">Loading reviews...</p>
-            </div>
-          ) : latestReviews.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {latestReviews.map((review) => (
-                <div key={review.id}>
-                  <div className="mb-2">
-                    <Link 
-                      to={`/business/${review.businessId}`}
-                      className="text-sm font-medium text-blue-600 hover:text-blue-800"
-                    >
-                      {review.businessName}
-                    </Link>
-                  </div>
-                  <SingleReviewCard
-                    review={review}
-                    viewingHistory={{}}
-                    onToggleHistory={() => {}}
-                  />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12 bg-white rounded-lg border">
-              <p className="text-gray-500">No reviews available yet.</p>
-            </div>
-          )}
-        </section>
 
-        {/* Featured Businesses */}
-        <section>
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">Featured Businesses</h2>
-              <p className="text-gray-600">Discover top-rated businesses in your area</p>
-            </div>
-            <Button variant="outline" asChild>
-              <Link to="/businesses">
-                Browse All <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-          
-          {businessesLoading ? (
-            <div className="text-center py-12">
-              <p className="text-gray-500">Loading businesses...</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {featuredBusinesses.map((business) => (
-                <Card key={business.id} className="hover:shadow-lg transition-shadow group">
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <CardTitle className="text-lg group-hover:text-blue-600 transition-colors">
-                          <Link to={`/business/${business.id}`}>
-                            {business.name}
-                          </Link>
-                        </CardTitle>
-                        <div className="flex items-center space-x-2 mt-2">
-                          <Badge variant="secondary">{business.category}</Badge>
+          {recentReviews.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {recentReviews.map((review) => (
+                <Card
+                  key={review.id}
+                  className="hover:shadow-lg transition-shadow"
+                >
+                  <CardContent className="p-6">
+                    <div className="space-y-4">
+                      {/* User Info */}
+                      <div className="flex items-center space-x-3">
+                        <div
+                          className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold ${getAvatarColor(
+                            review.userName
+                          )}`}
+                        >
+                          {getUserInitials(review.userName)}
+                        </div>
+                        <div>
+                          <div className="flex items-center space-x-2">
+                            <h3 className="font-semibold text-gray-900">
+                              {review.userName}
+                            </h3>
+                            {review.isUpdate && (
+                              <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700">
+                                Updated
+                              </Badge>
+                            )}
+                          </div>
                           <div className="flex items-center">
-                            <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                            <span className="text-sm text-gray-600 ml-1">{business.average_rating?.toFixed(1) || "N/A"}</span>
+                            {[...Array(5)].map((_, i) => (
+                              <Star
+                                key={i}
+                                className={`h-4 w-4 ${
+                                  i < Math.floor(review.rating)
+                                    ? "text-yellow-400 fill-current"
+                                    : "text-gray-300"
+                                }`}
+                              />
+                            ))}
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center text-sm text-gray-600 mb-3">
-                      <MapPin className="h-4 w-4 mr-1" />
-                      {business.location}
-                    </div>
-                    <p className="text-gray-700 text-sm line-clamp-2">
-                      {business.description}
-                    </p>
-                    <div className="mt-4 flex items-center justify-between">
-                      <span className="text-sm text-gray-500">
-                        {business.total_reviews || 0} reviews
-                      </span>
-                      <Button variant="outline" size="sm" asChild>
-                        <Link to={`/business/${business.id}`}>
-                          View Details
-                        </Link>
-                      </Button>
+
+                      {/* Review Content */}
+                      <p className="text-gray-700 text-sm leading-relaxed line-clamp-4">
+                        {review.content}
+                      </p>
+
+                      {/* Business Info */}
+                      <div className="pt-4 border-t border-gray-100">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-6 h-6 bg-gray-200 rounded flex items-center justify-center">
+                            <span className="text-xs font-bold text-gray-600">
+                              {review.businessName.charAt(0)}
+                            </span>
+                          </div>
+                          <div>
+                            <div className="font-semibold text-sm text-gray-900">
+                              {review.businessName}
+                            </div>
+                            {review.businessWebsite && (
+                              <div className="text-xs text-gray-500">
+                                {review.businessWebsite
+                                  .replace(/^https?:\/\//, "")
+                                  .replace(/^www\./, "")}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        
+                        {/* Update indicator */}
+                        {review.updateCount > 0 && (
+                          <div className="mt-2 text-xs text-gray-500">
+                            {review.updateCount} update{review.updateCount > 1 ? 's' : ''} available
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
               ))}
             </div>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-500">No recent reviews available yet.</p>
+            </div>
           )}
-        </section>
-      </div>
 
+          <div className="text-center mt-8">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button variant="outline" size="lg" asChild>
+                <Link to="/reviews">View All Reviews</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Best Entities Section */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex justify-between items-center mb-12">
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                Best Entities
+              </h2>
+              <p className="text-lg text-gray-600">
+                Top-rated businesses and organizations trusted by users
+              </p>
+            </div>
+            <Button variant="outline" asChild>
+              <Link to="/businesses">See more</Link>
+            </Button>
+          </div>
+
+          {bestEntities.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {bestEntities.map((entity) => (
+                <Link key={entity.id} to={`/business/${entity.id}`}>
+                  <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer border border-gray-200">
+                    <CardContent className="p-6">
+                      <div className="space-y-4">
+                        {/* Entity Icon/Logo Placeholder */}
+                        <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center">
+                          <span className="text-2xl font-bold text-blue-600">
+                            {entity.name.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+
+                        {/* Entity Name */}
+                        <div>
+                          <h3 className="font-semibold text-lg text-gray-900 line-clamp-1">
+                            {entity.name}
+                          </h3>
+                          {entity.website && (
+                            <p className="text-sm text-blue-600 truncate">
+                              {entity.website
+                                .replace(/^https?:\/\//, "")
+                                .replace(/^www\./, "")}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Rating */}
+                        <div className="flex items-center space-x-1">
+                          {[...Array(5)].map((_, i) => (
+                            <Star
+                              key={i}
+                              className={`h-4 w-4 ${
+                                i < Math.floor(entity.rating)
+                                  ? "text-green-500 fill-current"
+                                  : "text-gray-300"
+                              }`}
+                            />
+                          ))}
+                          <span className="font-semibold text-sm ml-2">
+                            {entity.rating.toFixed(1)}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            ({entity.reviewCount})
+                          </span>
+                        </div>
+
+                        {/* Category and Verification */}
+                        <div className="flex items-center justify-between">
+                          <Badge variant="secondary" className="text-xs">
+                            {entity.category}
+                          </Badge>
+                          {entity.verificationStatus === "Verified" && (
+                            <Badge
+                              variant="outline"
+                              className="bg-green-50 text-green-700 border-green-200 text-xs"
+                            >
+                              <CheckCircle className="h-3 w-3 mr-1" />
+                              Verified
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <div className="bg-gray-50 rounded-lg p-8">
+                <TrendingUp className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  No top-rated entities yet
+                </h3>
+                <p className="text-gray-500 mb-4">
+                  Be the first to review and help others discover great
+                  businesses!
+                </p>
+                <Button asChild>
+                  <Link to="/write-review">Write a Review</Link>
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* How It Works Section */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              How Review Spot Works
+            </h2>
+            <p className="text-lg text-gray-600">
+              Simple, transparent, and trustworthy
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="text-center">
+              <div className="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                <Users className="h-8 w-8 text-blue-600" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">
+                Verify Your Identity
+              </h3>
+              <p className="text-gray-600">
+                Complete PAN verification to ensure authentic reviews from real
+                people
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="bg-green-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                <CheckCircle className="h-8 w-8 text-green-600" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">
+                Share Your Experience
+              </h3>
+              <p className="text-gray-600">
+                Write honest reviews with optional proof of your experience or
+                interaction
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="bg-purple-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                <Shield className="h-8 w-8 text-purple-600" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Build Trust</h3>
+              <p className="text-gray-600">
+                Help others make informed decisions with verified, authentic
+                feedback
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
       <CTASection />
-      <Footer />
     </div>
   );
 };
