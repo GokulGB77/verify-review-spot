@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import {
   Card,
@@ -37,7 +38,6 @@ const Index = () => {
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
-      // Navigate to search results with the search query
       navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
     }
   };
@@ -249,7 +249,10 @@ const Index = () => {
                 <span className="text-gray-700 text-sm font-medium mr-2">
                   Tried something new — maybe a course or a product?
                 </span>
-                <button className="inline-flex items-center text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors duration-200">
+                <Link 
+                  to="/write-review"
+                  className="inline-flex items-center text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors duration-200"
+                >
                   Share your review.
                   <svg
                     className="ml-1 w-4 h-4 mt-0.5"
@@ -264,7 +267,7 @@ const Index = () => {
                       d="M9 5l7 7-7 7"
                     />
                   </svg>
-                </button>
+                </Link>
               </div>
             </div>
 
