@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -76,7 +75,10 @@ const WriteReview = () => {
     if (originalReview) {
       form.setValue('rating', originalReview.rating);
       form.setValue('content', originalReview.content);
-      form.setValue('user_badge', (originalReview.user_badge as any) || 'Unverified User');
+      // Only set enhanced verification options, not basic verification status
+      if (originalReview.user_badge && ['Verified Graduate', 'Verified Employee'].includes(originalReview.user_badge)) {
+        form.setValue('user_badge', originalReview.user_badge as 'Verified Graduate' | 'Verified Employee');
+      }
       form.setValue('proof_provided', originalReview.proof_provided || false);
     }
   }, [originalReview, form]);
@@ -195,7 +197,8 @@ const WriteReview = () => {
         rating: data.rating,
         content: data.content.trim(),
         proof_provided: data.proof_provided,
-        user_badge: data.user_badge || 'Unverified User', // Default to appropriate status
+        user_badge: data.user_badge, // This will be undefined for basic verification
+        review_specific_badge: data.user_badge, // Set as review-specific badge instead
         proof_url: proofUrl,
         is_update: isUpdate
       });
@@ -590,7 +593,7 @@ const WriteReview = () => {
                     </div>
                   )}
 
-                  {/* Proof Provided Checkbox - Show for all statuses */}
+                  {/* Proof Provided Checkbox */}
                   <FormField
                     control={form.control}
                     name="proof_provided"

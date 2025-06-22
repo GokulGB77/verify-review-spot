@@ -193,12 +193,17 @@ export const useCreateReview = () => {
         const { data, error } = await supabase
           .from('reviews')
           .insert([{
-            ...review,
+            business_id: review.business_id,
+            rating: review.rating,
+            content: review.content,
             user_id: user.id,
             parent_review_id: existingOriginalReview.id,
             is_update: true,
             update_number: nextUpdateNumber,
-            user_badge: review.user_badge || 'Unverified User'
+            user_badge: 'Unverified User', // Always set to basic for consistency
+            review_specific_badge: review.review_specific_badge || null,
+            proof_provided: review.proof_provided || false,
+            proof_url: review.proof_url || null
           }])
           .select()
           .single();
@@ -210,12 +215,17 @@ export const useCreateReview = () => {
         const { data, error } = await supabase
           .from('reviews')
           .insert([{
-            ...review,
+            business_id: review.business_id,
+            rating: review.rating,
+            content: review.content,
             user_id: user.id,
             parent_review_id: null,
             is_update: false,
             update_number: 0,
-            user_badge: review.user_badge || 'Unverified User'
+            user_badge: 'Unverified User', // Always set to basic for consistency
+            review_specific_badge: review.review_specific_badge || null,
+            proof_provided: review.proof_provided || false,
+            proof_url: review.proof_url || null
           }])
           .select()
           .single();
