@@ -44,7 +44,10 @@ export const useReviews = (businessId?: string) => {
         ...item,
         profiles: item.profiles && typeof item.profiles === 'object' && !('error' in item.profiles) 
           ? {
-              ...item.profiles,
+              full_name: item.profiles.full_name,
+              pseudonym: item.profiles.pseudonym,
+              display_name_preference: item.profiles.display_name_preference,
+              main_badge: item.profiles.main_badge,
               username: item.profiles.pseudonym, // Map pseudonym to username for compatibility
             }
           : null
