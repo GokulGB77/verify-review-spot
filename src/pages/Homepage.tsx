@@ -317,11 +317,6 @@ const Index = () => {
                             <h3 className="font-semibold text-gray-900">
                               {review.userName}
                             </h3>
-                            {review.isUpdate && (
-                              <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700">
-                                Updated
-                              </Badge>
-                            )}
                           </div>
                           <div className="flex items-center">
                             {[...Array(5)].map((_, i) => (
@@ -367,8 +362,13 @@ const Index = () => {
                         
                         {/* Update indicator */}
                         {review.updateCount > 0 && (
-                          <div className="mt-2 text-xs text-gray-500">
-                            {review.updateCount} update{review.updateCount > 1 ? 's' : ''} available
+                          <div className="mt-2 flex items-center space-x-1">
+                            <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700">
+                              Updated
+                            </Badge>
+                            <div className="text-xs text-gray-500">
+                              {review.updateCount} update{review.updateCount > 1 ? 's' : ''} available
+                            </div>
                           </div>
                         )}
                       </div>
