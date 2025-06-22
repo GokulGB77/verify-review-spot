@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserRoles } from '@/hooks/useUserRoles';
@@ -115,9 +114,10 @@ const SuperAdminDashboard = () => {
   ];
 
   const AppSidebar = () => (
-    <Sidebar className="mt-20 w-64 bg-white border-r border-gray-200">
+    <Sidebar className="bg-white border-r border-gray-200">
       <SidebarContent>
         <SidebarGroup>
+          <SidebarGroupLabel>Admin Tools</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map((item) => (
@@ -323,71 +323,73 @@ const SuperAdminDashboard = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full">
+      <div className="min-h-screen flex w-full bg-gray-50">
         <AppSidebar />
-        <SidebarInset className="flex-1">
-          <div className="p-6">
-            <div className="flex items-center gap-4 mb-8">
-              <SidebarTrigger />
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">Super Admin Dashboard</h1>
-                <p className="text-gray-600 mt-2">Manage businesses, reviews, and platform analytics</p>
+        <SidebarInset className="flex-1 overflow-hidden">
+          <div className="h-full overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center gap-4 mb-8">
+                <SidebarTrigger />
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900">Super Admin Dashboard</h1>
+                  <p className="text-gray-600 mt-2">Manage businesses, reviews, and platform analytics</p>
+                </div>
               </div>
-            </div>
 
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center">
-                    <Building2 className="h-8 w-8 text-blue-600" />
-                    <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600">Total Businesses</p>
-                      <p className="text-2xl font-bold text-gray-900">{stats.totalBusinesses}</p>
+              {/* Stats Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center">
+                      <Building2 className="h-8 w-8 text-blue-600" />
+                      <div className="ml-4">
+                        <p className="text-sm font-medium text-gray-600">Total Businesses</p>
+                        <p className="text-2xl font-bold text-gray-900">{stats.totalBusinesses}</p>
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center">
-                    <MessageSquare className="h-8 w-8 text-green-600" />
-                    <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600">Total Reviews</p>
-                      <p className="text-2xl font-bold text-gray-900">{stats.totalReviews}</p>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center">
+                      <MessageSquare className="h-8 w-8 text-green-600" />
+                      <div className="ml-4">
+                        <p className="text-sm font-medium text-gray-600">Total Reviews</p>
+                        <p className="text-2xl font-bold text-gray-900">{stats.totalReviews}</p>
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center">
-                    <Users className="h-8 w-8 text-purple-600" />
-                    <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600">Verified Businesses</p>
-                      <p className="text-2xl font-bold text-gray-900">{stats.verifiedBusinesses}</p>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center">
+                      <Users className="h-8 w-8 text-purple-600" />
+                      <div className="ml-4">
+                        <p className="text-sm font-medium text-gray-600">Verified Businesses</p>
+                        <p className="text-2xl font-bold text-gray-900">{stats.verifiedBusinesses}</p>
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center">
-                    <TrendingUp className="h-8 w-8 text-orange-600" />
-                    <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600">Average Rating</p>
-                      <p className="text-2xl font-bold text-gray-900">{stats.averageRating.toFixed(1)}</p>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center">
+                      <TrendingUp className="h-8 w-8 text-orange-600" />
+                      <div className="ml-4">
+                        <p className="text-sm font-medium text-gray-600">Average Rating</p>
+                        <p className="text-2xl font-bold text-gray-900">{stats.averageRating.toFixed(1)}</p>
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                  </CardContent>
+                </Card>
+              </div>
 
-            <div className="space-y-6">
-              {renderContent()}
+              <div className="space-y-6">
+                {renderContent()}
+              </div>
             </div>
           </div>
         </SidebarInset>
