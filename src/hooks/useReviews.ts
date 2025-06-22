@@ -59,6 +59,28 @@ export const useUserReviews = () => {
   });
 };
 
+export const useUserReviewForBusiness = (businessId: string) => {
+  const { user } = useAuth();
+  
+  return useQuery({
+    queryKey: ['user-review', user?.id, businessId],
+    queryFn: async () => {
+      if (!user?.id || !businessId) return null;
+      
+      const { data, error } = await supabase
+        .from('reviews')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('business_id', businessId)
+        .maybeSingle();
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id && !!businessId,
+  });
+};
+
 export const useCreateReview = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -74,21 +96,52 @@ export const useCreateReview = () => {
     }) => {
       if (!user?.id) throw new Error('User must be authenticated');
       
-      const { data, error } = await supabase
+      // First check if user already has a review for this business
+      const { data: existingReview } = await supabase
         .from('reviews')
-        .insert([{
-          ...review,
-          user_id: user.id
-        }])
-        .select()
-        .single();
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('business_id', review.business_id)
+        .maybeSingle();
       
-      if (error) throw error;
-      return data;
+      if (existingReview) {
+        // Update existing review
+        const { data, error } = await supabase
+          .from('reviews')
+          .update({
+            rating: review.rating,
+            content: review.content,
+            user_badge: review.user_badge || 'Unverified User',
+            proof_provided: review.proof_provided || false,
+            proof_url: review.proof_url,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existingReview.id)
+          .select()
+          .single();
+        
+        if (error) throw error;
+        return data;
+      } else {
+        // Create new review
+        const { data, error } = await supabase
+          .from('reviews')
+          .insert([{
+            ...review,
+            user_id: user.id,
+            user_badge: review.user_badge || 'Unverified User'
+          }])
+          .select()
+          .single();
+        
+        if (error) throw error;
+        return data;
+      }
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['reviews'] });
       queryClient.invalidateQueries({ queryKey: ['user-reviews'] });
+      queryClient.invalidateQueries({ queryKey: ['user-review'] });
       queryClient.invalidateQueries({ queryKey: ['businesses'] });
       queryClient.invalidateQueries({ queryKey: ['business', data.business_id] });
     },

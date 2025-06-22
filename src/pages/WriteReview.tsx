@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -17,6 +16,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { toast } from "@/hooks/use-toast";
 import { Search, Star, Building, CheckCircle, Upload, X } from 'lucide-react';
 import { useBusinesses, useBusiness } from '@/hooks/useBusinesses';
+import { useUserReviewForBusiness, useCreateReview } from '@/hooks/useReviews';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -36,6 +36,8 @@ const WriteReview = () => {
   const { user } = useAuth();
   const { data: businesses = [] } = useBusinesses();
   const { data: selectedBusiness } = useBusiness(id || '');
+  const { data: existingReview } = useUserReviewForBusiness(id || '');
+  const createReviewMutation = useCreateReview();
   
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearchResults, setShowSearchResults] = useState(!id);
@@ -68,6 +70,16 @@ const WriteReview = () => {
       setShowSearchResults(false);
     }
   }, [selectedBusiness, form]);
+
+  // Populate form with existing review data
+  useEffect(() => {
+    if (existingReview) {
+      form.setValue('rating', existingReview.rating);
+      form.setValue('content', existingReview.content);
+      form.setValue('user_badge', (existingReview.user_badge as any) || 'Unverified User');
+      form.setValue('proof_provided', existingReview.proof_provided || false);
+    }
+  }, [existingReview, form]);
 
   // Filter businesses based on search query
   const filteredBusinesses = businesses.filter(business => {
@@ -182,9 +194,8 @@ const WriteReview = () => {
         proofUrl = uploadData.path;
       }
 
-      const { error } = await supabase.from('reviews').insert({
+      await createReviewMutation.mutateAsync({
         business_id: data.business_id,
-        user_id: user.id,
         rating: data.rating,
         content: data.content.trim(),
         proof_provided: data.proof_provided,
@@ -192,11 +203,11 @@ const WriteReview = () => {
         proof_url: proofUrl
       });
 
-      if (error) throw error;
-
       toast({
-        title: "Review Submitted",
-        description: "Thank you for sharing your experience!",
+        title: existingReview ? "Review Updated" : "Review Submitted",
+        description: existingReview 
+          ? "Your review has been updated successfully!" 
+          : "Thank you for sharing your experience!",
       });
 
       navigate(`/business/${data.business_id}`);
@@ -254,8 +265,23 @@ const WriteReview = () => {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Write a Review</h1>
-          <p className="text-lg text-gray-600">Share your honest experience to help others make informed decisions</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            {existingReview ? 'Update Your Review' : 'Write a Review'}
+          </h1>
+          <p className="text-lg text-gray-600">
+            {existingReview 
+              ? 'You can update your existing review below' 
+              : 'Share your honest experience to help others make informed decisions'
+            }
+          </p>
+          {existingReview && (
+            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-blue-800 text-sm">
+                <strong>Note:</strong> You already have a review for this business. 
+                Making changes here will update your existing review.
+              </p>
+            </div>
+          )}
         </div>
 
         {showSearchResults ? (
@@ -363,8 +389,13 @@ const WriteReview = () => {
         {selectedBusinessForReview && (
           <Card>
             <CardHeader>
-              <CardTitle>Your Review</CardTitle>
-              <CardDescription>Share your honest experience with {selectedBusinessForReview.name}</CardDescription>
+              <CardTitle>{existingReview ? 'Update Your Review' : 'Your Review'}</CardTitle>
+              <CardDescription>
+                {existingReview 
+                  ? `Update your review for ${selectedBusinessForReview.name}`
+                  : `Share your honest experience with ${selectedBusinessForReview.name}`
+                }
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <Form {...form}>
@@ -521,7 +552,10 @@ const WriteReview = () => {
                       Cancel
                     </Button>
                     <Button type="submit" disabled={form.formState.isSubmitting}>
-                      {form.formState.isSubmitting ? 'Submitting...' : 'Submit Review'}
+                      {form.formState.isSubmitting 
+                        ? (existingReview ? 'Updating...' : 'Submitting...') 
+                        : (existingReview ? 'Update Review' : 'Submit Review')
+                      }
                     </Button>
                   </div>
                 </form>
