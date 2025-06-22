@@ -46,17 +46,20 @@ const Index = () => {
   const recentReviews = allReviews
     .slice(0, 8) // Show up to 8 recent reviews
     .map((review) => {
-      const business = businesses.find(b => b.id === review.business_id);
+      const business = businesses.find((b) => b.id === review.business_id);
       return {
         id: review.id,
-        userName: review.profiles?.username || review.profiles?.full_name || 'Anonymous User',
+        userName:
+          review.profiles?.username ||
+          review.profiles?.full_name ||
+          "Anonymous User",
         rating: review.rating || 0,
-        content: review.content || '',
-        businessName: business?.name || 'Unknown Business',
-        businessWebsite: business?.website || '',
-        userBadge: review.user_badge || 'Unverified User',
+        content: review.content || "",
+        businessName: business?.name || "Unknown Business",
+        businessWebsite: business?.website || "",
+        userBadge: review.user_badge || "Unverified User",
         date: new Date(review.created_at).toLocaleDateString(),
-        businessCategory: business?.category || 'Business',
+        businessCategory: business?.category || "Business",
       };
     });
 
@@ -80,7 +83,13 @@ const Index = () => {
 
   // Get best entities (highest rated with minimum review count)
   const bestEntities = businesses
-    .filter((business) => business.rating && business.rating >= 4.0 && business.review_count && business.review_count >= 5)
+    .filter(
+      (business) =>
+        business.rating &&
+        business.rating >= 4.0 &&
+        business.review_count &&
+        business.review_count >= 5
+    )
     .sort((a, b) => {
       // Sort by rating first, then by review count
       if (b.rating !== a.rating) {
@@ -100,13 +109,24 @@ const Index = () => {
     }));
 
   const getUserInitials = (name: string) => {
-    return name.split(' ').map(n => n.charAt(0)).join('').toUpperCase().slice(0, 2);
+    return name
+      .split(" ")
+      .map((n) => n.charAt(0))
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
   };
 
   const getAvatarColor = (name: string) => {
     const colors = [
-      'bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-red-500', 
-      'bg-yellow-500', 'bg-indigo-500', 'bg-pink-500', 'bg-gray-500'
+      "bg-blue-500",
+      "bg-green-500",
+      "bg-purple-500",
+      "bg-red-500",
+      "bg-yellow-500",
+      "bg-indigo-500",
+      "bg-pink-500",
+      "bg-gray-500",
     ];
     const index = name.length % colors.length;
     return colors[index];
@@ -183,49 +203,49 @@ const Index = () => {
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Pill-shaped container */}
-          <div className="flex items-center justify-center px-4">
-            <div className="flex items-center w-full max-w-10xl">
-              {/* Left extending line */}
-              <div className="flex-1 h-px bg-gray-300"></div>
-              {/* Pill container */}
+        {/* Pill-shaped container */}
+        <div className="flex items-center justify-center px-4 pt-4">
+          <div className="flex items-center w-full max-w-10xl">
+            {/* Left extending line */}
+            <div className="flex-1 h-px bg-gray-300"></div>
+            {/* Pill container */}
 
-              <div className="bg-white bg-opacity-80 backdrop-blur-sm rounded-full px-8 py-4 mx-6 shadow-sm border border-gray-200">
-                <div className="flex items-center justify-center whitespace-nowrap">
-                  <span className="text-gray-700 text-sm font-medium mr-2">
-                    Bought something recently?
-                  </span>
-                  <button className="inline-flex items-center text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors duration-200">
-                    Write a review
-                    <svg
-                      className="ml-1 w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 5l7 7-7 7"
-                      />
-                    </svg>
-                  </button>
-                </div>
+            <div className="bg-white bg-opacity-80 backdrop-blur-sm rounded-full px-8 py-4 mx-6 shadow-sm border border-gray-200">
+              <div className="flex items-center justify-center whitespace-nowrap">
+                <span className="text-gray-700 text-sm font-medium mr-2">
+                  Tried something new — maybe a course or a product?
+                </span>
+                <button className="inline-flex items-center text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors duration-200">
+                  Share your review.
+                  <svg
+                    className="ml-1 w-4 h-4 mt-0.5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
+                </button>
               </div>
-
-              {/* Right extending line */}
-              <div className="flex-1 h-px bg-gray-300"></div>
             </div>
+
+            {/* Right extending line */}
+            <div className="flex-1 h-px bg-gray-300"></div>
           </div>
         </div>
       </section>
 
       {/* Recent Reviews Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
+      <section className="py-12 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-7xl mx-auto">
-          <div className="flex justify-between items-center mb-12">
+          <div className="flex justify-between items-center mb-4">
             <div>
               <h2 className="text-3xl font-bold text-gray-900 mb-4">
                 Recent reviews
@@ -242,14 +262,21 @@ const Index = () => {
           </div>
 
           {recentReviews.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {recentReviews.map((review) => (
-                <Card key={review.id} className="hover:shadow-lg transition-shadow">
+                <Card
+                  key={review.id}
+                  className="hover:shadow-lg transition-shadow"
+                >
                   <CardContent className="p-6">
                     <div className="space-y-4">
                       {/* User Info */}
                       <div className="flex items-center space-x-3">
-                        <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold ${getAvatarColor(review.userName)}`}>
+                        <div
+                          className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold ${getAvatarColor(
+                            review.userName
+                          )}`}
+                        >
                           {getUserInitials(review.userName)}
                         </div>
                         <div>
@@ -290,7 +317,9 @@ const Index = () => {
                             </div>
                             {review.businessWebsite && (
                               <div className="text-xs text-gray-500">
-                                {review.businessWebsite.replace(/^https?:\/\//, '').replace(/^www\./, '')}
+                                {review.businessWebsite
+                                  .replace(/^https?:\/\//, "")
+                                  .replace(/^www\./, "")}
                               </div>
                             )}
                           </div>
@@ -303,9 +332,7 @@ const Index = () => {
             </div>
           ) : (
             <div className="text-center py-8">
-              <p className="text-gray-500">
-                No recent reviews available yet.
-              </p>
+              <p className="text-gray-500">No recent reviews available yet.</p>
             </div>
           )}
 
@@ -357,7 +384,9 @@ const Index = () => {
                           </h3>
                           {entity.website && (
                             <p className="text-sm text-blue-600 truncate">
-                              {entity.website.replace(/^https?:\/\//, '').replace(/^www\./, '')}
+                              {entity.website
+                                .replace(/^https?:\/\//, "")
+                                .replace(/^www\./, "")}
                             </p>
                           )}
                         </div>
@@ -387,8 +416,11 @@ const Index = () => {
                           <Badge variant="secondary" className="text-xs">
                             {entity.category}
                           </Badge>
-                          {entity.verificationStatus === 'Verified' && (
-                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs">
+                          {entity.verificationStatus === "Verified" && (
+                            <Badge
+                              variant="outline"
+                              className="bg-green-50 text-green-700 border-green-200 text-xs"
+                            >
                               <CheckCircle className="h-3 w-3 mr-1" />
                               Verified
                             </Badge>
@@ -408,7 +440,8 @@ const Index = () => {
                   No top-rated entities yet
                 </h3>
                 <p className="text-gray-500 mb-4">
-                  Be the first to review and help others discover great businesses!
+                  Be the first to review and help others discover great
+                  businesses!
                 </p>
                 <Button asChild>
                   <Link to="/write-review">Write a Review</Link>
@@ -440,8 +473,8 @@ const Index = () => {
                 Verify Your Identity
               </h3>
               <p className="text-gray-600">
-                Complete PAN verification to ensure authentic reviews from
-                real people
+                Complete PAN verification to ensure authentic reviews from real
+                people
               </p>
             </div>
             <div className="text-center">
