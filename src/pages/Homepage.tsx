@@ -42,26 +42,58 @@ const Index = () => {
     }
   };
 
-  // Get recent reviews with business information
-  const recentReviews = allReviews
-    .slice(0, 8) // Show up to 8 recent reviews
-    .map((review) => {
-      const business = businesses.find((b) => b.id === review.business_id);
-      return {
-        id: review.id,
-        userName:
-          review.profiles?.username ||
-          review.profiles?.full_name ||
-          "Anonymous User",
-        rating: review.rating || 0,
-        content: review.content || "",
+  // Group reviews by user and business, showing only the latest review/update
+  const getLatestReviewsGrouped = () => {
+    const reviewGroups = new Map();
+
+    allReviews.forEach((review) => {
+      const key = `${review.user_id}-${review.business_id}`;
+      
+      if (!reviewGroups.has(key)) {
+        reviewGroups.set(key, []);
+      }
+      
+      reviewGroups.get(key).push(review);
+    });
+
+    // For each group, get the latest review (original + all updates sorted by date)
+    const latestReviews = [];
+    
+    reviewGroups.forEach((reviews) => {
+      // Sort by created_at to get the latest
+      const sortedReviews = reviews.sort((a, b) => 
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+      
+      const latestReview = sortedReviews[0];
+      const business = businesses.find((b) => b.id === latestReview.business_id);
+      
+      latestReviews.push({
+        id: latestReview.id,
+        userName: latestReview.profiles?.username || 
+                  latestReview.profiles?.full_name || 
+                  "Anonymous User",
+        rating: latestReview.rating || 0,
+        content: latestReview.content || "",
         businessName: business?.name || "Unknown Business",
         businessWebsite: business?.website || "",
-        userBadge: review.user_badge || "Unverified User",
-        date: new Date(review.created_at).toLocaleDateString(),
+        userBadge: latestReview.user_badge || "Unverified User",
+        date: new Date(latestReview.created_at).toLocaleDateString(),
         businessCategory: business?.category || "Business",
-      };
+        isUpdate: latestReview.is_update || false,
+        updateCount: reviews.filter(r => r.is_update).length,
+        created_at: latestReview.created_at,
+      });
     });
+
+    // Sort by creation date and return first 8
+    return latestReviews
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .slice(0, 8);
+  };
+
+  // Get recent reviews with business information (grouped by user-business)
+  const recentReviews = getLatestReviewsGrouped();
 
   // Get best entities (highest rated with minimum review count)
   const featuredReviews = businesses
@@ -280,9 +312,16 @@ const Index = () => {
                           {getUserInitials(review.userName)}
                         </div>
                         <div>
-                          <h3 className="font-semibold text-gray-900">
-                            {review.userName}
-                          </h3>
+                          <div className="flex items-center space-x-2">
+                            <h3 className="font-semibold text-gray-900">
+                              {review.userName}
+                            </h3>
+                            {review.isUpdate && (
+                              <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700">
+                                Updated
+                              </Badge>
+                            )}
+                          </div>
                           <div className="flex items-center">
                             {[...Array(5)].map((_, i) => (
                               <Star
@@ -324,6 +363,13 @@ const Index = () => {
                             )}
                           </div>
                         </div>
+                        
+                        {/* Update indicator */}
+                        {review.updateCount > 0 && (
+                          <div className="mt-2 text-xs text-gray-500">
+                            {review.updateCount} update{review.updateCount > 1 ? 's' : ''} available
+                          </div>
+                        )}
                       </div>
                     </div>
                   </CardContent>
