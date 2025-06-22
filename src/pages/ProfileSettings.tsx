@@ -22,6 +22,7 @@ interface Profile {
   pseudonym: string | null;
   pseudonym_set: boolean | null;
   rejection_reason?: string | null;
+  display_name_preference?: string | null;
 }
 
 const ProfileSettings = () => {
@@ -36,6 +37,7 @@ const ProfileSettings = () => {
     pan_number: "",
     mobile: "",
     pseudonym: "",
+    display_name_preference: "pseudonym",
   });
   const [panConsent, setPanConsent] = useState(false);
   const [panFile, setPanFile] = useState<File | null>(null);
@@ -74,6 +76,7 @@ const ProfileSettings = () => {
         mobile: data.mobile || "",
         full_name_pan: data.full_name_pan || "",
         pseudonym: data.pseudonym || "",
+        display_name_preference: data.display_name_preference || "pseudonym",
       });
     } catch (error) {
       console.error("Error fetching profile:", error);
@@ -195,6 +198,7 @@ const ProfileSettings = () => {
       const updateData: any = {
         full_name: formData.full_name.trim() || null,
         phone: formData.phone.trim() || null,
+        display_name_preference: formData.display_name_preference,
       };
 
       // Only update pseudonym if it hasn't been set before or if it's empty

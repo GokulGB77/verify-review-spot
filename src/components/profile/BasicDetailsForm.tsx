@@ -3,6 +3,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface Profile {
   pseudonym_set: boolean | null;
@@ -12,6 +13,7 @@ interface FormData {
   full_name: string;
   pseudonym: string;
   phone: string;
+  display_name_preference: string;
 }
 
 interface BasicDetailsFormProps {
@@ -68,6 +70,43 @@ const BasicDetailsForm = ({
           Only letters, numbers, underscores, and hyphens allowed. No spaces.
           {profile?.pseudonym_set && " This cannot be changed once set."}
         </p>
+      </div>
+
+      <div>
+        <div className="text-left mb-3">
+          <Label>Display Name in Reviews</Label>
+          <p className="text-sm text-gray-500 mt-1">
+            Choose how your name appears when you write reviews
+          </p>
+        </div>
+        <RadioGroup
+          value={formData.display_name_preference}
+          onValueChange={(value) => handleInputChange("display_name_preference", value)}
+          className="grid grid-cols-1 gap-4"
+        >
+          <div className="flex items-center space-x-2 p-3 border rounded-lg">
+            <RadioGroupItem value="pseudonym" id="pseudonym-option" />
+            <div className="flex-1">
+              <Label htmlFor="pseudonym-option" className="font-medium">
+                Pseudonym (Recommended)
+              </Label>
+              <p className="text-sm text-gray-500">
+                Use your pseudonym to keep your identity private
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center space-x-2 p-3 border rounded-lg">
+            <RadioGroupItem value="full_name" id="full-name-option" />
+            <div className="flex-1">
+              <Label htmlFor="full-name-option" className="font-medium">
+                Full Name
+              </Label>
+              <p className="text-sm text-gray-500">
+                Use your real name (publicly visible)
+              </p>
+            </div>
+          </div>
+        </RadioGroup>
       </div>
 
       <div>
