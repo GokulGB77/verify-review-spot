@@ -1,6 +1,9 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,21 +11,23 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { toast } from "@/hooks/use-toast";
 import { Search, Star, Building, CheckCircle } from 'lucide-react';
 import { useBusinesses, useBusiness } from '@/hooks/useBusinesses';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
-interface ReviewFormData {
-  business_id: string;
-  rating: number;
-  content: string;
-  proof_provided: boolean;
-  user_badge: string;
-}
+const formSchema = z.object({
+  business_id: z.string().min(1, "Please select a business to review"),
+  rating: z.number().min(1, "Please provide a rating").max(5),
+  content: z.string().min(10, "Review must be at least 10 characters long").max(500),
+  proof_provided: z.boolean().default(false),
+  user_badge: z.enum(['Verified Graduate', 'Verified Employee', 'Verified User', 'Unverified User']).default('Unverified User')
+});
+
+type FormData = z.infer<typeof formSchema>;
 
 const WriteReview = () => {
   const { id } = useParams();
@@ -34,24 +39,26 @@ const WriteReview = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearchResults, setShowSearchResults] = useState(!id);
   const [selectedBusinessForReview, setSelectedBusinessForReview] = useState<any>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  const [formData, setFormData] = useState<ReviewFormData>({
-    business_id: '',
-    rating: 0,
-    content: '',
-    proof_provided: false,
-    user_badge: 'Unverified User'
+
+  const form = useForm<FormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      business_id: '',
+      rating: 0,
+      content: '',
+      proof_provided: false,
+      user_badge: 'Unverified User'
+    },
   });
 
   // Set business when coming from a specific business page
   useEffect(() => {
     if (selectedBusiness) {
       setSelectedBusinessForReview(selectedBusiness);
-      setFormData(prev => ({ ...prev, business_id: selectedBusiness.id }));
+      form.setValue('business_id', selectedBusiness.id);
       setShowSearchResults(false);
     }
-  }, [selectedBusiness]);
+  }, [selectedBusiness, form]);
 
   // Filter businesses based on search query
   const filteredBusinesses = businesses.filter(business => {
@@ -68,14 +75,12 @@ const WriteReview = () => {
 
   const handleBusinessSelect = (business: any) => {
     setSelectedBusinessForReview(business);
-    setFormData(prev => ({ ...prev, business_id: business.id }));
+    form.setValue('business_id', business.id);
     setShowSearchResults(false);
     setSearchQuery('');
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const onSubmit = async (data: FormData) => {
     if (!user) {
       toast({
         title: "Authentication Required",
@@ -86,43 +91,14 @@ const WriteReview = () => {
       return;
     }
 
-    if (!formData.business_id) {
-      toast({
-        title: "Business Required",
-        description: "Please select a business to review.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (formData.rating === 0) {
-      toast({
-        title: "Rating Required",
-        description: "Please provide a rating for your review.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!formData.content.trim()) {
-      toast({
-        title: "Review Content Required",
-        description: "Please write your review.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsSubmitting(true);
-
     try {
       const { error } = await supabase.from('reviews').insert({
-        business_id: formData.business_id,
+        business_id: data.business_id,
         user_id: user.id,
-        rating: formData.rating,
-        content: formData.content.trim(),
-        proof_provided: formData.proof_provided,
-        user_badge: formData.user_badge
+        rating: data.rating,
+        content: data.content.trim(),
+        proof_provided: data.proof_provided,
+        user_badge: data.user_badge
       });
 
       if (error) throw error;
@@ -132,7 +108,7 @@ const WriteReview = () => {
         description: "Thank you for sharing your experience!",
       });
 
-      navigate(`/business/${formData.business_id}`);
+      navigate(`/business/${data.business_id}`);
     } catch (error: any) {
       console.error('Error submitting review:', error);
       toast({
@@ -140,21 +116,19 @@ const WriteReview = () => {
         description: error.message || "Failed to submit review. Please try again.",
         variant: "destructive",
       });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
-  const renderStarRating = () => {
+  const renderStarRating = (field: any) => {
     return (
       <div className="flex items-center space-x-1">
         {[1, 2, 3, 4, 5].map((star) => (
           <button
             key={star}
             type="button"
-            onClick={() => setFormData(prev => ({ ...prev, rating: star }))}
+            onClick={() => field.onChange(star)}
             className={`p-1 rounded transition-colors ${
-              star <= formData.rating 
+              star <= field.value 
                 ? 'text-yellow-400 hover:text-yellow-500' 
                 : 'text-gray-300 hover:text-gray-400'
             }`}
@@ -163,7 +137,7 @@ const WriteReview = () => {
           </button>
         ))}
         <span className="ml-2 text-sm text-gray-600">
-          {formData.rating > 0 ? `${formData.rating} star${formData.rating !== 1 ? 's' : ''}` : 'Click to rate'}
+          {field.value > 0 ? `${field.value} star${field.value !== 1 ? 's' : ''}` : 'Click to rate'}
         </span>
       </div>
     );
@@ -285,7 +259,7 @@ const WriteReview = () => {
                   onClick={() => {
                     setShowSearchResults(true);
                     setSelectedBusinessForReview(null);
-                    setFormData(prev => ({ ...prev, business_id: '' }));
+                    form.setValue('business_id', '');
                   }}
                 >
                   Change Business
@@ -302,85 +276,109 @@ const WriteReview = () => {
               <CardDescription>Share your honest experience with {selectedBusinessForReview.name}</CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Rating */}
-                <div>
-                  <Label className="text-base font-medium">Rating *</Label>
-                  <div className="mt-2">
-                    {renderStarRating()}
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  {/* Rating */}
+                  <FormField
+                    control={form.control}
+                    name="rating"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Rating *</FormLabel>
+                        <FormControl>
+                          <div className="mt-2">
+                            {renderStarRating(field)}
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Review Content */}
+                  <FormField
+                    control={form.control}
+                    name="content"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Your Review *</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Share your experience... What did you like or dislike? How was the service? Any specific details that might help others?"
+                            className="min-h-[120px]"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          {field.value.length}/500 characters (minimum 10 characters)
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Verification Level */}
+                  <FormField
+                    control={form.control}
+                    name="user_badge"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Your Verification Status</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select your verification status" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="Verified Graduate">Verified Graduate/Alumni</SelectItem>
+                            <SelectItem value="Verified Employee">Verified Employee/Staff</SelectItem>
+                            <SelectItem value="Verified User">Verified User</SelectItem>
+                            <SelectItem value="Unverified User">Unverified User</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Proof Provided */}
+                  <FormField
+                    control={form.control}
+                    name="proof_provided"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>
+                            I can provide proof of my experience (certificates, enrollment records, etc.)
+                          </FormLabel>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Submit Button */}
+                  <div className="flex justify-end space-x-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => navigate(-1)}
+                      disabled={form.formState.isSubmitting}
+                    >
+                      Cancel
+                    </Button>
+                    <Button type="submit" disabled={form.formState.isSubmitting}>
+                      {form.formState.isSubmitting ? 'Submitting...' : 'Submit Review'}
+                    </Button>
                   </div>
-                </div>
-
-                {/* Review Content */}
-                <div>
-                  <Label htmlFor="content" className="text-base font-medium">Your Review *</Label>
-                  <Textarea
-                    id="content"
-                    placeholder="Share your experience... What did you like or dislike? How was the service? Any specific details that might help others?"
-                    value={formData.content}
-                    onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
-                    className="mt-2 min-h-[120px]"
-                    required
-                  />
-                  <p className="text-sm text-gray-500 mt-1">
-                    {formData.content.length}/500 characters (minimum 10 characters)
-                  </p>
-                </div>
-
-                {/* Verification Level */}
-                <div>
-                  <Label className="text-base font-medium">Your Verification Status</Label>
-                  <RadioGroup
-                    value={formData.user_badge}
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, user_badge: value }))}
-                    className="mt-2"
-                  >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="Verified Graduate" id="verified-graduate" />
-                      <Label htmlFor="verified-graduate">Verified Graduate/Alumni</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="Verified Employee" id="verified-employee" />
-                      <Label htmlFor="verified-employee">Verified Employee/Staff</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="Verified User" id="verified-user" />
-                      <Label htmlFor="verified-user">Verified User</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="Unverified User" id="unverified" />
-                      <Label htmlFor="unverified">Unverified User</Label>
-                    </div>
-                  </RadioGroup>
-                </div>
-
-                {/* Proof Provided */}
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="proof"
-                    checked={formData.proof_provided}
-                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, proof_provided: !!checked }))}
-                  />
-                  <Label htmlFor="proof" className="text-sm">
-                    I can provide proof of my experience (certificates, enrollment records, etc.)
-                  </Label>
-                </div>
-
-                {/* Submit Button */}
-                <div className="flex justify-end space-x-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => navigate(-1)}
-                    disabled={isSubmitting}
-                  >
-                    Cancel
-                  </Button>
-                  <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting ? 'Submitting...' : 'Submit Review'}
-                  </Button>
-                </div>
-              </form>
+                </form>
+              </Form>
             </CardContent>
           </Card>
         )}
