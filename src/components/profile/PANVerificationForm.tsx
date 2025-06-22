@@ -13,6 +13,7 @@ interface Profile {
   full_name_pan: string | null;
   mobile: string | null;
   pan_image_url: string | null;
+  main_badge: string | null;
   rejection_reason?: string | null;
 }
 
@@ -53,6 +54,9 @@ const PANVerificationForm = ({
   // Check if verification was rejected
   const isRejected = profile?.is_verified === false;
   
+  // Check if user is verified
+  const isVerified = profile?.main_badge === 'Verified User';
+  
   // Function to get proper image URL
   const getImageUrl = (imageUrl: string | null) => {
     if (!imageUrl) return null;
@@ -87,12 +91,12 @@ const PANVerificationForm = ({
 
   return (
     <form onSubmit={handleVerifyPAN} className="space-y-6">
-      {profile?.is_verified ? (
+      {isVerified ? (
         <div className="bg-green-50 p-4 rounded-md border border-green-100">
           <p className="flex items-center text-sm text-green-700">
             <Shield className="h-5 w-5 text-green-600 mr-2" />
             <strong>Your account is verified!</strong> This helps other users
-            trust your reviews.
+            trust your reviews. You now have the "Verified User" badge.
           </p>
         </div>
       ) : isRejected ? (
@@ -275,7 +279,7 @@ const PANVerificationForm = ({
         <div className="bg-yellow-50 p-4 rounded-md border border-yellow-100">
           <p className="flex items-center text-sm text-yellow-700">
             <Clock className="h-5 w-5 text-yellow-600 mr-2" />
-            <strong>Verification under process.</strong> You will get the verified user badge once we verify your details.
+            <strong>Verification under process.</strong> You will get the "Verified User" badge once we verify your details.
           </p>
           {profile?.pan_image_url && (
             <div className="mt-4">
@@ -287,7 +291,7 @@ const PANVerificationForm = ({
                   className="max-w-xs h-auto border rounded-lg shadow-sm"
                   style={{ maxHeight: '200px' }}
                   onError={(e) => {
-                    console.error('Failed to load image:', profile.pan_image_url);
+                    console.error('Failed to loa image:', profile.pan_image_url);
                     console.error('Constructed URL:', getImageUrl(profile.pan_image_url));
                     e.currentTarget.style.display = 'none';
                   }}
@@ -427,7 +431,7 @@ const PANVerificationForm = ({
               <div className="text-left mb-1">
                 <h4 className="font-medium text-blue-800">Why this matters:</h4>
                 <p className="text-sm text-blue-700 mt-1">
-                  The 'Verified by PAN' badge helps build trust in the reviews you
+                  The "Verified User" badge helps build trust in the reviews you
                   post by showing that you're a real, unique person. Your privacy
                   and data security are our top priority.
                 </p>

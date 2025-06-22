@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
@@ -8,6 +7,9 @@ export type Review = Tables<'reviews'> & {
   profiles?: {
     username: string | null;
     full_name: string | null;
+    pseudonym: string | null;
+    display_name_preference: string | null;
+    main_badge: string | null;
   } | null;
 };
 
@@ -17,7 +19,15 @@ export const useReviews = (businessId?: string) => {
     queryFn: async () => {
       let query = supabase
         .from('reviews')
-        .select('*')
+        .select(`
+          *,
+          profiles (
+            full_name,
+            pseudonym,
+            display_name_preference,
+            main_badge
+          )
+        `)
         .order('created_at', { ascending: false });
 
       if (businessId) {
@@ -126,6 +136,7 @@ export const useCreateReview = () => {
       rating: number;
       content: string;
       user_badge?: string;
+      review_specific_badge?: string;
       proof_provided?: boolean;
       proof_url?: string;
       is_update?: boolean;

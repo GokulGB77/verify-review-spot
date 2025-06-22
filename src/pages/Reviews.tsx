@@ -23,12 +23,14 @@ const Homepage = () => {
     console.log('Searching for:', searchQuery);
   };
 
-  // Helper function to ensure userBadge is a valid type
-  const getValidUserBadge = (badge: string | null): 'Verified Graduate' | 'Verified Employee' | 'Verified User' | 'Unverified User' => {
-    if (!badge) return 'Unverified User';
-    
-    const validBadges = ['Verified Graduate', 'Verified Employee', 'Verified User', 'Unverified User'];
-    return validBadges.includes(badge) ? badge as any : 'Unverified User';
+  // Helper function to get display name from profile
+  const getDisplayName = (review: any) => {
+    if (review.profiles?.display_name_preference === 'real_name' && review.profiles?.full_name) {
+      return review.profiles.full_name;
+    } else if (review.profiles?.pseudonym) {
+      return review.profiles.pseudonym;
+    }
+    return 'Anonymous Reviewer';
   };
 
   // Create a map of business ID to business details for easy lookup
@@ -40,23 +42,27 @@ const Homepage = () => {
   const getFilteredReviews = () => {
     let filtered = allReviews.map(review => {
       const business = businessMap[review.business_id];
+      const displayName = getDisplayName(review);
+      const mainBadge = review.profiles?.main_badge || 'Unverified User';
+      
       return {
         id: review.id,
         businessId: review.business_id,
         businessName: business?.name || 'Unknown Business',
         businessCategory: business?.category || 'Unknown Category',
         businessLocation: business?.location || 'Location not specified',
-        userName: 'Anonymous Reviewer', // Generic fallback
-        userBadge: getValidUserBadge(review.user_badge),
+        userName: displayName,
+        mainBadge: mainBadge as 'Verified User' | 'Unverified User',
+        reviewSpecificBadge: review.review_specific_badge as 'Verified Employee' | 'Verified Student' | null,
         rating: review.rating,
         date: new Date(review.created_at).toLocaleDateString(),
         title: `Review for ${business?.name || 'Business'}`,
         content: review.content,
-        isVerified: getValidUserBadge(review.user_badge) !== 'Unverified User',
+        isVerified: mainBadge === 'Verified User',
         proofProvided: review.proof_provided || false,
         upvotes: review.upvotes || 0,
         downvotes: review.downvotes || 0,
-        pseudonym: null, // We'll need to fetch this from profiles if needed
+        pseudonym: review.profiles?.pseudonym,
       };
     });
     
@@ -233,8 +239,13 @@ const Homepage = () => {
                         variant={review.isVerified ? 'default' : 'secondary'}
                         className={review.isVerified ? 'bg-green-100 text-green-800' : ''}
                       >
-                        {review.userBadge}
+                        {review.mainBadge}
                       </Badge>
+                      {review.reviewSpecificBadge && (
+                        <Badge variant="outline" className="bg-blue-100 text-blue-800">
+                          {review.reviewSpecificBadge}
+                        </Badge>
+                      )}
                     </div>
                   </div>
                 </CardHeader>

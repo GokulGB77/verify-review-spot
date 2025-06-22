@@ -11,7 +11,8 @@ interface ReviewCardProps {
   userName: string;
   rating: number;
   content: string;
-  userBadge: 'Verified Graduate' | 'Verified Employee' | 'Verified User' | 'Unverified User';
+  mainBadge: 'Verified User' | 'Unverified User';
+  reviewSpecificBadge?: 'Verified Employee' | 'Verified Student' | null;
   proofProvided: boolean;
   proofVerified?: boolean | null;
   upvotes: number;
@@ -20,7 +21,6 @@ interface ReviewCardProps {
   businessResponse?: string;
   businessResponseDate?: string;
   title?: string;
-  isVerified?: boolean;
   pseudonym?: string | null;
 }
 
@@ -29,7 +29,8 @@ const ReviewCard = ({
   userName,
   rating,
   content,
-  userBadge,
+  mainBadge,
+  reviewSpecificBadge,
   proofProvided,
   proofVerified,
   upvotes: initialUpvotes,
@@ -38,7 +39,6 @@ const ReviewCard = ({
   businessResponse,
   businessResponseDate,
   title,
-  isVerified = false,
   pseudonym
 }: ReviewCardProps) => {
   const [upvotes, setUpvotes] = useState(initialUpvotes);
@@ -73,75 +73,45 @@ const ReviewCard = ({
     }
   };
 
-  const getVerificationDisplay = () => {
-    // If no proof was provided, show original badge
-    if (!proofProvided) {
+  const getMainBadgeDisplay = () => {
+    if (mainBadge === 'Verified User') {
       return {
-        badge: userBadge,
-        color: getVerificationColor(userBadge),
-        icon: getVerificationIcon(userBadge)
+        badge: 'Verified User',
+        color: 'bg-green-100 text-green-800 border-green-200',
+        icon: <CheckCircle className="h-4 w-4 mr-1" />
       };
-    }
-
-    // If proof was provided but not yet verified
-    if (proofVerified === null) {
+    } else {
       return {
-        badge: 'Proof Submitted - Under Verification',
-        color: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-        icon: <Clock className="h-4 w-4 mr-1" />
-      };
-    }
-
-    // If proof was verified and approved
-    if (proofVerified === true) {
-      return {
-        badge: userBadge,
-        color: getVerificationColor(userBadge),
-        icon: getVerificationIcon(userBadge)
-      };
-    }
-
-    // If proof was rejected
-    if (proofVerified === false) {
-      return {
-        badge: 'Proof Rejected - Unverified User',
-        color: 'bg-red-100 text-red-800 border-red-200',
+        badge: 'Unverified User',
+        color: 'bg-gray-100 text-gray-800 border-gray-200',
         icon: null
       };
     }
-
-    return {
-      badge: userBadge,
-      color: getVerificationColor(userBadge),
-      icon: getVerificationIcon(userBadge)
-    };
   };
 
-  const getVerificationColor = (level: string) => {
-    switch (level) {
-      case 'Verified Graduate':
-        return 'bg-green-100 text-green-800 border-green-200';
-      case 'Verified Employee':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'Verified User':
-        return 'bg-purple-100 text-purple-800 border-purple-200';
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+  const getReviewSpecificBadgeDisplay = () => {
+    if (!reviewSpecificBadge) return null;
+    
+    if (reviewSpecificBadge === 'Verified Employee') {
+      return {
+        badge: 'Verified Employee',
+        color: 'bg-blue-100 text-blue-800 border-blue-200',
+        icon: <Shield className="h-4 w-4 mr-1" />
+      };
+    } else if (reviewSpecificBadge === 'Verified Student') {
+      return {
+        badge: 'Verified Student',
+        color: 'bg-purple-100 text-purple-800 border-purple-200',
+        icon: <Shield className="h-4 w-4 mr-1" />
+      };
     }
-  };
-
-  const getVerificationIcon = (level: string) => {
-    if (level === 'Unverified User') {
-      return null;
-    }
-    return level === 'Verified Graduate' || level === 'Verified Employee' ? 
-      <CheckCircle className="h-4 w-4 mr-1" /> : 
-      <Shield className="h-4 w-4 mr-1" />;
+    return null;
   };
 
   // Display pseudonym if set, otherwise show generic term
-  const displayName = pseudonym || 'Anonymous Reviewer';
-  const verification = getVerificationDisplay();
+  const displayName = pseudonym || userName || 'Anonymous Reviewer';
+  const mainBadgeDisplay = getMainBadgeDisplay();
+  const reviewSpecificBadgeDisplay = getReviewSpecificBadgeDisplay();
 
   return (
     <Card className="w-full mb-4">
@@ -152,15 +122,24 @@ const ReviewCard = ({
               <AvatarFallback>{displayName.charAt(0).toUpperCase()}</AvatarFallback>
             </Avatar>
             <div>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 mb-1">
                 <span className="font-semibold text-gray-900">{displayName}</span>
                 <Badge 
                   variant="outline" 
-                  className={`${verification.color} flex items-center`}
+                  className={`${mainBadgeDisplay.color} flex items-center`}
                 >
-                  {verification.icon}
-                  {verification.badge}
+                  {mainBadgeDisplay.icon}
+                  {mainBadgeDisplay.badge}
                 </Badge>
+                {reviewSpecificBadgeDisplay && (
+                  <Badge 
+                    variant="outline" 
+                    className={`${reviewSpecificBadgeDisplay.color} flex items-center`}
+                  >
+                    {reviewSpecificBadgeDisplay.icon}
+                    {reviewSpecificBadgeDisplay.badge}
+                  </Badge>
+                )}
               </div>
               <div className="flex items-center mt-1">
                 <div className="flex items-center mr-2">

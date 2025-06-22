@@ -81,12 +81,14 @@ export type Database = {
           full_name_pan: string | null
           id: string
           is_verified: boolean | null
+          main_badge: string | null
           mobile: string | null
           pan_image_url: string | null
           pan_number: string | null
           phone: string | null
           pseudonym: string | null
           pseudonym_set: boolean | null
+          rejection_reason: string | null
           updated_at: string
         }
         Insert: {
@@ -100,12 +102,14 @@ export type Database = {
           full_name_pan?: string | null
           id: string
           is_verified?: boolean | null
+          main_badge?: string | null
           mobile?: string | null
           pan_image_url?: string | null
           pan_number?: string | null
           phone?: string | null
           pseudonym?: string | null
           pseudonym_set?: boolean | null
+          rejection_reason?: string | null
           updated_at?: string
         }
         Update: {
@@ -119,12 +123,14 @@ export type Database = {
           full_name_pan?: string | null
           id?: string
           is_verified?: boolean | null
+          main_badge?: string | null
           mobile?: string | null
           pan_image_url?: string | null
           pan_number?: string | null
           phone?: string | null
           pseudonym?: string | null
           pseudonym_set?: boolean | null
+          rejection_reason?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -147,6 +153,7 @@ export type Database = {
           proof_verified_at: string | null
           proof_verified_by: string | null
           rating: number
+          review_specific_badge: string | null
           update_number: number | null
           updated_at: string
           upvotes: number | null
@@ -170,6 +177,7 @@ export type Database = {
           proof_verified_at?: string | null
           proof_verified_by?: string | null
           rating: number
+          review_specific_badge?: string | null
           update_number?: number | null
           updated_at?: string
           upvotes?: number | null
@@ -193,6 +201,7 @@ export type Database = {
           proof_verified_at?: string | null
           proof_verified_by?: string | null
           rating?: number
+          review_specific_badge?: string | null
           update_number?: number | null
           updated_at?: string
           upvotes?: number | null

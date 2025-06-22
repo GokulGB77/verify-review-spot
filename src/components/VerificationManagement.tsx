@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -19,6 +18,7 @@ interface VerificationRequest {
   mobile: string | null;
   pan_image_url: string | null;
   is_verified: boolean | null;
+  main_badge: string | null;
   email: string | null;
   created_at: string;
   updated_at: string;
@@ -142,6 +142,7 @@ const VerificationManagement = () => {
         .from('profiles')
         .update({ 
           is_verified: true,
+          main_badge: 'Verified User',
           rejection_reason: null // Clear any previous rejection reason
         })
         .eq('id', userId);
@@ -154,7 +155,7 @@ const VerificationManagement = () => {
       console.log('Verification approved successfully for user:', userId);
       toast({
         title: 'Success',
-        description: 'User verification approved successfully.',
+        description: 'User verification approved successfully. They now have the "Verified User" badge.',
       });
 
       // Refresh the list
@@ -189,6 +190,7 @@ const VerificationManagement = () => {
         .from('profiles')
         .update({ 
           is_verified: false,
+          main_badge: 'Unverified User',
           rejection_reason: rejectionReason.trim()
         })
         .eq('id', requestToReject);
@@ -231,7 +233,7 @@ const VerificationManagement = () => {
   };
 
   const getVerificationStatus = (request: VerificationRequest) => {
-    if (request.is_verified === true) {
+    if (request.main_badge === 'Verified User') {
       return <Badge variant="default" className="bg-green-500">Verified</Badge>;
     } else if (request.is_verified === false) {
       return <Badge variant="destructive">Rejected</Badge>;
@@ -263,7 +265,7 @@ const VerificationManagement = () => {
         <CardHeader>
           <CardTitle>PAN Verification Management</CardTitle>
           <CardDescription>
-            Review and approve user verification requests
+            Review and approve user verification requests for "Verified User" badges
           </CardDescription>
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-600">
