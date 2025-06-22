@@ -70,16 +70,17 @@ const WriteReview = () => {
     }
   }, [selectedBusiness, form]);
 
-  // Populate form with existing review data
+  // Don't populate form with existing review data for updates
+  // Updates should start with a blank form since they're meant to share new experiences
   useEffect(() => {
     if (originalReview) {
-      form.setValue('rating', originalReview.rating);
-      form.setValue('content', originalReview.content);
-      // Only set enhanced verification options, not basic verification status
-      if (originalReview.user_badge && ['Verified Graduate', 'Verified Employee'].includes(originalReview.user_badge)) {
-        form.setValue('user_badge', originalReview.user_badge as 'Verified Graduate' | 'Verified Employee');
+      // Only carry over enhanced verification options if user had them before
+      // This allows them to continue using their verified status without re-uploading proof
+      if (originalReview.review_specific_badge && ['Verified Graduate', 'Verified Employee'].includes(originalReview.review_specific_badge)) {
+        form.setValue('user_badge', originalReview.review_specific_badge as 'Verified Graduate' | 'Verified Employee');
       }
-      form.setValue('proof_provided', originalReview.proof_provided || false);
+      // Don't prefill rating, content, or other fields for updates
+      // Users should provide fresh information for their update
     }
   }, [originalReview, form]);
 
