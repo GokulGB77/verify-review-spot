@@ -139,8 +139,8 @@ const ReviewCard = ({
       <Shield className="h-4 w-4 mr-1" />;
   };
 
-  // Display pseudonym if set, otherwise show generic term
-  const displayName = pseudonym || 'Anonymous Reviewer';
+  // Use the userName prop directly since it's now properly calculated
+  const displayName = userName;
   const verification = getVerificationDisplay();
 
   return (

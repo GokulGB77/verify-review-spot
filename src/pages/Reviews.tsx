@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -31,6 +30,28 @@ const Homepage = () => {
     return validBadges.includes(badge) ? badge as any : 'Unverified User';
   };
 
+  // Helper function to get display name based on user's preference
+  const getDisplayName = (profiles: any) => {
+    if (!profiles) return 'Anonymous Reviewer';
+    
+    const preference = profiles.display_name_preference || 'pseudonym';
+    
+    if (preference === 'pseudonym' && profiles.pseudonym) {
+      return profiles.pseudonym;
+    } else if (preference === 'full_name' && profiles.full_name) {
+      return profiles.full_name;
+    }
+    
+    // Fallback logic: try pseudonym first, then full name, then anonymous
+    if (profiles.pseudonym) {
+      return profiles.pseudonym;
+    } else if (profiles.full_name) {
+      return profiles.full_name;
+    }
+    
+    return 'Anonymous Reviewer';
+  };
+
   // Create a map of business ID to business details for easy lookup
   const businessMap = businesses.reduce((acc, business) => {
     acc[business.id] = business;
@@ -40,13 +61,15 @@ const Homepage = () => {
   const getFilteredReviews = () => {
     let filtered = allReviews.map(review => {
       const business = businessMap[review.business_id];
+      const displayName = getDisplayName(review.profiles);
+      
       return {
         id: review.id,
         businessId: review.business_id,
         businessName: business?.name || 'Unknown Business',
         businessCategory: business?.category || 'Unknown Category',
         businessLocation: business?.location || 'Location not specified',
-        userName: 'Anonymous Reviewer', // Generic fallback
+        userName: displayName,
         userBadge: getValidUserBadge(review.user_badge),
         rating: review.rating,
         date: new Date(review.created_at).toLocaleDateString(),
@@ -56,7 +79,7 @@ const Homepage = () => {
         proofProvided: review.proof_provided || false,
         upvotes: review.upvotes || 0,
         downvotes: review.downvotes || 0,
-        pseudonym: null, // We'll need to fetch this from profiles if needed
+        pseudonym: displayName !== 'Anonymous Reviewer' ? displayName : null,
       };
     });
     

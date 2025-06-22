@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -53,6 +52,28 @@ const BusinessProfile = () => {
     return validBadges.includes(badge) ? badge as any : 'Unverified User';
   };
 
+  // Helper function to get display name based on user's preference
+  const getDisplayName = (profiles: any) => {
+    if (!profiles) return 'Anonymous Reviewer';
+    
+    const preference = profiles.display_name_preference || 'pseudonym';
+    
+    if (preference === 'pseudonym' && profiles.pseudonym) {
+      return profiles.pseudonym;
+    } else if (preference === 'full_name' && profiles.full_name) {
+      return profiles.full_name;
+    }
+    
+    // Fallback logic: try pseudonym first, then full name, then anonymous
+    if (profiles.pseudonym) {
+      return profiles.pseudonym;
+    } else if (profiles.full_name) {
+      return profiles.full_name;
+    }
+    
+    return 'Anonymous Reviewer';
+  };
+
   // Group reviews by user and get the latest version for each user
   const groupedReviews = reviews.reduce((acc, review) => {
     const userId = review.user_id;
@@ -86,11 +107,12 @@ const BusinessProfile = () => {
     
     const hasUpdates = data.updates.length > 0;
     const totalUpdates = data.updates.length;
+    const displayName = getDisplayName(latestReview.profiles);
     
     return {
       id: latestReview.id,
       userId: userId,
-      userName: 'Anonymous User',
+      userName: displayName,
       rating: latestReview.rating,
       content: latestReview.content,
       userBadge: getValidUserBadge(latestReview.user_badge),
@@ -103,7 +125,8 @@ const BusinessProfile = () => {
       hasUpdates,
       totalUpdates,
       updateNumber: latestReview.update_number || 0,
-      allReviews: data.allReviews.sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+      allReviews: data.allReviews.sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()),
+      pseudonym: displayName !== 'Anonymous Reviewer' ? displayName : null
     };
   }).filter(Boolean);
 
@@ -298,9 +321,10 @@ const BusinessProfile = () => {
                               Review History (oldest to newest)
                             </div>
                             {review.allReviews.map((historicalReview: any, index: number) => {
+                              const displayName = getDisplayName(historicalReview.profiles);
                               const transformedHistorical = {
                                 id: historicalReview.id,
-                                userName: 'Anonymous User',
+                                userName: displayName,
                                 rating: historicalReview.rating,
                                 content: historicalReview.content,
                                 userBadge: getValidUserBadge(historicalReview.user_badge),
@@ -309,7 +333,8 @@ const BusinessProfile = () => {
                                 downvotes: historicalReview.downvotes || 0,
                                 date: new Date(historicalReview.created_at).toLocaleDateString(),
                                 businessResponse: historicalReview.business_response,
-                                businessResponseDate: historicalReview.business_response_date ? new Date(historicalReview.business_response_date).toLocaleDateString() : undefined
+                                businessResponseDate: historicalReview.business_response_date ? new Date(historicalReview.business_response_date).toLocaleDateString() : undefined,
+                                pseudonym: displayName !== 'Anonymous Reviewer' ? displayName : null
                               };
                               
                               const isOriginal = !historicalReview.parent_review_id;
