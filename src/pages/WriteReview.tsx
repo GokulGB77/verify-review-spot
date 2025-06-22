@@ -34,8 +34,13 @@ const WriteReview = () => {
   const { user } = useAuth();
   const { data: businesses = [] } = useBusinesses();
   const { data: selectedBusiness } = useBusiness(id || '');
-  const { data: originalReview } = useUserOriginalReviewForBusiness(id || '');
-  const { data: reviewUpdates = [] } = useUserReviewUpdatesForBusiness(id || '');
+  
+  // State to manage currently selected business for review
+  const [currentBusinessId, setCurrentBusinessId] = useState<string>(id || '');
+  
+  // Use currentBusinessId instead of id directly for fetching review data
+  const { data: originalReview } = useUserOriginalReviewForBusiness(currentBusinessId);
+  const { data: reviewUpdates = [] } = useUserReviewUpdatesForBusiness(currentBusinessId);
   const createReviewMutation = useCreateReview();
   
   const [searchQuery, setSearchQuery] = useState('');
@@ -62,6 +67,7 @@ const WriteReview = () => {
   useEffect(() => {
     if (selectedBusiness) {
       setSelectedBusinessForReview(selectedBusiness);
+      setCurrentBusinessId(selectedBusiness.id); // Update the current business ID
       form.setValue('business_id', selectedBusiness.id);
       setShowSearchResults(false);
     }
@@ -95,9 +101,17 @@ const WriteReview = () => {
 
   const handleBusinessSelect = (business: any) => {
     setSelectedBusinessForReview(business);
+    setCurrentBusinessId(business.id); // Update the current business ID
     form.setValue('business_id', business.id);
     setShowSearchResults(false);
     setSearchQuery('');
+    // Reset form when changing business
+    form.reset({
+      business_id: business.id,
+      rating: 0,
+      content: '',
+      user_badge: undefined
+    });
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
