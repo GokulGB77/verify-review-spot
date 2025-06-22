@@ -36,7 +36,21 @@ export const useReviews = (businessId?: string) => {
       const { data, error } = await query;
       
       if (error) throw error;
-      return data as Review[];
+      
+      // Transform the data to match our Review type
+      const transformedData = (data || []).map(review => ({
+        ...review,
+        profiles: review.profiles && typeof review.profiles === 'object' && !('error' in review.profiles) 
+          ? review.profiles as {
+              username: string | null;
+              full_name: string | null;
+              pseudonym: string | null;
+              display_name_preference: string | null;
+            }
+          : null
+      }));
+      
+      return transformedData as Review[];
     },
   });
 };
