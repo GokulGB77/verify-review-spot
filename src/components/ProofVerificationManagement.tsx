@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Star, FileText, Check, X, Eye } from 'lucide-react';
+import { Star, FileText, Check, X, Eye, ExternalLink } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
@@ -109,6 +109,53 @@ const ProofVerificationManagement = () => {
     verifyProofMutation.mutate({ reviewId, isApproved: false, reason: rejectionReason });
   };
 
+  const handleViewProof = async (proofUrl: string) => {
+    if (!proofUrl) {
+      toast({
+        title: 'No Proof Document',
+        description: 'No proof document is available for this review.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      // If it's a Supabase storage URL, get the signed URL
+      if (proofUrl.includes('supabase')) {
+        // Extract the file path from the URL
+        const urlParts = proofUrl.split('/storage/v1/object/public/verification-docs/');
+        if (urlParts.length > 1) {
+          const filePath = urlParts[1];
+          const { data, error } = await supabase.storage
+            .from('verification-docs')
+            .createSignedUrl(filePath, 3600); // 1 hour expiry
+          
+          if (error) {
+            console.error('Error creating signed URL:', error);
+            // If signed URL fails, try the original URL
+            window.open(proofUrl, '_blank');
+          } else if (data?.signedUrl) {
+            window.open(data.signedUrl, '_blank');
+          } else {
+            window.open(proofUrl, '_blank');
+          }
+        } else {
+          window.open(proofUrl, '_blank');
+        }
+      } else {
+        // For direct URLs, open directly
+        window.open(proofUrl, '_blank');
+      }
+    } catch (error) {
+      console.error('Error opening proof document:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to open the proof document.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const getVerificationStatus = (review: ReviewWithProof) => {
     if (review.proof_verified === null) {
       return { status: 'Pending', color: 'bg-yellow-100 text-yellow-800' };
@@ -176,6 +223,16 @@ const ProofVerificationManagement = () => {
                     </TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
+                        {review.proof_url && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleViewProof(review.proof_url)}
+                          >
+                            <ExternalLink className="h-4 w-4 mr-1" />
+                            View Proof
+                          </Button>
+                        )}
                         <Dialog>
                           <DialogTrigger asChild>
                             <Button
@@ -184,7 +241,7 @@ const ProofVerificationManagement = () => {
                               onClick={() => setSelectedReview(review)}
                             >
                               <Eye className="h-4 w-4 mr-1" />
-                              View
+                              Review
                             </Button>
                           </DialogTrigger>
                           <DialogContent className="max-w-2xl">
@@ -210,7 +267,7 @@ const ProofVerificationManagement = () => {
                                     <h4 className="font-semibold">Proof Document:</h4>
                                     <Button
                                       variant="outline"
-                                      onClick={() => window.open(selectedReview.proof_url, '_blank')}
+                                      onClick={() => handleViewProof(selectedReview.proof_url)}
                                       className="mt-2"
                                     >
                                       <FileText className="h-4 w-4 mr-2" />
