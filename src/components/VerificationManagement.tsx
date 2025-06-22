@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -9,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Eye, Check, X, AlertCircle, RefreshCw } from 'lucide-react';
+import { Eye, Check, X, AlertCircle, RefreshCw, ExternalLink } from 'lucide-react';
 
 interface VerificationRequest {
   id: string;
@@ -72,21 +71,57 @@ const VerificationManagement = () => {
     }
   };
 
-  // Function to get proper image URL
-  const getImageUrl = (imageUrl: string | null) => {
+  // Improved function to get proper image URL
+  const getImageUrl = async (imageUrl: string | null): Promise<string | null> => {
     if (!imageUrl) return null;
+    
+    console.log('Processing image URL:', imageUrl);
     
     // If it's already a full URL, return as is
     if (imageUrl.startsWith('http')) {
       return imageUrl;
     }
     
-    // If it looks like a file path, construct the proper URL
-    const { data } = supabase.storage
-      .from('verification-docs')
-      .getPublicUrl(imageUrl);
+    try {
+      // Extract the file path from the URL if it contains storage path
+      let filePath = imageUrl;
+      
+      // Handle different URL formats
+      if (imageUrl.includes('/verification-docs/')) {
+        const parts = imageUrl.split('/verification-docs/');
+        filePath = parts[parts.length - 1];
+      } else if (imageUrl.includes('verification-docs/')) {
+        const parts = imageUrl.split('verification-docs/');
+        filePath = parts[parts.length - 1];
+      }
+      
+      console.log('Extracted file path:', filePath);
+      
+      // Try to get a signed URL first for better security
+      const { data: signedData, error: signedError } = await supabase.storage
+        .from('verification-docs')
+        .createSignedUrl(filePath, 3600); // 1 hour expiry
+      
+      if (signedData?.signedUrl && !signedError) {
+        console.log('Using signed URL:', signedData.signedUrl);
+        return signedData.signedUrl;
+      } else {
+        console.log('Signed URL error:', signedError);
+        // Fallback to public URL
+        const { data: publicData } = supabase.storage
+          .from('verification-docs')
+          .getPublicUrl(filePath);
+        
+        if (publicData?.publicUrl) {
+          console.log('Using public URL:', publicData.publicUrl);
+          return publicData.publicUrl;
+        }
+      }
+    } catch (error) {
+      console.error('Error processing image URL:', error);
+    }
     
-    return data.publicUrl;
+    return null;
   };
 
   const handleApproveVerification = async (userId: string) => {
@@ -207,7 +242,40 @@ const VerificationManagement = () => {
 
   const handleImageLoad = (imageUrl: string) => {
     console.log('Image loaded successfully:', imageUrl);
-    setImageError(null);
+    if (imageError === imageUrl) {
+      setImageError(null);
+    }
+  };
+
+  const handleViewImage = async (imageUrl: string | null) => {
+    if (!imageUrl) {
+      toast({
+        title: 'No Image',
+        description: 'No PAN card image is available for this request.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      const finalUrl = await getImageUrl(imageUrl);
+      if (finalUrl) {
+        window.open(finalUrl, '_blank');
+      } else {
+        toast({
+          title: 'Error',
+          description: 'Failed to load image. Please try again.',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('Error opening image:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to open image. Please try again.',
+        variant: 'destructive',
+      });
+    }
   };
 
   if (loading) {
@@ -335,32 +403,20 @@ const VerificationManagement = () => {
                                 {selectedRequest.pan_image_url ? (
                                   <div>
                                     <label className="text-sm font-medium">PAN Card Image:</label>
-                                    <div className="mt-2">
-                                      {imageError === getImageUrl(selectedRequest.pan_image_url) ? (
-                                        <div className="flex items-center gap-2 p-4 border rounded-lg bg-red-50 border-red-200">
-                                          <AlertCircle className="h-5 w-5 text-red-500" />
-                                          <div>
-                                            <p className="text-sm text-red-700 font-medium">
-                                              Failed to load image
-                                            </p>
-                                            <p className="text-xs text-red-600">
-                                              Original URL: {selectedRequest.pan_image_url}
-                                            </p>
-                                            <p className="text-xs text-red-600">
-                                              Constructed URL: {getImageUrl(selectedRequest.pan_image_url)}
-                                            </p>
-                                          </div>
-                                        </div>
-                                      ) : (
-                                        <img
-                                          src={getImageUrl(selectedRequest.pan_image_url)}
-                                          alt="PAN Card"
-                                          className="max-w-full h-auto border rounded-lg shadow-sm"
-                                          style={{ maxHeight: '400px' }}
-                                          onError={() => handleImageError(getImageUrl(selectedRequest.pan_image_url)!)}
-                                          onLoad={() => handleImageLoad(getImageUrl(selectedRequest.pan_image_url)!)}
-                                        />
-                                      )}
+                                    <div className="mt-2 space-y-3">
+                                      <div className="flex items-center gap-2">
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() => handleViewImage(selectedRequest.pan_image_url)}
+                                        >
+                                          <ExternalLink className="h-4 w-4 mr-2" />
+                                          Open Image in New Tab
+                                        </Button>
+                                      </div>
+                                      <div className="text-xs text-gray-500 space-y-1">
+                                        <p><strong>Original URL:</strong> {selectedRequest.pan_image_url}</p>
+                                      </div>
                                     </div>
                                   </div>
                                 ) : (
