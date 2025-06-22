@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import {
   Card,
@@ -29,6 +28,7 @@ import Footer from "@/components/common/Footer";
 import CTASection from "@/components/CtaSection";
 import { useBusinesses } from "@/hooks/useBusinesses";
 import { useReviews } from "@/hooks/useReviews";
+import { getDisplayName } from "@/utils/reviewHelpers";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -70,9 +70,7 @@ const Index = () => {
       
       latestReviews.push({
         id: latestReview.id,
-        userName: latestReview.profiles?.username || 
-                  latestReview.profiles?.full_name || 
-                  "Anonymous User",
+        userName: getDisplayName(latestReview),
         rating: latestReview.rating || 0,
         content: latestReview.content || "",
         businessName: business?.name || "Unknown Business",
