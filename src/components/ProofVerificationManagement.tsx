@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -110,6 +109,8 @@ const ProofVerificationManagement = () => {
   };
 
   const handleViewProof = async (proofUrl: string) => {
+    console.log('Attempting to view proof:', proofUrl);
+    
     if (!proofUrl) {
       toast({
         title: 'No Proof Document',
@@ -120,37 +121,86 @@ const ProofVerificationManagement = () => {
     }
 
     try {
-      // If it's a Supabase storage URL, get the signed URL
+      // Check if we have the verification-docs bucket
+      const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
+      console.log('Available buckets:', buckets);
+      
+      if (bucketsError) {
+        console.error('Error listing buckets:', bucketsError);
+      }
+
+      // First, let's check if the verification-docs bucket exists
+      const verificationBucket = buckets?.find(bucket => bucket.name === 'verification-docs');
+      if (!verificationBucket) {
+        console.log('verification-docs bucket not found, creating it...');
+        
+        const { data: newBucket, error: createError } = await supabase.storage.createBucket('verification-docs', {
+          public: true,
+          allowedMimeTypes: ['image/*', 'application/pdf'],
+          fileSizeLimit: 10 * 1024 * 1024 // 10MB
+        });
+        
+        if (createError) {
+          console.error('Error creating bucket:', createError);
+          toast({
+            title: 'Storage Error',
+            description: 'Unable to access document storage. Please contact support.',
+            variant: 'destructive',
+          });
+          return;
+        }
+        
+        console.log('Created verification-docs bucket:', newBucket);
+      }
+
+      // Try different approaches to open the document
       if (proofUrl.includes('supabase')) {
+        console.log('Detected Supabase URL, attempting to create signed URL...');
+        
         // Extract the file path from the URL
-        const urlParts = proofUrl.split('/storage/v1/object/public/verification-docs/');
-        if (urlParts.length > 1) {
-          const filePath = urlParts[1];
-          const { data, error } = await supabase.storage
-            .from('verification-docs')
-            .createSignedUrl(filePath, 3600); // 1 hour expiry
+        let filePath = proofUrl;
+        
+        // Handle different URL formats
+        if (proofUrl.includes('/storage/v1/object/public/verification-docs/')) {
+          filePath = proofUrl.split('/storage/v1/object/public/verification-docs/')[1];
+        } else if (proofUrl.includes('/verification-docs/')) {
+          filePath = proofUrl.split('/verification-docs/')[1];
+        }
+        
+        console.log('Extracted file path:', filePath);
+        
+        // Try to get a signed URL
+        const { data: signedUrlData, error: signedUrlError } = await supabase.storage
+          .from('verification-docs')
+          .createSignedUrl(filePath, 3600); // 1 hour expiry
+        
+        if (signedUrlError) {
+          console.error('Error creating signed URL:', signedUrlError);
           
-          if (error) {
-            console.error('Error creating signed URL:', error);
-            // If signed URL fails, try the original URL
-            window.open(proofUrl, '_blank');
-          } else if (data?.signedUrl) {
-            window.open(data.signedUrl, '_blank');
-          } else {
-            window.open(proofUrl, '_blank');
-          }
+          // Try to get public URL instead
+          const { data: publicUrlData } = supabase.storage
+            .from('verification-docs')
+            .getPublicUrl(filePath);
+          
+          console.log('Trying public URL:', publicUrlData.publicUrl);
+          window.open(publicUrlData.publicUrl, '_blank');
+        } else if (signedUrlData?.signedUrl) {
+          console.log('Opening signed URL:', signedUrlData.signedUrl);
+          window.open(signedUrlData.signedUrl, '_blank');
         } else {
+          console.log('No signed URL returned, trying original URL:', proofUrl);
           window.open(proofUrl, '_blank');
         }
       } else {
         // For direct URLs, open directly
+        console.log('Opening direct URL:', proofUrl);
         window.open(proofUrl, '_blank');
       }
     } catch (error) {
       console.error('Error opening proof document:', error);
       toast({
         title: 'Error',
-        description: 'Failed to open the proof document.',
+        description: 'Failed to open the proof document. Check console for details.',
         variant: 'destructive',
       });
     }
@@ -261,6 +311,10 @@ const ProofVerificationManagement = () => {
                                 <div>
                                   <h4 className="font-semibold">User Badge:</h4>
                                   <Badge variant="outline">{selectedReview.user_badge}</Badge>
+                                </div>
+                                <div>
+                                  <h4 className="font-semibold">Proof URL Debug:</h4>
+                                  <p className="text-xs text-gray-600 font-mono break-all">{selectedReview.proof_url}</p>
                                 </div>
                                 {selectedReview.proof_url && (
                                   <div>
