@@ -13,8 +13,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { toast } from "@/hooks/use-toast";
-import { Search, Star, Building, CheckCircle } from 'lucide-react';
+import { Search, Star, Building, CheckCircle, Upload, X } from 'lucide-react';
 import { useBusinesses, useBusiness } from '@/hooks/useBusinesses';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -39,6 +40,9 @@ const WriteReview = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearchResults, setShowSearchResults] = useState(!id);
   const [selectedBusinessForReview, setSelectedBusinessForReview] = useState<any>(null);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [showWarningDialog, setShowWarningDialog] = useState(false);
+  const [pendingSubmit, setPendingSubmit] = useState(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -50,6 +54,11 @@ const WriteReview = () => {
       user_badge: 'Unverified User'
     },
   });
+
+  const watchedUserBadge = form.watch('user_badge');
+
+  // Check if the selected verification status requires proof
+  const requiresProof = ['Verified Graduate', 'Verified Employee'].includes(watchedUserBadge);
 
   // Set business when coming from a specific business page
   useEffect(() => {
@@ -80,6 +89,63 @@ const WriteReview = () => {
     setSearchQuery('');
   };
 
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Check file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "File too large",
+          description: "Please upload a file smaller than 5MB.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Check file type
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
+      if (!allowedTypes.includes(file.type)) {
+        toast({
+          title: "Invalid file type",
+          description: "Please upload a JPG, PNG, or PDF file.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      setUploadedFile(file);
+      form.setValue('proof_provided', true);
+    }
+  };
+
+  const removeUploadedFile = () => {
+    setUploadedFile(null);
+    form.setValue('proof_provided', false);
+  };
+
+  const handleSubmitAttempt = (data: FormData) => {
+    // Check if verification status requires proof but no file is uploaded
+    if (requiresProof && !uploadedFile) {
+      setShowWarningDialog(true);
+      setPendingSubmit(true);
+      return;
+    }
+    
+    // Proceed with normal submission
+    onSubmit(data);
+  };
+
+  const handleContinueWithoutProof = () => {
+    setShowWarningDialog(false);
+    setPendingSubmit(false);
+    
+    // Set badge to Unverified User and proceed
+    const formData = form.getValues();
+    formData.user_badge = 'Unverified User';
+    formData.proof_provided = false;
+    onSubmit(formData);
+  };
+
   const onSubmit = async (data: FormData) => {
     if (!user) {
       toast({
@@ -92,13 +158,38 @@ const WriteReview = () => {
     }
 
     try {
+      let proofUrl = null;
+      
+      // Upload proof file if provided
+      if (uploadedFile && data.proof_provided) {
+        const fileExt = uploadedFile.name.split('.').pop();
+        const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+        
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('verification-docs')
+          .upload(fileName, uploadedFile);
+          
+        if (uploadError) {
+          console.error('Upload error:', uploadError);
+          toast({
+            title: "Upload Failed",
+            description: "Failed to upload proof document. Please try again.",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        proofUrl = uploadData.path;
+      }
+
       const { error } = await supabase.from('reviews').insert({
         business_id: data.business_id,
         user_id: user.id,
         rating: data.rating,
         content: data.content.trim(),
         proof_provided: data.proof_provided,
-        user_badge: data.user_badge
+        user_badge: data.user_badge,
+        proof_url: proofUrl
       });
 
       if (error) throw error;
@@ -277,7 +368,7 @@ const WriteReview = () => {
             </CardHeader>
             <CardContent>
               <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <form onSubmit={form.handleSubmit(handleSubmitAttempt)} className="space-y-6">
                   {/* Rating */}
                   <FormField
                     control={form.control}
@@ -342,7 +433,62 @@ const WriteReview = () => {
                     )}
                   />
 
-                  {/* Proof Provided */}
+                  {/* File Upload Section - Show only if verification status requires proof */}
+                  {requiresProof && (
+                    <div className="space-y-4">
+                      <Label>Upload Proof Document</Label>
+                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
+                        {!uploadedFile ? (
+                          <div className="text-center">
+                            <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                            <div className="mb-2">
+                              <Label htmlFor="proof-upload" className="cursor-pointer">
+                                <span className="text-blue-600 hover:text-blue-500 font-medium">
+                                  Click to upload
+                                </span>
+                                <span className="text-gray-500"> or drag and drop</span>
+                              </Label>
+                              <Input
+                                id="proof-upload"
+                                type="file"
+                                accept=".jpg,.jpeg,.png,.pdf"
+                                onChange={handleFileUpload}
+                                className="hidden"
+                              />
+                            </div>
+                            <p className="text-xs text-gray-500">
+                              PNG, JPG, PDF up to 5MB
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-between bg-gray-50 p-3 rounded">
+                            <div className="flex items-center space-x-2">
+                              <div className="w-8 h-8 bg-blue-100 rounded flex items-center justify-center">
+                                <Upload className="h-4 w-4 text-blue-600" />
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium text-gray-900">{uploadedFile.name}</p>
+                                <p className="text-xs text-gray-500">
+                                  {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB
+                                </p>
+                              </div>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={removeUploadedFile}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Proof Provided Checkbox - Show for all statuses */}
                   <FormField
                     control={form.control}
                     name="proof_provided"
@@ -352,6 +498,7 @@ const WriteReview = () => {
                           <Checkbox
                             checked={field.value}
                             onCheckedChange={field.onChange}
+                            disabled={requiresProof && !uploadedFile}
                           />
                         </FormControl>
                         <div className="space-y-1 leading-none">
@@ -382,6 +529,31 @@ const WriteReview = () => {
             </CardContent>
           </Card>
         )}
+
+        {/* Warning Dialog */}
+        <AlertDialog open={showWarningDialog} onOpenChange={setShowWarningDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>No Proof Document Uploaded</AlertDialogTitle>
+              <AlertDialogDescription>
+                You've selected a verified status but haven't uploaded any proof document. 
+                If you continue without proof, your review will be shown with your current verification status 
+                (based on PAN card authentication) or as an unverified user.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => {
+                setShowWarningDialog(false);
+                setPendingSubmit(false);
+              }}>
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction onClick={handleContinueWithoutProof}>
+                Continue Without Proof
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );
