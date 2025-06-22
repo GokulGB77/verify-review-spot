@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -29,7 +30,6 @@ const VerificationManagement = () => {
   const [loading, setLoading] = useState(true);
   const [selectedRequest, setSelectedRequest] = useState<VerificationRequest | null>(null);
   const [processing, setProcessing] = useState<string | null>(null);
-  const [imageError, setImageError] = useState<string | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [requestToReject, setRequestToReject] = useState<string | null>(null);
@@ -71,40 +71,41 @@ const VerificationManagement = () => {
     }
   };
 
-  // Improved function to get proper image URL
-  const getImageUrl = async (imageUrl: string | null): Promise<string | null> => {
-    if (!imageUrl) return null;
+  const handleViewPanImage = async (imageUrl: string | null) => {
+    console.log('Attempting to view PAN image:', imageUrl);
     
-    console.log('Processing image URL:', imageUrl);
-    
-    // If it's already a full URL, return as is
-    if (imageUrl.startsWith('http')) {
-      return imageUrl;
+    if (!imageUrl) {
+      toast({
+        title: 'No PAN Image',
+        description: 'No PAN card image is available for this request.',
+        variant: 'destructive',
+      });
+      return;
     }
-    
+
     try {
-      // Extract the file path from the URL if it contains storage path
+      // Extract the file path from the URL
       let filePath = imageUrl;
       
-      // Handle different URL formats
+      // If it's a full URL, extract just the file path part
       if (imageUrl.includes('/verification-docs/')) {
-        const parts = imageUrl.split('/verification-docs/');
-        filePath = parts[parts.length - 1];
+        filePath = imageUrl.split('/verification-docs/')[1];
       } else if (imageUrl.includes('verification-docs/')) {
-        const parts = imageUrl.split('verification-docs/');
-        filePath = parts[parts.length - 1];
+        filePath = imageUrl.split('verification-docs/')[1];
       }
       
-      console.log('Extracted file path:', filePath);
+      console.log('File path:', filePath);
       
-      // Try to get a signed URL first for better security
+      // First try to get a signed URL for better security
       const { data: signedData, error: signedError } = await supabase.storage
         .from('verification-docs')
         .createSignedUrl(filePath, 3600); // 1 hour expiry
       
+      let finalUrl = imageUrl; // fallback to original URL
+      
       if (signedData?.signedUrl && !signedError) {
-        console.log('Using signed URL:', signedData.signedUrl);
-        return signedData.signedUrl;
+        finalUrl = signedData.signedUrl;
+        console.log('Using signed URL:', finalUrl);
       } else {
         console.log('Signed URL error:', signedError);
         // Fallback to public URL
@@ -113,15 +114,23 @@ const VerificationManagement = () => {
           .getPublicUrl(filePath);
         
         if (publicData?.publicUrl) {
-          console.log('Using public URL:', publicData.publicUrl);
-          return publicData.publicUrl;
+          finalUrl = publicData.publicUrl;
+          console.log('Using public URL:', finalUrl);
         }
       }
+      
+      // Open the document in a new tab
+      console.log('Opening URL:', finalUrl);
+      window.open(finalUrl, '_blank');
+      
     } catch (error) {
-      console.error('Error processing image URL:', error);
+      console.error('Error opening PAN image:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to open PAN image. Please try again.',
+        variant: 'destructive',
+      });
     }
-    
-    return null;
   };
 
   const handleApproveVerification = async (userId: string) => {
@@ -233,49 +242,6 @@ const VerificationManagement = () => {
 
   const isPending = (request: VerificationRequest) => {
     return request.is_verified === null;
-  };
-
-  const handleImageError = (imageUrl: string) => {
-    console.error('Failed to load image:', imageUrl);
-    setImageError(imageUrl);
-  };
-
-  const handleImageLoad = (imageUrl: string) => {
-    console.log('Image loaded successfully:', imageUrl);
-    if (imageError === imageUrl) {
-      setImageError(null);
-    }
-  };
-
-  const handleViewImage = async (imageUrl: string | null) => {
-    if (!imageUrl) {
-      toast({
-        title: 'No Image',
-        description: 'No PAN card image is available for this request.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    try {
-      const finalUrl = await getImageUrl(imageUrl);
-      if (finalUrl) {
-        window.open(finalUrl, '_blank');
-      } else {
-        toast({
-          title: 'Error',
-          description: 'Failed to load image. Please try again.',
-          variant: 'destructive',
-        });
-      }
-    } catch (error) {
-      console.error('Error opening image:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to open image. Please try again.',
-        variant: 'destructive',
-      });
-    }
   };
 
   if (loading) {
@@ -408,7 +374,7 @@ const VerificationManagement = () => {
                                         <Button
                                           variant="outline"
                                           size="sm"
-                                          onClick={() => handleViewImage(selectedRequest.pan_image_url)}
+                                          onClick={() => handleViewPanImage(selectedRequest.pan_image_url)}
                                         >
                                           <ExternalLink className="h-4 w-4 mr-2" />
                                           Open Image in New Tab
