@@ -50,7 +50,7 @@ export const useReviews = (businessId?: string) => {
         
         return {
           ...review,
-          profiles: isValidProfiles ? profiles : null
+          profiles: isValidProfiles ? (profiles as NonNullable<typeof profiles>) : null
         };
       }) as Review[];
     },
