@@ -109,14 +109,9 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory }: SingleRev
             <History className="h-2 w-2 mr-1" />
             {viewingHistory[review.userId] ? 'Hide' : 'View'} History ({review.totalUpdates + 1})
           </Button>
-          <div className="flex items-center space-x-1">
-            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs px-1 py-0 h-4">
-              Updated
-            </Badge>
-            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs px-1 py-0 h-4">
-              Update #{review.updateNumber}
-            </Badge>
-          </div>
+          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs px-1 py-0 h-4">
+            Update #{review.updateNumber}
+          </Badge>
         </div>
       )}
 
