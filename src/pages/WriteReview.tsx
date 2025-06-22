@@ -1,111 +1,113 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Star, Upload, Shield, AlertCircle, FileCheck } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useAuth } from "@/contexts/AuthContext";
-import { useCreateReview } from "@/hooks/useReviews";
-import { useBusiness } from "@/hooks/useBusinesses";
-import { useToast } from "@/hooks/use-toast";
-import Header from "@/components/common/Header";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
+import { toast } from "@/hooks/use-toast";
+import { Search, Star, Building, CheckCircle } from 'lucide-react';
+import { useBusinesses, useBusiness } from '@/hooks/useBusinesses';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+
+interface ReviewFormData {
+  business_id: string;
+  rating: number;
+  content: string;
+  proof_provided: boolean;
+  user_badge: string;
+}
 
 const WriteReview = () => {
-  const { id: businessId } = useParams();
+  const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { toast } = useToast();
-  const createReview = useCreateReview();
-  const { data: business } = useBusiness(businessId || "");
-
-  const [rating, setRating] = useState(0);
-  const [hoverRating, setHoverRating] = useState(0);
-  const [reviewText, setReviewText] = useState("");
-  const [businessName, setBusinessName] = useState("");
-  const [verificationLevel, setVerificationLevel] = useState("");
-  const [proofFile, setProofFile] = useState<File | null>(null);
+  const { data: businesses = [] } = useBusinesses();
+  const { data: selectedBusiness } = useBusiness(id || '');
+  
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSearchResults, setShowSearchResults] = useState(!id);
+  const [selectedBusinessForReview, setSelectedBusinessForReview] = useState<any>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const [formData, setFormData] = useState<ReviewFormData>({
+    business_id: '',
+    rating: 0,
+    content: '',
+    proof_provided: false,
+    user_badge: 'Unverified User'
+  });
 
+  // Set business when coming from a specific business page
   useEffect(() => {
-    if (!user) {
-      navigate("/auth");
-      return;
+    if (selectedBusiness) {
+      setSelectedBusinessForReview(selectedBusiness);
+      setFormData(prev => ({ ...prev, business_id: selectedBusiness.id }));
+      setShowSearchResults(false);
     }
+  }, [selectedBusiness]);
 
-    if (business) {
-      setBusinessName(business.name);
-    }
-  }, [user, business, navigate]);
+  // Filter businesses based on search query
+  const filteredBusinesses = businesses.filter(business => {
+    if (!searchQuery.trim()) return false;
+    
+    const query = searchQuery.toLowerCase();
+    return (
+      business.name.toLowerCase().includes(query) ||
+      business.category.toLowerCase().includes(query) ||
+      (business.description && business.description.toLowerCase().includes(query)) ||
+      (business.location && business.location.toLowerCase().includes(query))
+    );
+  });
 
-  const verificationOptions = [
-    {
-      value: "verified-graduate",
-      label: "Verified Graduate",
-      description: "I am a graduate/student of this institution",
-    },
-    {
-      value: "verified-employee",
-      label: "Verified Employee",
-      description: "I am/was an employee of this organization",
-    },
-    {
-      value: "verified-user",
-      label: "Verified User",
-      description: "I have used their services",
-    },
-    {
-      value: "unverified",
-      label: "Unverified",
-      description: "I prefer not to verify my connection",
-    },
-  ];
-
-  const handleRating = (value: number) => {
-    setRating(value);
+  const handleBusinessSelect = (business: any) => {
+    setSelectedBusinessForReview(business);
+    setFormData(prev => ({ ...prev, business_id: business.id }));
+    setShowSearchResults(false);
+    setSearchQuery('');
   };
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setProofFile(file);
-    }
-  };
-
-  const handleSubmit = async () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
     if (!user) {
       toast({
         title: "Authentication Required",
-        description: "Please log in to submit a review.",
+        description: "Please sign in to write a review.",
         variant: "destructive",
       });
-      navigate("/auth");
+      navigate('/auth');
       return;
     }
 
-    if (!businessId) {
+    if (!formData.business_id) {
       toast({
-        title: "Error",
-        description: "No business selected for review.",
+        title: "Business Required",
+        description: "Please select a business to review.",
         variant: "destructive",
       });
       return;
     }
 
-    if (!rating || !reviewText.trim()) {
+    if (formData.rating === 0) {
       toast({
-        title: "Missing Information",
-        description: "Please provide a rating and review text.",
+        title: "Rating Required",
+        description: "Please provide a rating for your review.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.content.trim()) {
+      toast({
+        title: "Review Content Required",
+        description: "Please write your review.",
         variant: "destructive",
       });
       return;
@@ -114,25 +116,28 @@ const WriteReview = () => {
     setIsSubmitting(true);
 
     try {
-      await createReview.mutateAsync({
-        business_id: businessId,
-        rating,
-        content: reviewText,
-        user_badge: verificationLevel || "Unverified User",
-        proof_provided: !!proofFile,
+      const { error } = await supabase.from('reviews').insert({
+        business_id: formData.business_id,
+        user_id: user.id,
+        rating: formData.rating,
+        content: formData.content.trim(),
+        proof_provided: formData.proof_provided,
+        user_badge: formData.user_badge
       });
+
+      if (error) throw error;
 
       toast({
-        title: "Review Submitted!",
-        description: "Your review has been submitted successfully.",
+        title: "Review Submitted",
+        description: "Thank you for sharing your experience!",
       });
 
-      navigate(`/business/${businessId}`);
+      navigate(`/business/${formData.business_id}`);
     } catch (error: any) {
+      console.error('Error submitting review:', error);
       toast({
-        title: "Submission Failed",
-        description:
-          error.message || "Failed to submit review. Please try again.",
+        title: "Error",
+        description: error.message || "Failed to submit review. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -140,274 +145,245 @@ const WriteReview = () => {
     }
   };
 
+  const renderStarRating = () => {
+    return (
+      <div className="flex items-center space-x-1">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <button
+            key={star}
+            type="button"
+            onClick={() => setFormData(prev => ({ ...prev, rating: star }))}
+            className={`p-1 rounded transition-colors ${
+              star <= formData.rating 
+                ? 'text-yellow-400 hover:text-yellow-500' 
+                : 'text-gray-300 hover:text-gray-400'
+            }`}
+          >
+            <Star className="h-8 w-8 fill-current" />
+          </button>
+        ))}
+        <span className="ml-2 text-sm text-gray-600">
+          {formData.rating > 0 ? `${formData.rating} star${formData.rating !== 1 ? 's' : ''}` : 'Click to rate'}
+        </span>
+      </div>
+    );
+  };
+
   if (!user) {
-    return null; // Will redirect to auth
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardContent className="p-6 text-center">
+            <h2 className="text-2xl font-bold mb-4">Sign In Required</h2>
+            <p className="text-gray-600 mb-4">You need to be signed in to write a review.</p>
+            <Button onClick={() => navigate('/auth')} className="w-full">
+              Sign In
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Write a Review
-          </h1>
-          <p className="text-lg text-gray-600">
-            Share your honest experience to help others make informed decisions
-          </p>
-          {business && (
-            <p className="text-sm text-gray-500 mt-2">
-              Reviewing: <span className="font-medium">{business.name}</span>
-            </p>
-          )}
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Write a Review</h1>
+          <p className="text-lg text-gray-600">Share your honest experience to help others make informed decisions</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Form */}
-          <div className="lg:col-span-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Your Review Details</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Business Name - Read only if from URL */}
-                <div>
-                  <div className="text-left mb-1">
-                    <Label htmlFor="business-name">
-                      Entitiy/Business Name *
-                    </Label>
-                  </div>
-                  <Input
-                    id="business-name"
-                    placeholder="Search or enter the name of the business..."
-                    value={businessName}
-                    onChange={(e) => setBusinessName(e.target.value)}
-                    disabled={!!businessId}
-                  />
-                  {!businessId && (
-                    <div className="text-sm mt-1">
-                      Can't find your business?{" "}
-                      <button
-                        type="button"
-                        className="text-blue-600 hover:underline"
+        {showSearchResults ? (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Search for Business</CardTitle>
+              <CardDescription>Find the business you want to review</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="relative mb-4">
+                <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                <Input
+                  placeholder="Search by business name, category, or location..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              
+              {searchQuery.trim() && (
+                <div className="space-y-2 max-h-96 overflow-y-auto">
+                  {filteredBusinesses.length > 0 ? (
+                    filteredBusinesses.map((business) => (
+                      <div
+                        key={business.id}
+                        onClick={() => handleBusinessSelect(business)}
+                        className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
                       >
-                        Request to add it
-                      </button>
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-2 mb-1">
+                              <h3 className="font-semibold text-gray-900">{business.name}</h3>
+                              {business.verification_status === 'Verified' && (
+                                <Badge variant="secondary" className="bg-green-50 text-green-700 border-green-200">
+                                  <CheckCircle className="h-3 w-3 mr-1" />
+                                  Verified
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-600 mb-1">{business.category}</p>
+                            {business.location && (
+                              <p className="text-sm text-gray-500">{business.location}</p>
+                            )}
+                            {business.description && (
+                              <p className="text-sm text-gray-600 mt-2 line-clamp-2">{business.description}</p>
+                            )}
+                          </div>
+                          <div className="flex items-center space-x-1 ml-4">
+                            {business.rating > 0 && (
+                              <>
+                                <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                                <span className="text-sm font-medium">{business.rating.toFixed(1)}</span>
+                                <span className="text-sm text-gray-500">({business.review_count || 0})</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8">
+                      <Building className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-500">No businesses found matching "{searchQuery}"</p>
+                      <p className="text-sm text-gray-400 mt-1">Try adjusting your search terms</p>
                     </div>
                   )}
                 </div>
+              )}
+            </CardContent>
+          </Card>
+        ) : selectedBusinessForReview && (
+          <Card className="mb-6">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="flex items-center space-x-2 mb-1">
+                    <h3 className="text-xl font-semibold text-gray-900">{selectedBusinessForReview.name}</h3>
+                    {selectedBusinessForReview.verification_status === 'Verified' && (
+                      <Badge variant="secondary" className="bg-green-50 text-green-700 border-green-200">
+                        <CheckCircle className="h-3 w-3 mr-1" />
+                        Verified
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-gray-600">{selectedBusinessForReview.category}</p>
+                  {selectedBusinessForReview.location && (
+                    <p className="text-sm text-gray-500">{selectedBusinessForReview.location}</p>
+                  )}
+                </div>
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setShowSearchResults(true);
+                    setSelectedBusinessForReview(null);
+                    setFormData(prev => ({ ...prev, business_id: '' }));
+                  }}
+                >
+                  Change Business
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
+        {selectedBusinessForReview && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Your Review</CardTitle>
+              <CardDescription>Share your honest experience with {selectedBusinessForReview.name}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Rating */}
                 <div>
-                  <div className="text-left mb-1">
-                    <Label>Overall Rating *</Label>
+                  <Label className="text-base font-medium">Rating *</Label>
+                  <div className="mt-2">
+                    {renderStarRating()}
                   </div>
-                  <div className="flex items-center space-x-2">
-                    {[1, 2, 3, 4, 5].map((value) => (
-                      <Star
-                        key={value}
-                        className={`h-8 w-8 cursor-pointer transition-colors ${
-                          value <= (hoverRating || rating)
-                            ? "text-yellow-400 fill-current"
-                            : "text-gray-300 hover:text-yellow-400"
-                        }`}
-                        onMouseEnter={() => setHoverRating(value)}
-                        onMouseLeave={() => setHoverRating(0)}
-                        onClick={() => handleRating(value)}
-                      />
-                    ))}
-                    <span className="ml-2 text-lg font-semibold">
-                      {rating > 0 && `${rating} star${rating > 1 ? "s" : ""}`}
-                    </span>
-                  </div>
+                </div>
+
+                {/* Review Content */}
+                <div>
+                  <Label htmlFor="content" className="text-base font-medium">Your Review *</Label>
+                  <Textarea
+                    id="content"
+                    placeholder="Share your experience... What did you like or dislike? How was the service? Any specific details that might help others?"
+                    value={formData.content}
+                    onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
+                    className="mt-2 min-h-[120px]"
+                    required
+                  />
+                  <p className="text-sm text-gray-500 mt-1">
+                    {formData.content.length}/500 characters (minimum 10 characters)
+                  </p>
                 </div>
 
                 {/* Verification Level */}
                 <div>
-                  <div className="text-left mb-1">
-                    <Label>Your Connection to This Entity/Business</Label>
-                  </div>
-                  <Select
-                    value={verificationLevel}
-                    onValueChange={setVerificationLevel}
+                  <Label className="text-base font-medium">Your Verification Status</Label>
+                  <RadioGroup
+                    value={formData.user_badge}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, user_badge: value }))}
+                    className="mt-2"
                   >
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="How are you connected to this business?" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {verificationOptions.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          <div>
-                            <div className="font-medium">{option.label}</div>
-                            <div className="text-sm text-gray-600">
-                              {option.description}
-                            </div>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="Verified Graduate" id="verified-graduate" />
+                      <Label htmlFor="verified-graduate">Verified Graduate/Alumni</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="Verified Employee" id="verified-employee" />
+                      <Label htmlFor="verified-employee">Verified Employee/Staff</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="Verified User" id="verified-user" />
+                      <Label htmlFor="verified-user">Verified User</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="Unverified User" id="unverified" />
+                      <Label htmlFor="unverified">Unverified User</Label>
+                    </div>
+                  </RadioGroup>
                 </div>
 
-                {/* Proof Upload */}
-                {verificationLevel && verificationLevel !== "unverified" && (
-                  <div>
-                    <div className="text-left mb-1">
-                      <Label htmlFor="proof-upload">
-                        Proof of Connection (Optional)
-                      </Label>
-                    </div>
-                    <div className="mt-2 border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
-                      <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                      <div className="text-sm text-gray-600">
-                        <label
-                          htmlFor="proof-upload"
-                          className="cursor-pointer text-blue-600 hover:text-blue-500"
-                        >
-                          Upload a file
-                        </label>
-                        <span> or drag and drop</span>
-                      </div>
-                      <p className="text-xs text-gray-500 mt-1">
-                        ID card, certificate, email confirmation, etc. (PDF,
-                        JPG, PNG up to 10MB)
-                      </p>
-                      <input
-                        id="proof-upload"
-                        type="file"
-                        className="hidden"
-                        accept=".pdf,.jpg,.jpeg,.png"
-                        onChange={handleFileUpload}
-                      />
-                    </div>
-                    {proofFile && (
-                      <div className="mt-2 text-sm text-green-600">
-                        ✓ {proofFile.name} uploaded
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Review Text */}
-                <div>
-                  <div className="text-left mb-1">
-                    <Label htmlFor="review-text">Your Review *</Label>
-                  </div>
-                  <Textarea
-                    id="review-text"
-                    placeholder="Share your honest experience... What went well? What could be improved? Be specific and helpful for other users."
-                    value={reviewText}
-                    onChange={(e) => setReviewText(e.target.value)}
-                    className="mt-1 min-h-[120px]"
+                {/* Proof Provided */}
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="proof"
+                    checked={formData.proof_provided}
+                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, proof_provided: !!checked }))}
                   />
-                  <div className="text-sm text-gray-600 mt-1">
-                    {reviewText.length}/1000 characters
-                  </div>
+                  <Label htmlFor="proof" className="text-sm">
+                    I can provide proof of my experience (certificates, enrollment records, etc.)
+                  </Label>
                 </div>
 
                 {/* Submit Button */}
-                <div className="pt-4">
+                <div className="flex justify-end space-x-4">
                   <Button
-                    onClick={handleSubmit}
-                    size="lg"
-                    className="w-full"
+                    type="button"
+                    variant="outline"
+                    onClick={() => navigate(-1)}
                     disabled={isSubmitting}
                   >
-                    {isSubmitting ? "Submitting..." : "Submit Review"}
+                    Cancel
                   </Button>
-                  <p className="text-sm text-gray-600 mt-2 text-center">
-                    Your review will be published immediately
-                  </p>
-
-                  {/* Legal Notice - Moved here from sidebar */}
-                  <Alert className="mt-4">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>
-                      By submitting this review, you agree to our Terms of
-                      Service and confirm that your review is based on genuine
-                      experience.
-                    </AlertDescription>
-                  </Alert>
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? 'Submitting...' : 'Submit Review'}
+                  </Button>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="space-y-6">
-              {/* Verification Info */}
-              <Card>
-                <CardHeader className="flex flex-col items-center text-center">
-                  <Shield className="h-10 w-10 text-blue-600 mb-2" />
-                  <CardTitle>Verification Process</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex items-start space-x-2">
-                      <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0" />
-                      <div className="text-sm">
-                        <div className="font-medium">Identity Verification</div>
-                        <div className="text-gray-600">
-                          Account-based verification for all users
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-start space-x-2">
-                      <div className="w-2 h-2 bg-green-600 rounded-full mt-2 flex-shrink-0" />
-                      <div className="text-sm">
-                        <div className="font-medium">Proof Verification</div>
-                        <div className="text-gray-600">
-                          Optional document verification
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-start space-x-2">
-                      <div className="w-2 h-2 bg-purple-600 rounded-full mt-2 flex-shrink-0" />
-                      <div className="text-sm">
-                        <div className="font-medium">Content Review</div>
-                        <div className="text-gray-600">
-                          Review content checked for authenticity
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Guidelines */}
-              <Card>
-                <CardHeader className="flex flex-col items-center text-center">
-                  <FileCheck className="h-10 w-10 text-green-600 mb-2" />
-                  <CardTitle>Review Guidelines</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3 text-sm">
-                    <div className="flex items-start space-x-2">
-                      <span className="text-green-600">✓</span>
-                      <span>Be honest and specific about your experience</span>
-                    </div>
-                    <div className="flex items-start space-x-2">
-                      <span className="text-green-600">✓</span>
-                      <span>Focus on the service quality and value</span>
-                    </div>
-                    <div className="flex items-start space-x-2">
-                      <span className="text-green-600">✓</span>
-                      <span>Provide constructive feedback</span>
-                    </div>
-                    <div className="flex items-start space-x-2">
-                      <span className="text-red-600">✗</span>
-                      <span>No personal attacks or inappropriate language</span>
-                    </div>
-                    <div className="flex items-start space-x-2">
-                      <span className="text-red-600">✗</span>
-                      <span>No fake or misleading information</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </div>
+              </form>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
