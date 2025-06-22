@@ -212,7 +212,7 @@ const Index = () => {
                           <Badge variant="secondary">{business.category}</Badge>
                           <div className="flex items-center">
                             <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                            <span className="text-sm text-gray-600 ml-1">{business.rating?.toFixed(1) || "N/A"}</span>
+                            <span className="text-sm text-gray-600 ml-1">{business.average_rating?.toFixed(1) || "N/A"}</span>
                           </div>
                         </div>
                       </div>
@@ -228,7 +228,7 @@ const Index = () => {
                     </p>
                     <div className="mt-4 flex items-center justify-between">
                       <span className="text-sm text-gray-500">
-                        {business.review_count || 0} reviews
+                        {business.total_reviews || 0} reviews
                       </span>
                       <Button variant="outline" size="sm" asChild>
                         <Link to={`/business/${business.id}`}>
