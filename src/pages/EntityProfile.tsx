@@ -317,13 +317,8 @@ const BusinessProfile = () => {
                               {review.userName.charAt(0).toUpperCase()}
                             </div>
                             <div>
-                              <div className="flex items-center space-x-1 mb-1">
+                              <div className="mb-1">
                                 <span className="font-medium text-gray-900 text-xs">{review.userName}</span>
-                                {review.hasUpdates && (
-                                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs px-1 py-0 h-4">
-                                    Update #{review.updateNumber}
-                                  </Badge>
-                                )}
                               </div>
                               <div className="flex items-center space-x-1">
                                 <Badge 
@@ -379,9 +374,9 @@ const BusinessProfile = () => {
                           </div>
                         )}
 
-                        {/* Review History Button */}
+                        {/* Review History Button and Update Badge */}
                         {review.hasUpdates && (
-                          <div className="pt-1 border-t border-gray-100">
+                          <div className="pt-1 border-t border-gray-100 flex items-center justify-between">
                             <Button
                               variant="ghost"
                               size="sm"
@@ -391,6 +386,9 @@ const BusinessProfile = () => {
                               <History className="h-2 w-2 mr-1" />
                               {viewingHistory[review.userId] ? 'Hide' : 'View'} History ({review.totalUpdates + 1})
                             </Button>
+                            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs px-1 py-0 h-4">
+                              Update #{review.updateNumber}
+                            </Badge>
                           </div>
                         )}
 
