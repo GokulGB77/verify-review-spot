@@ -149,13 +149,13 @@ const BusinessProfile = () => {
   };
 
   // Helper function to render review content with "See more" functionality
-  const ReviewContent = ({ content, maxLength = 120 }: { content: string; maxLength?: number }) => {
+  const ReviewContent = ({ content, maxLength = 80 }: { content: string; maxLength?: number }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const shouldTruncate = content.length > maxLength;
     
     return (
       <div>
-        <p className="text-gray-700 text-sm leading-relaxed">
+        <p className="text-gray-700 text-xs leading-relaxed">
           {shouldTruncate && !isExpanded ? `${content.slice(0, maxLength)}...` : content}
         </p>
         {shouldTruncate && (
@@ -307,20 +307,20 @@ const BusinessProfile = () => {
                     <p className="text-gray-500">Loading reviews...</p>
                   </div>
                 ) : transformedReviews.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                     {transformedReviews.map((review) => (
-                      <div key={review.userId} className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 h-fit">
+                      <div key={review.userId} className="bg-white rounded-lg p-3 shadow-sm border border-gray-200 h-fit">
                         {/* User Info and Rating */}
-                        <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-start justify-between mb-2">
                           <div className="flex items-center space-x-2">
-                            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-xs">
+                            <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-xs">
                               {review.userName.charAt(0).toUpperCase()}
                             </div>
                             <div>
                               <div className="flex items-center space-x-1 mb-1">
-                                <span className="font-medium text-gray-900 text-sm">{review.userName}</span>
+                                <span className="font-medium text-gray-900 text-xs">{review.userName}</span>
                                 {review.hasUpdates && (
-                                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs px-1 py-0">
+                                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs px-1 py-0 h-4">
                                     Update #{review.updateNumber}
                                   </Badge>
                                 )}
@@ -328,7 +328,7 @@ const BusinessProfile = () => {
                               <div className="flex items-center space-x-1">
                                 <Badge 
                                   variant="outline" 
-                                  className={`text-xs px-1 py-0 ${
+                                  className={`text-xs px-1 py-0 h-4 ${
                                     review.mainBadge === 'Verified User' 
                                       ? 'bg-green-50 text-green-700 border-green-200' 
                                       : 'bg-gray-50 text-gray-600 border-gray-200'
@@ -338,7 +338,7 @@ const BusinessProfile = () => {
                                   {review.mainBadge === 'Verified User' ? 'Verified' : 'Unverified'}
                                 </Badge>
                                 {review.reviewSpecificBadge && (
-                                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs px-1 py-0">
+                                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs px-1 py-0 h-4">
                                     {review.reviewSpecificBadge === 'Verified Employee' ? 'Employee' : 'Student'}
                                   </Badge>
                                 )}
@@ -350,7 +350,7 @@ const BusinessProfile = () => {
                               {[...Array(5)].map((_, i) => (
                                 <Star
                                   key={i}
-                                  className={`h-3 w-3 ${
+                                  className={`h-2 w-2 ${
                                     i < review.rating
                                       ? 'text-green-500 fill-current'
                                       : 'text-gray-300'
@@ -363,15 +363,15 @@ const BusinessProfile = () => {
                         </div>
 
                         {/* Review Content */}
-                        <div className="mb-3">
+                        <div className="mb-2">
                           <ReviewContent content={review.content} />
                         </div>
 
                         {/* Business Response */}
                         {review.businessResponse && (
-                          <div className="bg-gray-50 rounded p-2 mb-3 border-l-2 border-blue-400">
+                          <div className="bg-gray-50 rounded p-2 mb-2 border-l-2 border-blue-400">
                             <div className="flex items-center space-x-1 mb-1">
-                              <MessageSquare className="h-3 w-3 text-blue-600" />
+                              <MessageSquare className="h-2 w-2 text-blue-600" />
                               <span className="text-xs font-medium text-blue-900">Business Response</span>
                               <span className="text-xs text-gray-500">{review.businessResponseDate}</span>
                             </div>
@@ -381,14 +381,14 @@ const BusinessProfile = () => {
 
                         {/* Review History Button */}
                         {review.hasUpdates && (
-                          <div className="pt-2 border-t border-gray-100">
+                          <div className="pt-1 border-t border-gray-100">
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => toggleHistory(review.userId)}
-                              className="text-gray-600 hover:text-gray-900 h-6 text-xs px-2"
+                              className="text-gray-600 hover:text-gray-900 h-5 text-xs px-1"
                             >
-                              <History className="h-3 w-3 mr-1" />
+                              <History className="h-2 w-2 mr-1" />
                               {viewingHistory[review.userId] ? 'Hide' : 'View'} History ({review.totalUpdates + 1})
                             </Button>
                           </div>
@@ -396,11 +396,11 @@ const BusinessProfile = () => {
 
                         {/* Review History */}
                         {review.hasUpdates && viewingHistory[review.userId] && (
-                          <div className="mt-3 pt-3 border-t border-gray-200">
-                            <div className="text-xs font-medium text-gray-700 mb-2">
+                          <div className="mt-2 pt-2 border-t border-gray-200">
+                            <div className="text-xs font-medium text-gray-700 mb-1">
                               Review History
                             </div>
-                            <div className="space-y-2">
+                            <div className="space-y-1">
                               {review.allReviews.map((historicalReview: any, index: number) => {
                                 const isOriginal = !historicalReview.parent_review_id;
                                 const versionLabel = isOriginal ? 'Original' : `Update #${historicalReview.update_number}`;
@@ -410,7 +410,7 @@ const BusinessProfile = () => {
                                     <div className="flex items-center justify-between mb-1">
                                       <Badge 
                                         variant="outline" 
-                                        className={`text-xs px-1 py-0 ${
+                                        className={`text-xs px-1 py-0 h-4 ${
                                           isOriginal ? 'bg-green-50 text-green-700 border-green-200' : 'bg-blue-50 text-blue-700 border-blue-200'
                                         }`}
                                       >
@@ -434,7 +434,7 @@ const BusinessProfile = () => {
                                         </span>
                                       </div>
                                     </div>
-                                    <ReviewContent content={historicalReview.content} maxLength={80} />
+                                    <ReviewContent content={historicalReview.content} maxLength={60} />
                                   </div>
                                 );
                               })}
