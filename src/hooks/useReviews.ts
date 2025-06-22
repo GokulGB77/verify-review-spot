@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
@@ -40,7 +41,7 @@ export const useReviews = (businessId?: string) => {
       // Type assertion to handle the Supabase response properly
       return (data || []).map(review => ({
         ...review,
-        profiles: review.profiles && typeof review.profiles === 'object' && !('error' in review.profiles) 
+        profiles: review.profiles && typeof review.profiles === 'object' && review.profiles !== null && !('error' in review.profiles) 
           ? review.profiles 
           : null
       })) as Review[];
