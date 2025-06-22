@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -34,6 +35,7 @@ function App() {
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/businesses" element={<EntitiesDirectory />} />
                 <Route path="/business/:id" element={<EntityProfile />} />
+                <Route path="/business/:id/write-review" element={<WriteReview />} />
                 <Route path="/write-review" element={<WriteReview />} />
                 <Route path="/reviews" element={<Reviews />} />
                 <Route path="/my-reviews" element={<MyReviews />} />
