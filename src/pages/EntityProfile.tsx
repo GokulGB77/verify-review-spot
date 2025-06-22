@@ -1,10 +1,11 @@
+
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Star, MapPin, Globe, Phone, Mail, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Star, MapPin, Globe, Phone, Mail, CheckCircle, AlertTriangle, History } from 'lucide-react';
 import ReviewCard from '@/components/ReviewCard';
 import { useBusiness } from '@/hooks/useBusinesses';
 import { useReviews } from '@/hooks/useReviews';
@@ -15,6 +16,7 @@ const BusinessProfile = () => {
   const { id } = useParams();
   const { user } = useAuth();
   const [selectedTab, setSelectedTab] = useState('reviews');
+  const [viewingHistory, setViewingHistory] = useState<Record<string, boolean>>({});
   
   const { data: business, isLoading: businessLoading } = useBusiness(id || '');
   const { data: reviews = [], isLoading: reviewsLoading } = useReviews(id);
@@ -51,32 +53,82 @@ const BusinessProfile = () => {
     return validBadges.includes(badge) ? badge as any : 'Unverified User';
   };
 
-  // Transform reviews data for display
-  const transformedReviews = reviews.map(review => ({
-    id: review.id,
-    userName: 'Anonymous User', // We'll implement user profiles later
-    rating: review.rating,
-    content: review.content,
-    userBadge: getValidUserBadge(review.user_badge),
-    proofProvided: review.proof_provided || false,
-    upvotes: review.upvotes || 0,
-    downvotes: review.downvotes || 0,
-    date: new Date(review.created_at).toLocaleDateString(),
-    businessResponse: review.business_response,
-    businessResponseDate: review.business_response_date ? new Date(review.business_response_date).toLocaleDateString() : undefined
-  }));
+  // Group reviews by user and get the latest version for each user
+  const groupedReviews = reviews.reduce((acc, review) => {
+    const userId = review.user_id;
+    
+    if (!acc[userId]) {
+      acc[userId] = {
+        original: null,
+        updates: [],
+        allReviews: []
+      };
+    }
+    
+    acc[userId].allReviews.push(review);
+    
+    if (!review.parent_review_id) {
+      acc[userId].original = review;
+    } else {
+      acc[userId].updates.push(review);
+    }
+    
+    return acc;
+  }, {} as Record<string, any>);
 
-  // Calculate rating distribution
+  // Transform grouped reviews for display
+  const transformedReviews = Object.entries(groupedReviews).map(([userId, data]) => {
+    // Sort updates by update_number to get the latest
+    const sortedUpdates = data.updates.sort((a: any, b: any) => b.update_number - a.update_number);
+    const latestReview = sortedUpdates.length > 0 ? sortedUpdates[0] : data.original;
+    
+    if (!latestReview) return null;
+    
+    const hasUpdates = data.updates.length > 0;
+    const totalUpdates = data.updates.length;
+    
+    return {
+      id: latestReview.id,
+      userId: userId,
+      userName: 'Anonymous User',
+      rating: latestReview.rating,
+      content: latestReview.content,
+      userBadge: getValidUserBadge(latestReview.user_badge),
+      proofProvided: latestReview.proof_provided || false,
+      upvotes: latestReview.upvotes || 0,
+      downvotes: latestReview.downvotes || 0,
+      date: new Date(latestReview.created_at).toLocaleDateString(),
+      businessResponse: latestReview.business_response,
+      businessResponseDate: latestReview.business_response_date ? new Date(latestReview.business_response_date).toLocaleDateString() : undefined,
+      hasUpdates,
+      totalUpdates,
+      updateNumber: latestReview.update_number || 0,
+      allReviews: data.allReviews.sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+    };
+  }).filter(Boolean);
+
+  // Calculate rating distribution using all individual reviews
+  const allIndividualReviews = reviews.map(review => ({
+    rating: review.rating
+  }));
+  
   const ratingCounts = [1, 2, 3, 4, 5].map(rating => 
-    transformedReviews.filter(review => review.rating === rating).length
+    allIndividualReviews.filter(review => review.rating === rating).length
   );
   
-  const totalReviews = transformedReviews.length;
+  const totalReviews = allIndividualReviews.length;
   const ratingDistribution = ratingCounts.map((count, index) => ({
     stars: index + 1,
     count,
     percentage: totalReviews > 0 ? Math.round((count / totalReviews) * 100) : 0
   })).reverse();
+
+  const toggleHistory = (userId: string) => {
+    setViewingHistory(prev => ({
+      ...prev,
+      [userId]: !prev[userId]
+    }));
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -215,7 +267,75 @@ const BusinessProfile = () => {
                 ) : transformedReviews.length > 0 ? (
                   <div className="space-y-4">
                     {transformedReviews.map((review) => (
-                      <ReviewCard key={review.id} {...review} />
+                      <div key={review.userId} className="space-y-2">
+                        {/* Latest Review */}
+                        <div className="relative">
+                          <ReviewCard {...review} />
+                          
+                          {/* Update Indicator and History Button */}
+                          {review.hasUpdates && (
+                            <div className="absolute top-4 right-4 flex items-center space-x-2">
+                              <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200">
+                                Update #{review.updateNumber}
+                              </Badge>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => toggleHistory(review.userId)}
+                                className="h-8 px-2"
+                              >
+                                <History className="h-4 w-4 mr-1" />
+                                {viewingHistory[review.userId] ? 'Hide' : 'View'} History ({review.totalUpdates + 1})
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Review History */}
+                        {review.hasUpdates && viewingHistory[review.userId] && (
+                          <div className="ml-8 border-l-2 border-gray-200 pl-6 space-y-4">
+                            <div className="text-sm font-medium text-gray-700 mb-3">
+                              Review History (oldest to newest)
+                            </div>
+                            {review.allReviews.map((historicalReview: any, index: number) => {
+                              const transformedHistorical = {
+                                id: historicalReview.id,
+                                userName: 'Anonymous User',
+                                rating: historicalReview.rating,
+                                content: historicalReview.content,
+                                userBadge: getValidUserBadge(historicalReview.user_badge),
+                                proofProvided: historicalReview.proof_provided || false,
+                                upvotes: historicalReview.upvotes || 0,
+                                downvotes: historicalReview.downvotes || 0,
+                                date: new Date(historicalReview.created_at).toLocaleDateString(),
+                                businessResponse: historicalReview.business_response,
+                                businessResponseDate: historicalReview.business_response_date ? new Date(historicalReview.business_response_date).toLocaleDateString() : undefined
+                              };
+                              
+                              const isOriginal = !historicalReview.parent_review_id;
+                              const versionLabel = isOriginal ? 'Original Review' : `Update #${historicalReview.update_number}`;
+                              
+                              return (
+                                <div key={historicalReview.id} className="relative">
+                                  <div className="absolute -left-8 top-4 w-4 h-4 bg-gray-300 rounded-full border-2 border-white"></div>
+                                  <div className="bg-gray-50 p-3 rounded-lg">
+                                    <div className="flex items-center justify-between mb-2">
+                                      <Badge 
+                                        variant="outline" 
+                                        className={isOriginal ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}
+                                      >
+                                        {versionLabel}
+                                      </Badge>
+                                      <span className="text-xs text-gray-500">{transformedHistorical.date}</span>
+                                    </div>
+                                    <ReviewCard {...transformedHistorical} />
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
                     ))}
                   </div>
                 ) : (
