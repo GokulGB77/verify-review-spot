@@ -33,6 +33,26 @@ const Homepage = () => {
     return 'Anonymous Reviewer';
   };
 
+  // Helper function to get main badge
+  const getMainBadge = (review: any): 'Verified User' | 'Unverified User' => {
+    // First check profiles main_badge, then fallback to user_badge
+    const profileBadge = review.profiles?.main_badge;
+    const userBadge = review.user_badge;
+    
+    if (profileBadge === 'Verified User') return 'Verified User';
+    if (userBadge === 'Verified User') return 'Verified User';
+    return 'Unverified User';
+  };
+
+  // Helper function to get review-specific badge
+  const getReviewSpecificBadge = (review: any): 'Verified Employee' | 'Verified Student' | null => {
+    const specificBadge = review.review_specific_badge;
+    if (specificBadge === 'Verified Employee' || specificBadge === 'Verified Student') {
+      return specificBadge;
+    }
+    return null;
+  };
+
   // Create a map of business ID to business details for easy lookup
   const businessMap = businesses.reduce((acc, business) => {
     acc[business.id] = business;
@@ -43,7 +63,8 @@ const Homepage = () => {
     let filtered = allReviews.map(review => {
       const business = businessMap[review.business_id];
       const displayName = getDisplayName(review);
-      const mainBadge = review.profiles?.main_badge || 'Unverified User';
+      const mainBadge = getMainBadge(review);
+      const reviewSpecificBadge = getReviewSpecificBadge(review);
       
       return {
         id: review.id,
@@ -52,8 +73,8 @@ const Homepage = () => {
         businessCategory: business?.category || 'Unknown Category',
         businessLocation: business?.location || 'Location not specified',
         userName: displayName,
-        mainBadge: mainBadge as 'Verified User' | 'Unverified User',
-        reviewSpecificBadge: review.review_specific_badge as 'Verified Employee' | 'Verified Student' | null,
+        mainBadge: mainBadge,
+        reviewSpecificBadge: reviewSpecificBadge,
         rating: review.rating,
         date: new Date(review.created_at).toLocaleDateString(),
         title: `Review for ${business?.name || 'Business'}`,

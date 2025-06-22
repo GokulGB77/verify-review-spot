@@ -37,7 +37,18 @@ export const useReviews = (businessId?: string) => {
       const { data, error } = await query;
       
       if (error) throw error;
-      return data as Review[];
+      
+      // Transform the data to ensure type safety
+      return (data || []).map(item => ({
+        ...item,
+        profiles: item.profiles ? {
+          username: null, // Not selected in query
+          full_name: item.profiles.full_name,
+          pseudonym: item.profiles.pseudonym,
+          display_name_preference: item.profiles.display_name_preference,
+          main_badge: item.profiles.main_badge,
+        } : null
+      })) as Review[];
     },
   });
 };

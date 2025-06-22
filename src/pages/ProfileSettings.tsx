@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -13,16 +12,16 @@ interface Profile {
   id: string;
   full_name: string | null;
   email: string | null;
-  pan_number: string | null;
-  mobile: string | null;
-  full_name_pan: string | null;
-  phone: string | null;
-  is_verified: boolean | null;
-  pan_image_url: string | null;
   pseudonym: string | null;
-  pseudonym_set: boolean | null;
-  rejection_reason?: string | null;
   display_name_preference: string | null;
+  is_verified: boolean | null;
+  main_badge: string | null;
+  pan_number: string | null;
+  pan_image_url: string | null;
+  mobile: string | null;
+  phone: string | null;
+  full_name_pan: string | null;
+  rejection_reason: string | null;
 }
 
 const ProfileSettings = () => {

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -45,12 +44,24 @@ const BusinessProfile = () => {
     );
   }
 
-  // Helper function to ensure userBadge is a valid type
-  const getValidUserBadge = (badge: string | null): 'Verified Graduate' | 'Verified Employee' | 'Verified User' | 'Unverified User' => {
-    if (!badge) return 'Unverified User';
+  // Helper function to get main badge from profiles or review
+  const getMainBadge = (review: any): 'Verified User' | 'Unverified User' => {
+    // First check profiles main_badge, then fallback to user_badge
+    const profileBadge = review.profiles?.main_badge;
+    const userBadge = review.user_badge;
     
-    const validBadges = ['Verified Graduate', 'Verified Employee', 'Verified User', 'Unverified User'];
-    return validBadges.includes(badge) ? badge as any : 'Unverified User';
+    if (profileBadge === 'Verified User') return 'Verified User';
+    if (userBadge === 'Verified User') return 'Verified User';
+    return 'Unverified User';
+  };
+
+  // Helper function to get review-specific badge
+  const getReviewSpecificBadge = (review: any): 'Verified Employee' | 'Verified Student' | null => {
+    const specificBadge = review.review_specific_badge;
+    if (specificBadge === 'Verified Employee' || specificBadge === 'Verified Student') {
+      return specificBadge;
+    }
+    return null;
   };
 
   // Group reviews by user and get the latest version for each user
@@ -93,7 +104,8 @@ const BusinessProfile = () => {
       userName: 'Anonymous User',
       rating: latestReview.rating,
       content: latestReview.content,
-      userBadge: getValidUserBadge(latestReview.user_badge),
+      mainBadge: getMainBadge(latestReview),
+      reviewSpecificBadge: getReviewSpecificBadge(latestReview),
       proofProvided: latestReview.proof_provided || false,
       upvotes: latestReview.upvotes || 0,
       downvotes: latestReview.downvotes || 0,
@@ -103,7 +115,8 @@ const BusinessProfile = () => {
       hasUpdates,
       totalUpdates,
       updateNumber: latestReview.update_number || 0,
-      allReviews: data.allReviews.sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+      allReviews: data.allReviews.sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()),
+      pseudonym: latestReview.profiles?.pseudonym
     };
   }).filter(Boolean);
 
@@ -303,13 +316,15 @@ const BusinessProfile = () => {
                                 userName: 'Anonymous User',
                                 rating: historicalReview.rating,
                                 content: historicalReview.content,
-                                userBadge: getValidUserBadge(historicalReview.user_badge),
+                                mainBadge: getMainBadge(historicalReview),
+                                reviewSpecificBadge: getReviewSpecificBadge(historicalReview),
                                 proofProvided: historicalReview.proof_provided || false,
                                 upvotes: historicalReview.upvotes || 0,
                                 downvotes: historicalReview.downvotes || 0,
                                 date: new Date(historicalReview.created_at).toLocaleDateString(),
                                 businessResponse: historicalReview.business_response,
-                                businessResponseDate: historicalReview.business_response_date ? new Date(historicalReview.business_response_date).toLocaleDateString() : undefined
+                                businessResponseDate: historicalReview.business_response_date ? new Date(historicalReview.business_response_date).toLocaleDateString() : undefined,
+                                pseudonym: historicalReview.profiles?.pseudonym
                               };
                               
                               const isOriginal = !historicalReview.parent_review_id;
@@ -422,8 +437,8 @@ const BusinessProfile = () => {
                     <div className="flex justify-between">
                       <span>Verified Reviews</span>
                       <span className="font-semibold">
-                        {transformedReviews.filter(r => r.userBadge !== 'Unverified User').length} 
-                        ({transformedReviews.length > 0 ? Math.round((transformedReviews.filter(r => r.userBadge !== 'Unverified User').length / transformedReviews.length) * 100) : 0}%)
+                        {transformedReviews.filter(r => r.mainBadge !== 'Unverified User').length} 
+                        ({transformedReviews.length > 0 ? Math.round((transformedReviews.filter(r => r.mainBadge !== 'Unverified User').length / transformedReviews.length) * 100) : 0}%)
                       </span>
                     </div>
                     <div className="flex justify-between">
