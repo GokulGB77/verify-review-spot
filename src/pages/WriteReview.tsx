@@ -10,7 +10,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { toast } from "@/hooks/use-toast";
@@ -24,7 +23,6 @@ const formSchema = z.object({
   business_id: z.string().min(1, "Please select a business to review"),
   rating: z.number().min(1, "Please provide a rating").max(5),
   content: z.string().min(10, "Review must be at least 10 characters long").max(500),
-  proof_provided: z.boolean().default(false),
   user_badge: z.enum(['Verified Graduate', 'Verified Employee']).optional()
 });
 
@@ -53,7 +51,6 @@ const WriteReview = () => {
       business_id: '',
       rating: 0,
       content: '',
-      proof_provided: false,
       user_badge: undefined
     },
   });
@@ -84,7 +81,6 @@ const WriteReview = () => {
     }
   }, [originalReview, form]);
 
-  // Filter businesses based on search query
   const filteredBusinesses = businesses.filter(business => {
     if (!searchQuery.trim()) return false;
     
@@ -127,13 +123,11 @@ const WriteReview = () => {
       }
       
       setUploadedFile(file);
-      form.setValue('proof_provided', true);
     }
   };
 
   const removeUploadedFile = () => {
     setUploadedFile(null);
-    form.setValue('proof_provided', false);
   };
 
   const handleSubmitAttempt = (data: FormData) => {
@@ -152,7 +146,6 @@ const WriteReview = () => {
     
     const formData = form.getValues();
     formData.user_badge = undefined; // Reset to default verification status
-    formData.proof_provided = false;
     onSubmit(formData);
   };
 
@@ -170,7 +163,7 @@ const WriteReview = () => {
     try {
       let proofUrl = null;
       
-      if (uploadedFile && data.proof_provided) {
+      if (uploadedFile && data.user_badge) {
         const fileExt = uploadedFile.name.split('.').pop();
         const fileName = `${user.id}/${Date.now()}.${fileExt}`;
         
@@ -197,9 +190,8 @@ const WriteReview = () => {
         business_id: data.business_id,
         rating: data.rating,
         content: data.content.trim(),
-        proof_provided: data.proof_provided,
-        user_badge: data.user_badge, // This will be undefined for basic verification
-        review_specific_badge: data.user_badge, // Set as review-specific badge instead
+        user_badge: data.user_badge,
+        review_specific_badge: data.user_badge,
         proof_url: proofUrl,
         is_update: isUpdate
       });
@@ -593,28 +585,6 @@ const WriteReview = () => {
                       </div>
                     </div>
                   )}
-
-                  {/* Proof Provided Checkbox */}
-                  <FormField
-                    control={form.control}
-                    name="proof_provided"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                            disabled={requiresProof && !uploadedFile}
-                          />
-                        </FormControl>
-                        <div className="space-y-1 leading-none">
-                          <FormLabel>
-                            I can provide proof of my experience (certificates, enrollment records, etc.)
-                          </FormLabel>
-                        </div>
-                      </FormItem>
-                    )}
-                  />
 
                   {/* Submit Button */}
                   <div className="flex justify-end space-x-4">

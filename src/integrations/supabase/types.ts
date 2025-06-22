@@ -146,7 +146,6 @@ export type Database = {
           id: string
           is_update: boolean | null
           parent_review_id: string | null
-          proof_provided: boolean | null
           proof_rejection_reason: string | null
           proof_url: string | null
           proof_verified: boolean | null
@@ -170,7 +169,6 @@ export type Database = {
           id?: string
           is_update?: boolean | null
           parent_review_id?: string | null
-          proof_provided?: boolean | null
           proof_rejection_reason?: string | null
           proof_url?: string | null
           proof_verified?: boolean | null
@@ -194,7 +192,6 @@ export type Database = {
           id?: string
           is_update?: boolean | null
           parent_review_id?: string | null
-          proof_provided?: boolean | null
           proof_rejection_reason?: string | null
           proof_url?: string | null
           proof_verified?: boolean | null

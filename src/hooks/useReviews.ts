@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
@@ -154,7 +155,6 @@ export const useCreateReview = () => {
       content: string;
       user_badge?: string;
       review_specific_badge?: string;
-      proof_provided?: boolean;
       proof_url?: string;
       is_update?: boolean;
     }) => {
@@ -202,7 +202,6 @@ export const useCreateReview = () => {
             update_number: nextUpdateNumber,
             user_badge: 'Unverified User', // Always set to basic for consistency
             review_specific_badge: review.review_specific_badge || null,
-            proof_provided: review.proof_provided || false,
             proof_url: review.proof_url || null
           }])
           .select()
@@ -224,7 +223,6 @@ export const useCreateReview = () => {
             update_number: 0,
             user_badge: 'Unverified User', // Always set to basic for consistency
             review_specific_badge: review.review_specific_badge || null,
-            proof_provided: review.proof_provided || false,
             proof_url: review.proof_url || null
           }])
           .select()
