@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
@@ -39,12 +38,15 @@ export const useReviews = (businessId?: string) => {
       if (error) throw error;
       
       // Type assertion to handle the Supabase response properly
-      return (data || []).map(review => ({
-        ...review,
-        profiles: review.profiles && typeof review.profiles === 'object' && review.profiles !== null && !('error' in review.profiles) 
-          ? review.profiles 
-          : null
-      })) as Review[];
+      return (data || []).map(review => {
+        const profiles = review.profiles;
+        return {
+          ...review,
+          profiles: profiles && typeof profiles === 'object' && profiles !== null && !('error' in profiles) 
+            ? profiles 
+            : null
+        };
+      }) as Review[];
     },
   });
 };
