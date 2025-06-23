@@ -16,6 +16,7 @@ import SearchResults from "@/pages/SearchResults";
 import EntityDashboard from "@/pages/EntityDashboard";
 import SuperAdminDashboard from "@/pages/SuperAdminDashboard";
 import ProfileSettings from "@/pages/ProfileSettings";
+import EntityRegistration from "@/pages/EntityRegistration";
 import Legal from "./pages/Legal";
 import NotFound from "@/pages/NotFound";
 import "./App.css";
@@ -43,6 +44,7 @@ function App() {
                 <Route path="/dashboard" element={<EntityDashboard />} />
                 <Route path="/admin" element={<SuperAdminDashboard />} />
                 <Route path="/profile" element={<ProfileSettings />} />
+                <Route path="/register-entity" element={<EntityRegistration />} />
                 <Route path="/legal" element={<Legal />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>

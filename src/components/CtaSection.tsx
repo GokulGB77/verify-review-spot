@@ -41,8 +41,9 @@ const CTASection = () => {
             size="lg"
             variant="outline"
             className="bg-transparent border-white text-white hover:bg-white hover:text-blue-600"
+            asChild
           >
-            Register Your Entity
+            <Link to="/register-entity">Register Your Entity</Link>
           </Button>
         </div>
       </div>

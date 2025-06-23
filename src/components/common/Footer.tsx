@@ -1,3 +1,4 @@
+
 import { Shield } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -43,7 +44,7 @@ const Footer = () => {
           <h3 className="font-semibold mb-4">For Entities</h3>
           <ul className="space-y-2 text-gray-400">
             <li>
-              <Link to="/business/register" className="hover:text-white">
+              <Link to="/register-entity" className="hover:text-white">
                 Register Entity
               </Link>
             </li>
