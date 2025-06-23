@@ -1,20 +1,20 @@
+
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from 'react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './contexts/AuthContext';
-import Header from './components/Header';
-import Footer from './components/Footer';
-import Home from './pages/Home';
-import About from './pages/About';
-import Contact from './pages/Contact';
-import Entities from './pages/Entities';
-import EntityDetails from './pages/EntityDetails';
+import Header from './components/common/Header';
+import Footer from './components/common/Footer';
+import Homepage from './pages/Homepage';
+import EntitiesDirectory from './pages/EntitiesDirectory';
+import EntityProfile from './pages/EntityProfile';
 import Auth from './pages/Auth';
-import Profile from './pages/Profile';
+import ProfileSettings from './pages/ProfileSettings';
 import EntityRegistration from './pages/EntityRegistration';
 import EntityRegistrationSuccess from './pages/EntityRegistrationSuccess';
-import AdminDashboard from './pages/AdminDashboard';
+import SuperAdminDashboard from './pages/SuperAdminDashboard';
 import { useAuth } from '@/contexts/AuthContext';
+import { Toaster } from "@/components/ui/sonner"
 
 const queryClient = new QueryClient();
 
@@ -27,20 +27,18 @@ function App() {
             <Header />
             <main>
               <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/entities" element={<Entities />} />
-                <Route path="/entities/:id" element={<EntityDetails />} />
+                <Route path="/" element={<Homepage />} />
+                <Route path="/entities" element={<EntitiesDirectory />} />
+                <Route path="/entities/:id" element={<EntityProfile />} />
                 <Route path="/auth" element={<Auth />} />
-                <Route path="/profile" element={<Profile />} />
+                <Route path="/profile" element={<ProfileSettings />} />
                 <Route path="/register-entity" element={<EntityRegistration />} />
                 <Route path="/register-entity/success" element={<EntityRegistrationSuccess />} />
                 <Route
                   path="/admin/*"
                   element={
                     <AdminRoute>
-                      <AdminDashboard />
+                      <SuperAdminDashboard />
                     </AdminRoute>
                   }
                 />
@@ -99,7 +97,5 @@ async function getRolesForUser(userId: string): Promise<string[]> {
     }, 500);
   });
 }
-
-import { Toaster } from "@/components/ui/sonner"
 
 export default App;
