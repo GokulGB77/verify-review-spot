@@ -6,13 +6,16 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { Building2, Globe, MapPin, Phone, Mail, FileText, CheckCircle } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { useEntityRegistrations, EntityRegistrationData } from "@/hooks/useEntityRegistrations";
+import { Link } from "react-router-dom";
 
 const EntityRegistration = () => {
-  const { toast } = useToast();
-  const [formData, setFormData] = useState({
+  const { user } = useAuth();
+  const { submitRegistration } = useEntityRegistrations();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState<EntityRegistrationData>({
     entityName: "",
     category: "",
     website: "",
@@ -46,7 +49,7 @@ const EntityRegistration = () => {
     "Other"
   ];
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: keyof EntityRegistrationData, value: string) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -58,40 +61,60 @@ const EntityRegistration = () => {
     
     // Basic validation
     if (!formData.entityName || !formData.category || !formData.contactEmail) {
-      toast({
-        title: "Missing Information",
-        description: "Please fill in all required fields.",
-        variant: "destructive",
-      });
       return;
     }
 
-    // Here you would typically send the data to your backend
-    console.log("Entity registration data:", formData);
-    
-    toast({
-      title: "Registration Submitted",
-      description: "Your entity registration has been submitted for review. We'll contact you within 2-3 business days.",
-    });
+    if (!user) {
+      return;
+    }
 
-    // Reset form
-    setFormData({
-      entityName: "",
-      category: "",
-      website: "",
-      description: "",
-      contactEmail: "",
-      contactPhone: "",
-      address: "",
-      city: "",
-      state: "",
-      zipCode: "",
-      registrationNumber: "",
-      taxId: "",
-      ownerName: "",
-      ownerEmail: "",
-    });
+    setIsSubmitting(true);
+    const result = await submitRegistration(formData);
+    
+    if (result.success) {
+      // Reset form
+      setFormData({
+        entityName: "",
+        category: "",
+        website: "",
+        description: "",
+        contactEmail: "",
+        contactPhone: "",
+        address: "",
+        city: "",
+        state: "",
+        zipCode: "",
+        registrationNumber: "",
+        taxId: "",
+        ownerName: "",
+        ownerEmail: "",
+      });
+    }
+    
+    setIsSubmitting(false);
   };
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-2xl mx-auto text-center">
+          <Card>
+            <CardHeader>
+              <CardTitle>Sign In Required</CardTitle>
+              <CardDescription>
+                You need to be signed in to register an entity.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button asChild>
+                <Link to="/auth">Sign In</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -352,8 +375,13 @@ const EntityRegistration = () => {
 
               {/* Submit Button */}
               <div className="pt-6 border-t border-gray-200">
-                <Button type="submit" size="lg" className="w-full md:w-auto">
-                  Submit Registration
+                <Button 
+                  type="submit" 
+                  size="lg" 
+                  className="w-full md:w-auto"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Submitting..." : "Submit Registration"}
                 </Button>
                 <p className="text-sm text-gray-500 mt-2">
                   By submitting this form, you agree to our Terms of Service and Privacy Policy.

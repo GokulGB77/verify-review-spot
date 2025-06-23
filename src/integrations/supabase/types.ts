@@ -69,6 +69,78 @@ export type Database = {
         }
         Relationships: []
       }
+      entity_registrations: {
+        Row: {
+          address: string | null
+          category: string
+          city: string | null
+          contact_email: string
+          contact_phone: string | null
+          created_at: string
+          description: string | null
+          entity_name: string
+          id: string
+          owner_email: string | null
+          owner_name: string | null
+          registration_number: string | null
+          rejection_reason: string | null
+          reviewed_by: string | null
+          state: string | null
+          status: string
+          submitted_by: string | null
+          tax_id: string | null
+          updated_at: string
+          website: string | null
+          zip_code: string | null
+        }
+        Insert: {
+          address?: string | null
+          category: string
+          city?: string | null
+          contact_email: string
+          contact_phone?: string | null
+          created_at?: string
+          description?: string | null
+          entity_name: string
+          id?: string
+          owner_email?: string | null
+          owner_name?: string | null
+          registration_number?: string | null
+          rejection_reason?: string | null
+          reviewed_by?: string | null
+          state?: string | null
+          status?: string
+          submitted_by?: string | null
+          tax_id?: string | null
+          updated_at?: string
+          website?: string | null
+          zip_code?: string | null
+        }
+        Update: {
+          address?: string | null
+          category?: string
+          city?: string | null
+          contact_email?: string
+          contact_phone?: string | null
+          created_at?: string
+          description?: string | null
+          entity_name?: string
+          id?: string
+          owner_email?: string | null
+          owner_name?: string | null
+          registration_number?: string | null
+          rejection_reason?: string | null
+          reviewed_by?: string | null
+          state?: string | null
+          status?: string
+          submitted_by?: string | null
+          tax_id?: string | null
+          updated_at?: string
+          website?: string | null
+          zip_code?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           aadhaar_mobile: string | null

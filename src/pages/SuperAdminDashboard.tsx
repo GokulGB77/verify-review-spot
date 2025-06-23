@@ -11,11 +11,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Users, Building2, MessageSquare, TrendingUp, Search, Filter, Shield, FileCheck, UserCheck, BarChart3 } from 'lucide-react';
+import { Users, Building2, MessageSquare, TrendingUp, Search, Filter, Shield, FileCheck, UserCheck, BarChart3, ClipboardList } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import RoleManagement from '@/components/RoleManagement';
 import VerificationManagement from '@/components/VerificationManagement';
 import ProofVerificationManagement from '@/components/ProofVerificationManagement';
+import EntityRegistrationManagement from '@/components/EntityRegistrationManagement';
 
 const SuperAdminDashboard = () => {
   const { user } = useAuth();
@@ -78,6 +79,11 @@ const SuperAdminDashboard = () => {
       title: "Reviews",
       icon: MessageSquare,
       value: "reviews"
+    },
+    {
+      title: "Entity Registrations",
+      icon: ClipboardList,
+      value: "entity-registrations"
     },
     {
       title: "Proof Verification",
@@ -224,6 +230,9 @@ const SuperAdminDashboard = () => {
             </CardContent>
           </Card>
         );
+
+      case 'entity-registrations':
+        return <EntityRegistrationManagement />;
 
       case 'proof-verification':
         return <ProofVerificationManagement />;
