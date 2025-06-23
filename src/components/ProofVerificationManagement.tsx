@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -8,7 +9,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Star, FileText, Check, X, Eye, ExternalLink } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Star, FileText, Check, X, Eye, ExternalLink, Filter } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
@@ -36,6 +38,7 @@ const ProofVerificationManagement = () => {
   const queryClient = useQueryClient();
   const [selectedReview, setSelectedReview] = useState<ReviewWithProof | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
 
   // Fetch reviews with submitted proofs - now filter by proof_url existence
   const { data: reviewsWithProof, isLoading } = useQuery({
@@ -55,6 +58,21 @@ const ProofVerificationManagement = () => {
       if (error) throw error;
       return data as ReviewWithProof[];
     },
+  });
+
+  // Filter reviews based on status
+  const filteredReviews = reviewsWithProof?.filter(review => {
+    if (statusFilter === 'all') return true;
+    
+    if (statusFilter === 'pending') {
+      return review.proof_verified === null;
+    } else if (statusFilter === 'approved') {
+      return review.proof_verified === true;
+    } else if (statusFilter === 'rejected') {
+      return review.proof_verified === false;
+    }
+    
+    return true;
   });
 
   const verifyProofMutation = useMutation({
@@ -193,11 +211,31 @@ const ProofVerificationManagement = () => {
     <Card>
       <CardHeader>
         <CardTitle>Proof Verification Management</CardTitle>
+        <div className="flex items-center gap-4 mt-4">
+          <div className="flex items-center gap-2">
+            <Filter className="h-4 w-4 text-gray-500" />
+            <Label htmlFor="status-filter">Filter by Status:</Label>
+          </div>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-48">
+              <SelectValue placeholder="Select status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="approved">Approved</SelectItem>
+              <SelectItem value="rejected">Rejected</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </CardHeader>
       <CardContent>
-        {!reviewsWithProof || reviewsWithProof.length === 0 ? (
+        {!filteredReviews || filteredReviews.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
-            No proof submissions found.
+            {statusFilter === 'all' 
+              ? 'No proof submissions found.'
+              : `No ${statusFilter} proof submissions found.`
+            }
           </div>
         ) : (
           <Table>
@@ -212,7 +250,7 @@ const ProofVerificationManagement = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {reviewsWithProof.map((review) => {
+              {filteredReviews.map((review) => {
                 const { status, color } = getVerificationStatus(review);
                 return (
                   <TableRow key={review.id}>
