@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,11 +8,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Building2, Globe, MapPin, Phone, Mail, FileText, CheckCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEntityRegistrations, EntityRegistrationData } from "@/hooks/useEntityRegistrations";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const EntityRegistration = () => {
   const { user } = useAuth();
   const { submitRegistration } = useEntityRegistrations();
+  const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<EntityRegistrationData>({
     entityName: "",
@@ -72,23 +72,8 @@ const EntityRegistration = () => {
     const result = await submitRegistration(formData);
     
     if (result.success) {
-      // Reset form
-      setFormData({
-        entityName: "",
-        category: "",
-        website: "",
-        description: "",
-        contactEmail: "",
-        contactPhone: "",
-        address: "",
-        city: "",
-        state: "",
-        zipCode: "",
-        registrationNumber: "",
-        taxId: "",
-        ownerName: "",
-        ownerEmail: "",
-      });
+      // Redirect to success page instead of resetting form
+      navigate('/register-entity/success');
     }
     
     setIsSubmitting(false);

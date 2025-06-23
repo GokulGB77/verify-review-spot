@@ -1,61 +1,105 @@
-
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "@/components/ui/toaster";
-import { AuthProvider } from "@/contexts/AuthContext";
-import Header from "@/components/common/Header";
-import Footer from "@/components/common/Footer";
-import Homepage from "@/pages/Homepage";
-import Auth from "@/pages/Auth";
-import EntitiesDirectory from "@/pages/EntitiesDirectory";
-import EntityProfile from "@/pages/EntityProfile";
-import WriteReview from "@/pages/WriteReview";
-import Reviews from "@/pages/Reviews";
-import MyReviews from "@/pages/MyReviews";
-import SearchResults from "@/pages/SearchResults";
-import EntityDashboard from "@/pages/EntityDashboard";
-import SuperAdminDashboard from "@/pages/SuperAdminDashboard";
-import ProfileSettings from "@/pages/ProfileSettings";
-import EntityRegistration from "@/pages/EntityRegistration";
-import Legal from "./pages/Legal";
-import NotFound from "@/pages/NotFound";
-import "./App.css";
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from 'react-query';
+import { AuthProvider } from './contexts/AuthContext';
+import Header from './components/Header';
+import Footer from './components/Footer';
+import Home from './pages/Home';
+import About from './pages/About';
+import Contact from './pages/Contact';
+import Entities from './pages/Entities';
+import EntityDetails from './pages/EntityDetails';
+import Auth from './pages/Auth';
+import Profile from './pages/Profile';
+import EntityRegistration from './pages/EntityRegistration';
+import EntityRegistrationSuccess from './pages/EntityRegistrationSuccess';
+import AdminDashboard from './pages/AdminDashboard';
+import { useAuth } from '@/contexts/AuthContext';
 
 const queryClient = new QueryClient();
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <Router>
-          <div className="min-h-screen bg-gray-50 flex flex-col">
+      <BrowserRouter>
+        <AuthProvider>
+          <div className="min-h-screen bg-background">
             <Header />
-            <main className="flex-1">
+            <main>
               <Routes>
-                <Route path="/" element={<Homepage />} />
+                <Route path="/" element={<Home />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/entities" element={<Entities />} />
+                <Route path="/entities/:id" element={<EntityDetails />} />
                 <Route path="/auth" element={<Auth />} />
-                <Route path="/businesses" element={<EntitiesDirectory />} />
-                <Route path="/business/:id" element={<EntityProfile />} />
-                <Route path="/business/:id/write-review" element={<WriteReview />} />
-                <Route path="/write-review" element={<WriteReview />} />
-                <Route path="/reviews" element={<Reviews />} />
-                <Route path="/my-reviews" element={<MyReviews />} />
-                <Route path="/search" element={<SearchResults />} />
-                <Route path="/dashboard" element={<EntityDashboard />} />
-                <Route path="/admin" element={<SuperAdminDashboard />} />
-                <Route path="/profile" element={<ProfileSettings />} />
+                <Route path="/profile" element={<Profile />} />
                 <Route path="/register-entity" element={<EntityRegistration />} />
-                <Route path="/legal" element={<Legal />} />
-                <Route path="*" element={<NotFound />} />
+                <Route path="/register-entity/success" element={<EntityRegistrationSuccess />} />
+                <Route
+                  path="/admin/*"
+                  element={
+                    <AdminRoute>
+                      <AdminDashboard />
+                    </AdminRoute>
+                  }
+                />
               </Routes>
             </main>
             <Footer />
           </div>
           <Toaster />
-        </Router>
-      </AuthProvider>
+        </AuthProvider>
+      </BrowserRouter>
     </QueryClientProvider>
   );
 }
+
+function AdminRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      if (user) {
+        // Assuming you have a function to fetch user roles
+        const roles = await getRolesForUser(user.id);
+        setIsAdmin(roles.includes('super_admin'));
+      } else {
+        setIsAdmin(false);
+      }
+    };
+
+    checkAdminStatus();
+  }, [user, loading]);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (isAdmin === null) {
+    return <div>Checking admin status...</div>;
+  }
+
+  if (!user || !isAdmin) {
+    return <Navigate to="/auth" replace />;
+  }
+
+  return children;
+}
+
+async function getRolesForUser(userId: string): Promise<string[]> {
+  // Replace with your actual implementation to fetch user roles
+  // This is just a placeholder
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      // Simulate fetching roles from a database or API
+      const roles = userId === 'someAdminUserId' ? ['super_admin'] : [];
+      resolve(roles);
+    }, 500);
+  });
+}
+
+import { Toaster } from "@/components/ui/sonner"
 
 export default App;
