@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -8,6 +7,7 @@ import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileTabs from "@/components/profile/ProfileTabs";
 import BasicDetailsForm from "@/components/profile/BasicDetailsForm";
 import PANVerificationForm from "@/components/profile/PANVerificationForm";
+import AadhaarVerificationForm from "@/components/profile/AadhaarVerificationForm";
 
 interface Profile {
   id: string;
@@ -24,6 +24,8 @@ interface Profile {
   phone: string | null;
   full_name_pan: string | null;
   rejection_reason: string | null;
+  aadhaar_number?: string | null;
+  aadhaar_mobile?: string | null;
 }
 
 const ProfileSettings = () => {
@@ -39,12 +41,21 @@ const ProfileSettings = () => {
     mobile: "",
     pseudonym: "",
     display_name_preference: "pseudonym",
+    aadhaar_number: "",
+    aadhaar_mobile: "",
   });
   const [panConsent, setPanConsent] = useState(false);
   const [panFile, setPanFile] = useState<File | null>(null);
   const [panFileName, setPanFileName] = useState<string>("");
   const [activeTab, setActiveTab] = useState("details");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // New Aadhaar-related state
+  const [aadhaarConsent, setAadhaarConsent] = useState(false);
+  const [aadhaarFiles, setAadhaarFiles] = useState<{front: File | null; back: File | null}>({
+    front: null,
+    back: null
+  });
 
   useEffect(() => {
     if (user) {
@@ -78,6 +89,8 @@ const ProfileSettings = () => {
         full_name_pan: data.full_name_pan || "",
         pseudonym: data.pseudonym || "",
         display_name_preference: data.display_name_preference || "pseudonym",
+        aadhaar_number: data.aadhaar_number || "",
+        aadhaar_mobile: data.aadhaar_mobile || "",
       });
     } catch (error) {
       console.error("Error fetching profile:", error);
@@ -437,6 +450,162 @@ const ProfileSettings = () => {
     }
   };
 
+  const handleVerifyAadhaar = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!user) {
+      console.error("No user found");
+      return;
+    }
+
+    // Validate required fields
+    if (!formData.aadhaar_number.replace(/\s/g, '').trim() || formData.aadhaar_number.replace(/\s/g, '').length !== 12) {
+      toast({
+        title: "Invalid Aadhaar Number",
+        description: "Please enter a valid 12-digit Aadhaar number.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.aadhaar_mobile.trim() || formData.aadhaar_mobile.length !== 10) {
+      toast({
+        title: "Invalid Mobile Number",
+        description: "Please enter a valid 10-digit mobile number.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check consent
+    if (!aadhaarConsent) {
+      toast({
+        title: "Consent Required",
+        description: "Please agree to the Aadhaar verification consent to continue.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    console.log("Starting Aadhaar verification");
+    setLoading(true);
+
+    try {
+      // Upload Aadhaar images if files are provided
+      let aadhaarImageUrls = { front: null, back: null };
+      
+      if (aadhaarFiles.front || aadhaarFiles.back) {
+        for (const [side, file] of Object.entries(aadhaarFiles)) {
+          if (file) {
+            console.log(`Uploading Aadhaar ${side} image:`, file.name);
+            
+            const fileExt = file.name.split(".").pop();
+            const fileName = `${user.id}-aadhaar-${side}-${Date.now()}.${fileExt}`;
+            
+            const { error: uploadError, data: fileData } = await supabase.storage
+              .from("verification-docs")
+              .upload(fileName, file, {
+                upsert: true,
+                cacheControl: "3600",
+              });
+
+            if (uploadError) {
+              console.error(`Aadhaar ${side} upload error:`, uploadError);
+              toast({
+                title: "Upload Failed",
+                description: `Failed to upload Aadhaar ${side} image. Please try again.`,
+                variant: "destructive",
+              });
+              return;
+            } else {
+              const { data } = supabase.storage
+                .from("verification-docs")
+                .getPublicUrl(fileName);
+
+              if (data) {
+                aadhaarImageUrls[side as keyof typeof aadhaarImageUrls] = data.publicUrl;
+                console.log(`Aadhaar ${side} uploaded successfully:`, data.publicUrl);
+              }
+            }
+          }
+        }
+      }
+
+      // Check if Aadhaar number already exists
+      const cleanAadhaarNumber = formData.aadhaar_number.replace(/\s/g, '');
+      const { data: existingAadhaar, error: checkError } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("aadhaar_number", cleanAadhaarNumber)
+        .neq("id", user.id)
+        .maybeSingle();
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        console.error("Aadhaar check error:", checkError);
+        throw checkError;
+      }
+
+      if (existingAadhaar) {
+        toast({
+          title: "Aadhaar Already Registered",
+          description: "This Aadhaar number is already associated with another account.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Update profile with Aadhaar verification data
+      const verificationData = {
+        aadhaar_number: cleanAadhaarNumber,
+        aadhaar_mobile: formData.aadhaar_mobile.trim(),
+        // Note: You can add image URLs here when backend is ready
+        // aadhaar_front_url: aadhaarImageUrls.front,
+        // aadhaar_back_url: aadhaarImageUrls.back,
+      };
+
+      console.log("Updating Aadhaar verification data:", verificationData);
+
+      const { error } = await supabase
+        .from("profiles")
+        .update(verificationData)
+        .eq("id", user.id);
+
+      if (error) {
+        console.error("Aadhaar verification update error:", error);
+        throw error;
+      }
+
+      console.log("Aadhaar verification data submitted successfully");
+      
+      // Clear form data
+      setFormData(prev => ({
+        ...prev,
+        aadhaar_number: "",
+        aadhaar_mobile: "",
+      }));
+      setAadhaarFiles({ front: null, back: null });
+      setAadhaarConsent(false);
+
+      toast({
+        title: "Verification Submitted",
+        description: "Your Aadhaar verification details have been submitted successfully. Verification is under process.",
+      });
+
+      // Refresh profile data
+      await fetchProfile();
+    } catch (error) {
+      console.error("Error submitting Aadhaar verification:", error);
+      toast({
+        title: "Submission Failed",
+        description: "Failed to submit Aadhaar verification details. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      console.log("Setting loading to false");
+      setLoading(false);
+    }
+  };
+
   if (!user) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -492,6 +661,19 @@ const ProfileSettings = () => {
                 panFile={panFile}
                 panFileName={panFileName}
                 handlePanFileUpload={handlePanFileUpload}
+                profile={profile}
+              />
+            )}
+            {activeTab === "aadhaar" && (
+              <AadhaarVerificationForm
+                formData={formData}
+                handleInputChange={handleInputChange}
+                handleVerifyAadhaar={handleVerifyAadhaar}
+                loading={loading}
+                aadhaarConsent={aadhaarConsent}
+                setAadhaarConsent={setAadhaarConsent}
+                aadhaarFiles={aadhaarFiles}
+                setAadhaarFiles={setAadhaarFiles}
                 profile={profile}
               />
             )}
