@@ -22,6 +22,7 @@ import ProofVerificationManagement from '@/components/ProofVerificationManagemen
 import EntityRegistrationManagement from '@/components/EntityRegistrationManagement';
 import BusinessEditForm from '@/components/BusinessEditForm';
 import EntityEditForm from '@/components/EntityEditForm';
+import EntityCreateForm from '@/components/EntityCreateForm';
 
 const SuperAdminDashboard = () => {
   const { user } = useAuth();
@@ -39,6 +40,7 @@ const SuperAdminDashboard = () => {
   const [selectedEntity, setSelectedEntity] = useState<any>(null);
   const [entityToDelete, setEntityToDelete] = useState<any>(null);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [showCreateForm, setShowCreateForm] = useState(false);
 
   // Delete entity mutation
   const deleteEntity = useMutation({
@@ -170,6 +172,11 @@ const SuperAdminDashboard = () => {
       value: "businesses"
     },
     {
+      title: "Create Entity",
+      icon: Users,
+      value: "create-entity"
+    },
+    {
       title: "Reviews",
       icon: MessageSquare,
       value: "reviews"
@@ -212,6 +219,14 @@ const SuperAdminDashboard = () => {
 
   const renderContent = () => {
     switch (activeSection) {
+      case 'create-entity':
+        return (
+          <EntityCreateForm
+            onCancel={() => setActiveSection('businesses')}
+            onSuccess={() => setActiveSection('businesses')}
+          />
+        );
+
       case 'businesses':
         return (
           <Card>
