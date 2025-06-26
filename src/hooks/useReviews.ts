@@ -72,9 +72,9 @@ export const useUserReviews = () => {
         .from('reviews')
         .select(`
           *,
-          businesses (
+          entities!inner (
             name,
-            category
+            industry
           )
         `)
         .eq('user_id', user.id)
@@ -237,8 +237,8 @@ export const useCreateReview = () => {
       queryClient.invalidateQueries({ queryKey: ['user-reviews'] });
       queryClient.invalidateQueries({ queryKey: ['user-original-review'] });
       queryClient.invalidateQueries({ queryKey: ['user-review-updates'] });
-      queryClient.invalidateQueries({ queryKey: ['businesses'] });
-      queryClient.invalidateQueries({ queryKey: ['business', data.business_id] });
+      queryClient.invalidateQueries({ queryKey: ['entities'] });
+      queryClient.invalidateQueries({ queryKey: ['entity', data.business_id] });
     },
   });
 };
