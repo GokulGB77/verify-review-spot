@@ -46,13 +46,14 @@ const BusinessDirectory = () => {
 
     // Transform each group to get only the latest review from each user
     const transformedReviews = Object.entries(groupedReviews).map(([groupKey, reviews]) => {
+      const [businessId, userId] = groupKey.split('-');
       const transformedGroup = transformReviews(reviews);
-      return transformedGroup.length > 0 ? transformedGroup[0] : null;
+      return transformedGroup.length > 0 ? { ...transformedGroup[0], businessId } : null;
     }).filter(Boolean);
 
     // Group transformed reviews by business to calculate stats
     const businessStats = transformedReviews.reduce((acc, review) => {
-      const businessId = review.businessId || allReviews.find(r => r.id === review.id)?.business_id;
+      const businessId = review.businessId;
       if (!businessId) return acc;
       
       if (!acc[businessId]) {
@@ -317,4 +318,3 @@ const BusinessDirectory = () => {
 };
 
 export default BusinessDirectory;
-
