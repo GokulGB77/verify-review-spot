@@ -14,6 +14,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Star, Search, Upload, AlertCircle, History, CheckCircle } from 'lucide-react';
 import { useEntities } from '@/hooks/useEntities';
 import { useCreateReview, useUserOriginalReviewForBusiness, useUserReviewUpdatesForBusiness } from '@/hooks/useReviews';
+import ReviewContent from '@/components/business/ReviewContent';
 
 interface ReviewFormData {
   businessId: string;
@@ -367,37 +368,84 @@ const WriteReview = () => {
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <History className="h-5 w-5 text-blue-500" />
-                  <span>Your Existing Review</span>
+                  <span>Your Review History</span>
                 </CardTitle>
+                <CardDescription>
+                  Your complete review history for this business
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <div className="flex items-center">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`h-4 w-4 ${
-                            i < existingReview.rating
-                              ? 'text-yellow-400 fill-current'
-                              : 'text-gray-300'
-                          }`}
-                        />
-                      ))}
+                <div className="space-y-4">
+                  {/* Original Review */}
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <Badge variant="outline" className="bg-green-100 text-green-700 border-green-300 text-xs px-2 py-1">
+                        Original Review
+                      </Badge>
+                      <div className="flex items-center space-x-2">
+                        <div className="flex items-center">
+                          {[...Array(5)].map((_, i) => (
+                            <Star
+                              key={i}
+                              className={`h-4 w-4 ${
+                                i < existingReview.rating
+                                  ? 'text-yellow-400 fill-current'
+                                  : 'text-gray-300'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                        <span className="font-medium">{existingReview.rating}/5</span>
+                        <span className="text-sm text-gray-500">
+                          {new Date(existingReview.created_at).toLocaleDateString()}
+                        </span>
+                      </div>
                     </div>
-                    <span className="font-medium">{existingReview.rating}/5</span>
-                    <span className="text-sm text-gray-500">
-                      Original review on {new Date(existingReview.created_at).toLocaleDateString()}
-                    </span>
+                    <ReviewContent content={existingReview.content} maxLength={150} />
                   </div>
-                  <p className="text-gray-700 text-sm bg-gray-50 p-3 rounded">
-                    {existingReview.content}
-                  </p>
+
+                  {/* Previous Updates */}
                   {reviewUpdates.length > 0 && (
-                    <div className="text-sm text-blue-600">
-                      You have {reviewUpdates.length} previous update{reviewUpdates.length !== 1 ? 's' : ''} for this review
+                    <div className="space-y-3">
+                      <div className="text-sm font-medium text-gray-700">
+                        Previous Updates ({reviewUpdates.length})
+                      </div>
+                      {reviewUpdates
+                        .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+                        .map((update, index) => (
+                          <div key={update.id} className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <div className="flex items-center justify-between mb-2">
+                              <Badge variant="outline" className="bg-blue-100 text-blue-700 border-blue-300 text-xs px-2 py-1">
+                                Update #{update.update_number || index + 1}
+                              </Badge>
+                              <div className="flex items-center space-x-2">
+                                <div className="flex items-center">
+                                  {[...Array(5)].map((_, i) => (
+                                    <Star
+                                      key={i}
+                                      className={`h-4 w-4 ${
+                                        i < update.rating
+                                          ? 'text-yellow-400 fill-current'
+                                          : 'text-gray-300'
+                                      }`}
+                                    />
+                                  ))}
+                                </div>
+                                <span className="font-medium">{update.rating}/5</span>
+                                <span className="text-sm text-gray-500">
+                                  {new Date(update.created_at).toLocaleDateString()}
+                                </span>
+                              </div>
+                            </div>
+                            <ReviewContent content={update.content} maxLength={150} />
+                          </div>
+                        ))}
                     </div>
                   )}
+
+                  <div className="text-sm text-blue-600 bg-blue-50 p-3 rounded">
+                    You're about to add Update #{reviewUpdates.length + 1} to your review history
+                  </div>
                 </div>
               </CardContent>
             </Card>
