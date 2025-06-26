@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserRoles } from '@/hooks/useUserRoles';
@@ -11,8 +10,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Users, Building2, MessageSquare, TrendingUp, Search, Filter, Shield, FileCheck, UserCheck, BarChart3, ClipboardList } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Users, Building2, MessageSquare, TrendingUp, Search, Filter, Shield, FileCheck, UserCheck, BarChart3, ClipboardList, Eye, Trash2, Ban } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 import RoleManagement from '@/components/RoleManagement';
 import VerificationManagement from '@/components/VerificationManagement';
 import ProofVerificationManagement from '@/components/ProofVerificationManagement';
@@ -24,10 +27,67 @@ const SuperAdminDashboard = () => {
   const { data: businesses, isLoading: businessesLoading } = useBusinesses();
   const { data: reviews, isLoading: reviewsLoading } = useReviews();
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [activeSection, setActiveSection] = useState('businesses');
+  const [selectedBusiness, setSelectedBusiness] = useState<any>(null);
+  const [businessToDelete, setBusinessToDelete] = useState<any>(null);
+
+  // Delete business mutation
+  const deleteBusiness = useMutation({
+    mutationFn: async (businessId: string) => {
+      const { error } = await supabase
+        .from('businesses')
+        .delete()
+        .eq('id', businessId);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['businesses'] });
+      toast({
+        title: "Business deleted",
+        description: "The business has been successfully deleted.",
+      });
+      setBusinessToDelete(null);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to delete business. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Deactivate business mutation (we'll set verification_status to 'Deactivated')
+  const deactivateBusiness = useMutation({
+    mutationFn: async (businessId: string) => {
+      const { error } = await supabase
+        .from('businesses')
+        .update({ verification_status: 'Deactivated' })
+        .eq('id', businessId);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['businesses'] });
+      toast({
+        title: "Business deactivated",
+        description: "The business has been successfully deactivated.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to deactivate business. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
 
   if (rolesLoading) {
     return (
@@ -142,6 +202,7 @@ const SuperAdminDashboard = () => {
                       <SelectItem value="Verified">Verified</SelectItem>
                       <SelectItem value="Unverified">Unverified</SelectItem>
                       <SelectItem value="Pending">Pending</SelectItem>
+                      <SelectItem value="Deactivated">Deactivated</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -176,9 +237,127 @@ const SuperAdminDashboard = () => {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <Button variant="outline" size="sm" onClick={() => navigate(`/business/${business.id}`)}>
-                            View
-                          </Button>
+                          <div className="flex gap-2">
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => setSelectedBusiness(business)}
+                                >
+                                  <Eye className="h-4 w-4 mr-1" />
+                                  View
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent className="max-w-2xl">
+                                <DialogHeader>
+                                  <DialogTitle>Business Details</DialogTitle>
+                                </DialogHeader>
+                                {selectedBusiness && (
+                                  <div className="space-y-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <div>
+                                        <Label className="font-semibold">Name</Label>
+                                        <p className="text-sm">{selectedBusiness.name}</p>
+                                      </div>
+                                      <div>
+                                        <Label className="font-semibold">Category</Label>
+                                        <p className="text-sm">{selectedBusiness.category}</p>
+                                      </div>
+                                      <div>
+                                        <Label className="font-semibold">Location</Label>
+                                        <p className="text-sm">{selectedBusiness.location || 'Not provided'}</p>
+                                      </div>
+                                      <div>
+                                        <Label className="font-semibold">Rating</Label>
+                                        <p className="text-sm">{selectedBusiness.rating || 0}/5 ({selectedBusiness.review_count || 0} reviews)</p>
+                                      </div>
+                                      <div>
+                                        <Label className="font-semibold">Website</Label>
+                                        <p className="text-sm">{selectedBusiness.website || 'Not provided'}</p>
+                                      </div>
+                                      <div>
+                                        <Label className="font-semibold">Phone</Label>
+                                        <p className="text-sm">{selectedBusiness.phone || 'Not provided'}</p>
+                                      </div>
+                                      <div>
+                                        <Label className="font-semibold">Email</Label>
+                                        <p className="text-sm">{selectedBusiness.email || 'Not provided'}</p>
+                                      </div>
+                                      <div>
+                                        <Label className="font-semibold">Status</Label>
+                                        <Badge variant={selectedBusiness.verification_status === 'Verified' ? 'default' : 'secondary'}>
+                                          {selectedBusiness.verification_status}
+                                        </Badge>
+                                      </div>
+                                    </div>
+                                    {selectedBusiness.description && (
+                                      <div>
+                                        <Label className="font-semibold">Description</Label>
+                                        <p className="text-sm mt-1">{selectedBusiness.description}</p>
+                                      </div>
+                                    )}
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <div>
+                                        <Label className="font-semibold">Founded Year</Label>
+                                        <p className="text-sm">{selectedBusiness.founded_year || 'Not provided'}</p>
+                                      </div>
+                                      <div>
+                                        <Label className="font-semibold">Employee Count</Label>
+                                        <p className="text-sm">{selectedBusiness.employee_count || 'Not provided'}</p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
+                              </DialogContent>
+                            </Dialog>
+                            
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => deactivateBusiness.mutate(business.id)}
+                              disabled={business.verification_status === 'Deactivated'}
+                            >
+                              <Ban className="h-4 w-4 mr-1" />
+                              Deactivate
+                            </Button>
+                            
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button 
+                                  variant="destructive" 
+                                  size="sm"
+                                  onClick={() => setBusinessToDelete(business)}
+                                >
+                                  <Trash2 className="h-4 w-4 mr-1" />
+                                  Delete
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>Delete Business</DialogTitle>
+                                  <DialogDescription>
+                                    Are you sure you want to delete "{businessToDelete?.name}"? This action cannot be undone.
+                                  </DialogDescription>
+                                </DialogHeader>
+                                <DialogFooter>
+                                  <Button
+                                    variant="outline"
+                                    onClick={() => setBusinessToDelete(null)}
+                                  >
+                                    Cancel
+                                  </Button>
+                                  <Button
+                                    variant="destructive"
+                                    onClick={() => businessToDelete && deleteBusiness.mutate(businessToDelete.id)}
+                                    disabled={deleteBusiness.isPending}
+                                  >
+                                    {deleteBusiness.isPending ? 'Deleting...' : 'Delete'}
+                                  </Button>
+                                </DialogFooter>
+                              </DialogContent>
+                            </Dialog>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
