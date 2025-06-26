@@ -11,7 +11,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Users, Building2, MessageSquare, TrendingUp, Search, Filter, Shield, FileCheck, UserCheck, BarChart3, ClipboardList, Eye, Trash2, Ban, RefreshCcw, Edit } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Users, Building2, MessageSquare, TrendingUp, Search, Filter, Shield, FileCheck, UserCheck, BarChart3, ClipboardList, Eye, Ban, RefreshCcw, Edit } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -38,9 +39,34 @@ const SuperAdminDashboard = () => {
   const [verificationFilter, setVerificationFilter] = useState('all');
   const [activeSection, setActiveSection] = useState('businesses');
   const [selectedEntity, setSelectedEntity] = useState<any>(null);
-  const [entityToDelete, setEntityToDelete] = useState<any>(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
+
+  // Toggle business claimed status mutation
+  const toggleBusinessClaimed = useMutation({
+    mutationFn: async ({ entityId, currentStatus }: { entityId: string, currentStatus: boolean }) => {
+      const { error } = await supabase
+        .from('entities')
+        .update({ claimed_by_business: !currentStatus })
+        .eq('entity_id', entityId);
+      
+      if (error) throw error;
+    },
+    onSuccess: (_, { currentStatus }) => {
+      queryClient.invalidateQueries({ queryKey: ['entities'] });
+      toast({
+        title: `Business ${!currentStatus ? 'Claimed' : 'Unclaimed'}`,
+        description: `The entity has been ${!currentStatus ? 'marked as business claimed' : 'unmarked as business claimed'}.`,
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to update business claimed status. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
 
   // Delete entity mutation
   const deleteEntity = useMutation({
@@ -58,7 +84,6 @@ const SuperAdminDashboard = () => {
         title: "Entity deleted",
         description: "The entity has been successfully deleted.",
       });
-      setEntityToDelete(null);
     },
     onError: (error) => {
       toast({
@@ -294,6 +319,7 @@ const SuperAdminDashboard = () => {
                       <TableHead>Reviews</TableHead>
                       <TableHead>Verification</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead>Business Claimed</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -314,6 +340,21 @@ const SuperAdminDashboard = () => {
                           <Badge variant={(entity.status || 'active') === 'active' ? 'default' : 'destructive'}>
                             {(entity.status || 'active') === 'active' ? 'Active' : 'Inactive'}
                           </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-2">
+                            <Switch
+                              checked={entity.claimed_by_business || false}
+                              onCheckedChange={() => toggleBusinessClaimed.mutate({
+                                entityId: entity.entity_id,
+                                currentStatus: entity.claimed_by_business || false
+                              })}
+                              disabled={toggleBusinessClaimed.isPending}
+                            />
+                            <Label className="text-xs">
+                              {entity.claimed_by_business ? 'Claimed' : 'Unclaimed'}
+                            </Label>
+                          </div>
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-2">
@@ -448,42 +489,6 @@ const SuperAdminDashboard = () => {
                                 {deactivateEntity.isPending ? 'Deactivating...' : 'Deactivate'}
                               </Button>
                             )}
-                            
-                            <Dialog>
-                              <DialogTrigger asChild>
-                                <Button 
-                                  variant="destructive" 
-                                  size="sm"
-                                  onClick={() => setEntityToDelete(entity)}
-                                >
-                                  <Trash2 className="h-4 w-4 mr-1" />
-                                  Delete
-                                </Button>
-                              </DialogTrigger>
-                              <DialogContent>
-                                <DialogHeader>
-                                  <DialogTitle>Delete Entity</DialogTitle>
-                                  <DialogDescription>
-                                    Are you sure you want to delete "{entityToDelete?.name}"? This action cannot be undone.
-                                  </DialogDescription>
-                                </DialogHeader>
-                                <DialogFooter>
-                                  <Button
-                                    variant="outline"
-                                    onClick={() => setEntityToDelete(null)}
-                                  >
-                                    Cancel
-                                  </Button>
-                                  <Button
-                                    variant="destructive"
-                                    onClick={() => entityToDelete && deleteEntity.mutate(entityToDelete.entity_id)}
-                                    disabled={deleteEntity.isPending}
-                                  >
-                                    {deleteEntity.isPending ? 'Deleting...' : 'Delete'}
-                                  </Button>
-                                </DialogFooter>
-                              </DialogContent>
-                            </Dialog>
                           </div>
                         </TableCell>
                       </TableRow>
