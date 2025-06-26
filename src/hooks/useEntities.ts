@@ -1,3 +1,4 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
@@ -11,6 +12,7 @@ export const useEntities = () => {
       const { data, error } = await supabase
         .from('entities')
         .select('*')
+        .eq('status', 'active')
         .order('created_at', { ascending: false });
       
       if (error) throw error;
@@ -27,6 +29,7 @@ export const useEntity = (id: string) => {
         .from('entities')
         .select('*')
         .eq('entity_id', id)
+        .eq('status', 'active')
         .single();
       
       if (error) throw error;

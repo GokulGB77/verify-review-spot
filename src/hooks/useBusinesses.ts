@@ -13,6 +13,7 @@ export const useBusinesses = () => {
       const { data, error } = await supabase
         .from('entities')
         .select('*')
+        .eq('status', 'active')
         .order('created_at', { ascending: false });
       
       if (error) throw error;
@@ -29,6 +30,7 @@ export const useBusiness = (id: string) => {
         .from('entities')
         .select('*')
         .eq('entity_id', id)
+        .eq('status', 'active')
         .single();
       
       if (error) throw error;
