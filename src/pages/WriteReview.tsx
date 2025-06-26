@@ -11,7 +11,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Star, Search, Upload, AlertCircle, History, CheckCircle } from 'lucide-react';
+import { Star, Search, Upload, AlertCircle, History } from 'lucide-react';
 import { useEntities } from '@/hooks/useEntities';
 import { useCreateReview, useUserOriginalReviewForBusiness, useUserReviewUpdatesForBusiness } from '@/hooks/useReviews';
 
