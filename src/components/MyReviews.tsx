@@ -57,7 +57,7 @@ const MyReviews = () => {
         original: null,
         updates: [],
         allReviews: [],
-        businessInfo: review.businesses
+        businessInfo: review.entities
       };
     }
     
@@ -115,7 +115,7 @@ const MyReviews = () => {
                     {item.businessInfo?.name || 'Unknown Business'}
                   </CardTitle>
                   <Badge variant="outline" className="mt-1">
-                    {item.businessInfo?.category || 'Unknown Category'}
+                    {item.businessInfo?.industry || 'Unknown Category'}
                   </Badge>
                 </div>
                 <div className="flex items-center space-x-2">

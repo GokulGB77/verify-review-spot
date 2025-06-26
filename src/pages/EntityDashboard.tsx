@@ -39,14 +39,18 @@ const EntityDashboard = () => {
 
   React.useEffect(() => {
     if (entity) {
+      // Safely extract contact and location data
+      const contactData = entity.contact as any || {};
+      const locationData = entity.location as any || {};
+      
       setFormData({
         name: entity.name || '',
         description: entity.description || '',
-        phone: entity.contact?.phone || '',
-        email: entity.contact?.email || '',
-        website: entity.contact?.website || '',
-        address: entity.location?.address || '',
-        city: entity.location?.city || '',
+        phone: contactData.phone || '',
+        email: contactData.email || '',
+        website: contactData.website || '',
+        address: locationData.address || '',
+        city: locationData.city || '',
         industry: entity.industry || '',
         tagline: entity.tagline || ''
       });

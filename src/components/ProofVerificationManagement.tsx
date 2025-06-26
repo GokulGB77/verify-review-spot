@@ -27,7 +27,7 @@ interface ReviewWithProof {
   proof_verified_at: string | null;
   proof_rejection_reason: string | null;
   created_at: string;
-  businesses?: {
+  entities?: {
     name: string;
   };
 }
@@ -48,7 +48,7 @@ const ProofVerificationManagement = () => {
         .from('reviews')
         .select(`
           *,
-          businesses (
+          entities (
             name
           )
         `)
@@ -255,7 +255,7 @@ const ProofVerificationManagement = () => {
                 return (
                   <TableRow key={review.id}>
                     <TableCell className="font-medium">
-                      {review.businesses?.name || 'Unknown Business'}
+                      {review.entities?.name || 'Unknown Business'}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center">
@@ -303,7 +303,7 @@ const ProofVerificationManagement = () => {
                               <div className="space-y-4">
                                 <div>
                                   <h4 className="font-semibold">Business:</h4>
-                                  <p>{selectedReview.businesses?.name}</p>
+                                  <p>{selectedReview.entities?.name}</p>
                                 </div>
                                 <div>
                                   <h4 className="font-semibold">Review Content:</h4>
