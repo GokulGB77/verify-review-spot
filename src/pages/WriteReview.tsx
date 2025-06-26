@@ -1,5 +1,6 @@
+
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,8 +14,6 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Star, Search, Upload, AlertCircle, CheckCircle, Building2, Users, GraduationCap, Plus } from 'lucide-react';
-import Header from "@/components/common/Header";
-import Footer from "@/components/common/Footer";
 import { useBusinesses } from '@/hooks/useBusinesses';
 
 interface ReviewFormData {
@@ -39,24 +38,12 @@ const WriteReview = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const { data: businesses = [] } = useBusinesses();
+  const [searchParams] = useSearchParams();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedBusiness, setSelectedBusiness] = useState<any>(null);
   const [showBusinessForm, setShowBusinessForm] = useState(false);
-  const [newBusinessData, setNewBusinessData] = useState({
-    name: '',
-    industry: '',
-    description: '',
-    website: '',
-    email: '',
-    phone: '',
-    address: '',
-    city: '',
-    state: '',
-    country: '',
-    pincode: ''
-  });
 
   const [formData, setFormData] = useState<ReviewFormData>({
     businessId: '',
@@ -67,12 +54,30 @@ const WriteReview = () => {
     reviewSpecificBadge: '',
   });
 
+  // Get entityId from URL parameters
+  const entityId = searchParams.get('entityId');
+
   // Fetch user profile
   useEffect(() => {
     if (user) {
       fetchProfile();
     }
   }, [user]);
+
+  // Pre-select business if entityId is provided
+  useEffect(() => {
+    if (entityId && businesses.length > 0) {
+      const business = businesses.find(b => b.entity_id === entityId);
+      if (business) {
+        setSelectedBusiness(business);
+        setFormData(prev => ({
+          ...prev,
+          businessId: business.entity_id,
+          businessName: business.name
+        }));
+      }
+    }
+  }, [entityId, businesses]);
 
   const fetchProfile = async () => {
     if (!user) return;
@@ -123,78 +128,6 @@ const WriteReview = () => {
     setSearchQuery('');
   };
 
-  const handleCreateNewBusiness = async () => {
-    if (!newBusinessData.name || !newBusinessData.industry) {
-      toast({
-        title: "Missing Information",
-        description: "Please provide at least a business name and category.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      const { data, error } = await supabase
-        .from('entities')
-        .insert({
-          name: newBusinessData.name,
-          industry: newBusinessData.industry,
-          description: newBusinessData.description || null,
-          contact: {
-            website: newBusinessData.website || null,
-            email: newBusinessData.email || null,
-            phone: newBusinessData.phone || null
-          },
-          location: {
-            address: newBusinessData.address || null,
-            city: newBusinessData.city || null,
-            state: newBusinessData.state || null,
-            country: newBusinessData.country || null,
-            pincode: newBusinessData.pincode || null
-          },
-          is_verified: false,
-          trust_level: 'basic'
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      toast({
-        title: "Business Created",
-        description: "New business has been added to our directory.",
-      });
-
-      setSelectedBusiness(data);
-      setFormData(prev => ({
-        ...prev,
-        businessId: data.entity_id,
-        businessName: data.name
-      }));
-      setShowBusinessForm(false);
-      setNewBusinessData({
-        name: '',
-        industry: '',
-        description: '',
-        website: '',
-        email: '',
-        phone: '',
-        address: '',
-        city: '',
-        state: '',
-        country: '',
-        pincode: ''
-      });
-    } catch (error) {
-      console.error('Error creating business:', error);
-      toast({
-        title: "Error",
-        description: "Failed to create new business. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -232,6 +165,15 @@ const WriteReview = () => {
       return;
     }
 
+    if (formData.content.length < 50) {
+      toast({
+        title: "Review too short",
+        description: "Please write at least 50 characters for your review.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -253,6 +195,7 @@ const WriteReview = () => {
             description: "Failed to upload proof file. Please try again.",
             variant: "destructive",
           });
+          setIsSubmitting(false);
           return;
         }
 
@@ -272,14 +215,18 @@ const WriteReview = () => {
           review_specific_badge: formData.reviewSpecificBadge || null,
         });
 
-      if (reviewError) throw reviewError;
+      if (reviewError) {
+        console.error('Review submission error:', reviewError);
+        throw reviewError;
+      }
 
       toast({
         title: "Review Submitted",
         description: "Your review has been submitted successfully!",
       });
 
-      navigate('/my-reviews');
+      // Redirect to the entity page
+      navigate(`/entities/${formData.businessId}`);
     } catch (error) {
       console.error('Error submitting review:', error);
       toast({
@@ -292,8 +239,24 @@ const WriteReview = () => {
     }
   };
 
-  if (!user || !profile?.pseudonym_set) {
-    return null;
+  if (!user || !profile || (profile && !profile.pseudonym_set)) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardContent className="pt-6 text-center">
+            <p className="text-gray-600">
+              {!user ? 'Please sign in to write a review.' : 'Please set up your pseudonym before writing reviews.'}
+            </p>
+            <Button 
+              className="mt-4" 
+              onClick={() => navigate(!user ? '/auth' : '/profile')}
+            >
+              {!user ? 'Sign In' : 'Set Up Profile'}
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   const getBadgeColor = (badge: string) => {
@@ -348,26 +311,43 @@ const WriteReview = () => {
           {/* Business Selection */}
           <Card>
             <CardHeader>
-              <CardTitle>Select Business or Service</CardTitle>
+              <CardTitle>Business or Service</CardTitle>
               <CardDescription>
-                Search for the business you want to review, or add a new one
+                {selectedBusiness ? 'You are reviewing:' : 'Search for the business you want to review'}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {!selectedBusiness ? (
-                <>
-                  <div className="relative">
-                    <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input
-                      placeholder="Search for a business, service, or institution..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10"
-                    />
+              {selectedBusiness ? (
+                <div className="p-4 border rounded-lg bg-green-50">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-medium text-green-900">{selectedBusiness.name}</h3>
+                      <p className="text-sm text-green-700">{selectedBusiness.industry}</p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedBusiness(null);
+                        setFormData(prev => ({ ...prev, businessId: '', businessName: '' }));
+                      }}
+                    >
+                      Change
+                    </Button>
                   </div>
-
+                </div>
+              ) : (
+                <div className="relative">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="Search for a business, service, or institution..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
+                  />
                   {searchQuery && filteredBusinesses.length > 0 && (
-                    <div className="border rounded-lg max-h-60 overflow-y-auto">
+                    <div className="border rounded-lg max-h-60 overflow-y-auto mt-2">
                       {filteredBusinesses.map((business) => (
                         <div
                           key={business.entity_id}
@@ -378,12 +358,6 @@ const WriteReview = () => {
                             <div>
                               <h3 className="font-medium">{business.name}</h3>
                               <p className="text-sm text-gray-600">{business.industry}</p>
-                              {business.location && typeof business.location === 'object' && (
-                                <p className="text-xs text-gray-500">
-                                  {(business.location as any).city && `${(business.location as any).city}, `}
-                                  {(business.location as any).state}
-                                </p>
-                              )}
                             </div>
                             <div className="flex items-center space-x-2">
                               {business.average_rating && (
@@ -403,127 +377,6 @@ const WriteReview = () => {
                       ))}
                     </div>
                   )}
-
-                  <Separator />
-
-                  <div className="text-center">
-                    <p className="text-sm text-gray-600 mb-3">Can't find the business you're looking for?</p>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setShowBusinessForm(true)}
-                      className="w-full"
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add New Business
-                    </Button>
-                  </div>
-
-                  {showBusinessForm && (
-                    <Card className="mt-4">
-                      <CardHeader>
-                        <CardTitle>Add New Business</CardTitle>
-                        <CardDescription>
-                          Provide details about the business you want to review
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <Label htmlFor="businessName">Business Name *</Label>
-                            <Input
-                              id="businessName"
-                              value={newBusinessData.name}
-                              onChange={(e) => setNewBusinessData(prev => ({ ...prev, name: e.target.value }))}
-                              placeholder="Enter business name"
-                              required
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="industry">Category *</Label>
-                            <Input
-                              id="industry"
-                              value={newBusinessData.industry}
-                              onChange={(e) => setNewBusinessData(prev => ({ ...prev, industry: e.target.value }))}
-                              placeholder="e.g., Restaurant, Online Course, SaaS"
-                              required
-                            />
-                          </div>
-                        </div>
-
-                        <div>
-                          <Label htmlFor="description">Description</Label>
-                          <Textarea
-                            id="description"
-                            value={newBusinessData.description}
-                            onChange={(e) => setNewBusinessData(prev => ({ ...prev, description: e.target.value }))}
-                            placeholder="Brief description of the business"
-                            rows={3}
-                          />
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <Label htmlFor="website">Website</Label>
-                            <Input
-                              id="website"
-                              type="url"
-                              value={newBusinessData.website}
-                              onChange={(e) => setNewBusinessData(prev => ({ ...prev, website: e.target.value }))}
-                              placeholder="https://example.com"
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="email">Email</Label>
-                            <Input
-                              id="email"
-                              type="email"
-                              value={newBusinessData.email}
-                              onChange={(e) => setNewBusinessData(prev => ({ ...prev, email: e.target.value }))}
-                              placeholder="contact@example.com"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="flex space-x-2">
-                          <Button
-                            type="button"
-                            onClick={handleCreateNewBusiness}
-                            className="flex-1"
-                          >
-                            Add Business
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => setShowBusinessForm(false)}
-                          >
-                            Cancel
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-                </>
-              ) : (
-                <div className="p-4 border rounded-lg bg-green-50">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-medium text-green-900">{selectedBusiness.name}</h3>
-                      <p className="text-sm text-green-700">{selectedBusiness.industry}</p>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setSelectedBusiness(null);
-                        setFormData(prev => ({ ...prev, businessId: '', businessName: '' }));
-                      }}
-                    >
-                      Change
-                    </Button>
-                  </div>
                 </div>
               )}
             </CardContent>
