@@ -8,13 +8,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Star, Search, Upload, AlertCircle, CheckCircle, Building2, Users, GraduationCap, Plus } from 'lucide-react';
-import { useBusinesses } from '@/hooks/useBusinesses';
+import { Star, Search, Upload, AlertCircle, CheckCircle } from 'lucide-react';
+import { useEntities } from '@/hooks/useEntities';
+import { useCreateReview } from '@/hooks/useReviews';
 
 interface ReviewFormData {
   businessId: string;
@@ -37,13 +37,12 @@ const WriteReview = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
-  const { data: businesses = [] } = useBusinesses();
+  const { data: entities = [] } = useEntities();
   const [searchParams] = useSearchParams();
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedBusiness, setSelectedBusiness] = useState<any>(null);
-  const [showBusinessForm, setShowBusinessForm] = useState(false);
+  const createReviewMutation = useCreateReview();
 
   const [formData, setFormData] = useState<ReviewFormData>({
     businessId: '',
@@ -66,8 +65,8 @@ const WriteReview = () => {
 
   // Pre-select business if entityId is provided
   useEffect(() => {
-    if (entityId && businesses.length > 0) {
-      const business = businesses.find(b => b.entity_id === entityId);
+    if (entityId && entities.length > 0) {
+      const business = entities.find(b => b.entity_id === entityId);
       if (business) {
         setSelectedBusiness(business);
         setFormData(prev => ({
@@ -77,7 +76,7 @@ const WriteReview = () => {
         }));
       }
     }
-  }, [entityId, businesses]);
+  }, [entityId, entities]);
 
   const fetchProfile = async () => {
     if (!user) return;
@@ -113,9 +112,9 @@ const WriteReview = () => {
     }
   }, [user, profile, navigate, toast]);
 
-  const filteredBusinesses = businesses.filter(business => 
-    business.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (business.industry && typeof business.industry === 'string' && business.industry.toLowerCase().includes(searchQuery.toLowerCase()))
+  const filteredEntities = entities.filter(entity => 
+    entity.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (entity.industry && typeof entity.industry === 'string' && entity.industry.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   const handleBusinessSelect = (business: any) => {
@@ -174,8 +173,6 @@ const WriteReview = () => {
       return;
     }
 
-    setIsSubmitting(true);
-
     try {
       let proofUrl = null;
 
@@ -195,30 +192,21 @@ const WriteReview = () => {
             description: "Failed to upload proof file. Please try again.",
             variant: "destructive",
           });
-          setIsSubmitting(false);
           return;
         }
 
         proofUrl = uploadData.path;
       }
 
-      // Submit review
-      const { error: reviewError } = await supabase
-        .from('reviews')
-        .insert({
-          user_id: user.id,
-          business_id: formData.businessId,
-          rating: formData.rating,
-          content: formData.content.trim(),
-          proof_url: proofUrl,
-          user_badge: profile.main_badge || 'Unverified User',
-          review_specific_badge: formData.reviewSpecificBadge || null,
-        });
-
-      if (reviewError) {
-        console.error('Review submission error:', reviewError);
-        throw reviewError;
-      }
+      // Submit review using the mutation
+      await createReviewMutation.mutateAsync({
+        business_id: formData.businessId,
+        rating: formData.rating,
+        content: formData.content.trim(),
+        proof_url: proofUrl,
+        user_badge: profile.main_badge || 'Unverified User',
+        review_specific_badge: formData.reviewSpecificBadge || undefined,
+      });
 
       toast({
         title: "Review Submitted",
@@ -234,8 +222,6 @@ const WriteReview = () => {
         description: "There was an error submitting your review. Please try again.",
         variant: "destructive",
       });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -346,27 +332,27 @@ const WriteReview = () => {
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-10"
                   />
-                  {searchQuery && filteredBusinesses.length > 0 && (
+                  {searchQuery && filteredEntities.length > 0 && (
                     <div className="border rounded-lg max-h-60 overflow-y-auto mt-2">
-                      {filteredBusinesses.map((business) => (
+                      {filteredEntities.map((entity) => (
                         <div
-                          key={business.entity_id}
+                          key={entity.entity_id}
                           className="p-3 hover:bg-gray-50 cursor-pointer border-b last:border-b-0"
-                          onClick={() => handleBusinessSelect(business)}
+                          onClick={() => handleBusinessSelect(entity)}
                         >
                           <div className="flex items-center justify-between">
                             <div>
-                              <h3 className="font-medium">{business.name}</h3>
-                              <p className="text-sm text-gray-600">{business.industry}</p>
+                              <h3 className="font-medium">{entity.name}</h3>
+                              <p className="text-sm text-gray-600">{entity.industry}</p>
                             </div>
                             <div className="flex items-center space-x-2">
-                              {business.average_rating && (
+                              {entity.average_rating && (
                                 <div className="flex items-center">
                                   <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                                  <span className="text-sm ml-1">{business.average_rating.toFixed(1)}</span>
+                                  <span className="text-sm ml-1">{entity.average_rating.toFixed(1)}</span>
                                 </div>
                               )}
-                              {business.is_verified && (
+                              {entity.is_verified && (
                                 <Badge variant="outline" className="bg-green-50 text-green-700">
                                   Verified
                                 </Badge>
@@ -460,17 +446,11 @@ const WriteReview = () => {
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="Verified Employee" id="employee" />
-                  <Label htmlFor="employee" className="flex items-center space-x-2">
-                    <Users className="h-4 w-4" />
-                    <span>I work/worked here</span>
-                  </Label>
+                  <Label htmlFor="employee">I work/worked here</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="Verified Student" id="student" />
-                  <Label htmlFor="student" className="flex items-center space-x-2">
-                    <GraduationCap className="h-4 w-4" />
-                    <span>I'm a student/alumni</span>
-                  </Label>
+                  <Label htmlFor="student">I'm a student/alumni</Label>
                 </div>
               </RadioGroup>
             </CardContent>
@@ -530,11 +510,11 @@ const WriteReview = () => {
             <CardContent className="pt-6">
               <Button
                 type="submit"
-                disabled={isSubmitting || !selectedBusiness || !formData.rating || formData.content.length < 50}
+                disabled={createReviewMutation.isPending || !selectedBusiness || !formData.rating || formData.content.length < 50}
                 className="w-full"
                 size="lg"
               >
-                {isSubmitting ? 'Submitting...' : 'Submit Review'}
+                {createReviewMutation.isPending ? 'Submitting...' : 'Submit Review'}
               </Button>
               
               {(!selectedBusiness || !formData.rating || formData.content.length < 50) && (

@@ -149,7 +149,7 @@ export const useCreateReview = () => {
   const { user } = useAuth();
   
   return useMutation({
-    mutationFn: async (review: {
+    mutationFn: async (reviewData: {
       business_id: string;
       rating: number;
       content: string;
@@ -165,19 +165,19 @@ export const useCreateReview = () => {
         .from('reviews')
         .select('id, update_number')
         .eq('user_id', user.id)
-        .eq('business_id', review.business_id)
+        .eq('business_id', reviewData.business_id)
         .is('parent_review_id', null)
         .maybeSingle();
       
-      if (existingOriginalReview && !review.is_update) {
+      if (existingOriginalReview && !reviewData.is_update) {
         throw new Error('You already have a review for this business. You can only add updates.');
       }
       
-      if (review.is_update && !existingOriginalReview) {
+      if (reviewData.is_update && !existingOriginalReview) {
         throw new Error('Cannot create an update without an original review.');
       }
       
-      if (review.is_update && existingOriginalReview) {
+      if (reviewData.is_update && existingOriginalReview) {
         // Get the current highest update number for this review chain
         const { data: latestUpdate } = await supabase
           .from('reviews')
@@ -193,16 +193,16 @@ export const useCreateReview = () => {
         const { data, error } = await supabase
           .from('reviews')
           .insert([{
-            business_id: review.business_id,
-            rating: review.rating,
-            content: review.content,
+            business_id: reviewData.business_id,
+            rating: reviewData.rating,
+            content: reviewData.content,
             user_id: user.id,
             parent_review_id: existingOriginalReview.id,
             is_update: true,
             update_number: nextUpdateNumber,
-            user_badge: 'Unverified User', // Always set to basic for consistency
-            review_specific_badge: review.review_specific_badge || null,
-            proof_url: review.proof_url || null
+            user_badge: reviewData.user_badge || 'Unverified User',
+            review_specific_badge: reviewData.review_specific_badge || null,
+            proof_url: reviewData.proof_url || null
           }])
           .select()
           .single();
@@ -214,16 +214,16 @@ export const useCreateReview = () => {
         const { data, error } = await supabase
           .from('reviews')
           .insert([{
-            business_id: review.business_id,
-            rating: review.rating,
-            content: review.content,
+            business_id: reviewData.business_id,
+            rating: reviewData.rating,
+            content: reviewData.content,
             user_id: user.id,
             parent_review_id: null,
             is_update: false,
             update_number: 0,
-            user_badge: 'Unverified User', // Always set to basic for consistency
-            review_specific_badge: review.review_specific_badge || null,
-            proof_url: review.proof_url || null
+            user_badge: reviewData.user_badge || 'Unverified User',
+            review_specific_badge: reviewData.review_specific_badge || null,
+            proof_url: reviewData.proof_url || null
           }])
           .select()
           .single();
