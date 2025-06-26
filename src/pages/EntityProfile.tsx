@@ -3,8 +3,11 @@ import { useParams } from 'react-router-dom';
 import { useEntity } from '@/hooks/useEntities';
 import { useReviews } from '@/hooks/useReviews';
 import BusinessHeader from '@/components/business/BusinessHeader';
+import BusinessOverview from '@/components/business/BusinessOverview';
+import BusinessAbout from '@/components/business/BusinessAbout';
+import RatingBreakdown from '@/components/business/RatingBreakdown';
 import ReviewsList from '@/components/business/ReviewsList';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const EntityProfile = () => {
   const { id } = useParams<{ id: string }>();
@@ -60,7 +63,6 @@ const EntityProfile = () => {
 
   // Transform grouped reviews for display - show latest version
   const transformedReviews = Object.entries(groupedReviews).map(([userId, data]) => {
-    // Sort updates by update_number to get the latest
     const sortedUpdates = data.updates.sort((a: any, b: any) => b.update_number - a.update_number);
     const latestReview = sortedUpdates.length > 0 ? sortedUpdates[0] : data.original;
     
@@ -69,7 +71,6 @@ const EntityProfile = () => {
     const hasUpdates = data.updates.length > 0;
     const totalUpdates = data.updates.length;
     
-    // Get display name from profile
     const getDisplayName = (review: any) => {
       if (review.profiles?.display_name_preference === 'real_name' && review.profiles?.full_name) {
         return review.profiles.full_name;
@@ -79,7 +80,6 @@ const EntityProfile = () => {
       return 'Anonymous Reviewer';
     };
 
-    // Get main badge
     const getMainBadge = (review: any): 'Verified User' | 'Unverified User' => {
       const profileBadge = review.profiles?.main_badge;
       const userBadge = review.user_badge;
@@ -89,7 +89,6 @@ const EntityProfile = () => {
       return 'Unverified User';
     };
 
-    // Get review-specific badge
     const getReviewSpecificBadge = (review: any): 'Verified Employee' | 'Verified Student' | null => {
       const specificBadge = review.review_specific_badge;
       if (specificBadge === 'Verified Employee' || specificBadge === 'Verified Student') {
@@ -119,20 +118,66 @@ const EntityProfile = () => {
     };
   }).filter(Boolean);
 
+  // Calculate rating distribution for RatingBreakdown
+  const ratingCounts = [1, 2, 3, 4, 5].map(stars => ({
+    stars,
+    count: allReviews.filter(review => review.rating === stars).length
+  }));
+
+  const totalReviews = allReviews.length;
+  const ratingDistribution = ratingCounts.map(item => ({
+    ...item,
+    percentage: totalReviews > 0 ? Math.round((item.count / totalReviews) * 100) : 0
+  }));
+
+  // Calculate verified reviews count
+  const verifiedReviewsCount = transformedReviews.filter(review => 
+    review.mainBadge === 'Verified User' || review.reviewSpecificBadge
+  ).length;
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <BusinessHeader 
           business={entity} 
-          totalReviews={transformedReviews.length} // Count unique users, not total reviews
+          totalReviews={transformedReviews.length}
         />
         
         <div className="mt-8">
-          <ReviewsList 
-            reviews={transformedReviews}
-            businessId={id || ''}
-            isLoading={reviewsLoading}
-          />
+          <Tabs defaultValue="overview" className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="about">About</TabsTrigger>
+              <TabsTrigger value="reviews">Reviews ({transformedReviews.length})</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="overview" className="mt-6">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2 space-y-6">
+                  <BusinessOverview 
+                    business={entity}
+                    totalReviews={transformedReviews.length}
+                    verifiedReviewsCount={verifiedReviewsCount}
+                  />
+                </div>
+                <div>
+                  <RatingBreakdown ratingDistribution={ratingDistribution} />
+                </div>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="about" className="mt-6">
+              <BusinessAbout business={entity} />
+            </TabsContent>
+            
+            <TabsContent value="reviews" className="mt-6">
+              <ReviewsList 
+                reviews={transformedReviews}
+                businessId={id || ''}
+                isLoading={reviewsLoading}
+              />
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>
