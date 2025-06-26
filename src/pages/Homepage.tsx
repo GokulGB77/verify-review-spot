@@ -42,11 +42,17 @@ const Index = () => {
     }
   };
 
+  // Filter reviews to only include those from active entities
+  const activeEntityReviews = allReviews.filter((review) => {
+    const business = businesses.find((b) => b.entity_id === review.business_id);
+    return business && business.status === 'active';
+  });
+
   // Group reviews by user and business, showing only the latest review/update
   const getLatestReviewsGrouped = () => {
     const reviewGroups = new Map();
 
-    allReviews.forEach((review) => {
+    activeEntityReviews.forEach((review) => {
       const key = `${review.user_id}-${review.business_id}`;
       
       if (!reviewGroups.has(key)) {
