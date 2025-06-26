@@ -366,15 +366,19 @@ const SuperAdminDashboard = () => {
                                           </div>
                                           <div>
                                             <Label className="font-semibold">Verification Status</Label>
-                                            <Badge variant={selectedBusiness.verification_status === 'Verified' ? 'default' : 'secondary'}>
-                                              {selectedBusiness.verification_status}
-                                            </Badge>
+                                            <div className="mt-1">
+                                              <Badge variant={selectedBusiness.verification_status === 'Verified' ? 'default' : 'secondary'}>
+                                                {selectedBusiness.verification_status}
+                                              </Badge>
+                                            </div>
                                           </div>
                                           <div>
                                             <Label className="font-semibold">Active Status</Label>
-                                            <Badge variant={(selectedBusiness.status || 'active') === 'active' ? 'default' : 'destructive'}>
-                                              {(selectedBusiness.status || 'active') === 'active' ? 'Active' : 'Inactive'}
-                                            </Badge>
+                                            <div className="mt-1">
+                                              <Badge variant={(selectedBusiness.status || 'active') === 'active' ? 'default' : 'destructive'}>
+                                                {(selectedBusiness.status || 'active') === 'active' ? 'Active' : 'Inactive'}
+                                              </Badge>
+                                            </div>
                                           </div>
                                         </div>
                                         {selectedBusiness.description && (
