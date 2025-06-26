@@ -1,5 +1,3 @@
-
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -30,53 +28,29 @@ const BusinessDirectory = () => {
 
   // Calculate correct ratings and review counts for each business
   const getBusinessWithCorrectStats = () => {
-    // Group reviews by business and user, then transform
-    const groupedReviews = allReviews.reduce((acc, review) => {
+    // Group reviews by business first
+    const reviewsByBusiness = allReviews.reduce((acc, review) => {
       const businessId = review.business_id;
-      const userId = review.user_id;
-      const groupKey = `${businessId}-${userId}`;
-      
-      if (!acc[groupKey]) {
-        acc[groupKey] = [];
+      if (!acc[businessId]) {
+        acc[businessId] = [];
       }
-      
-      acc[groupKey].push(review);
+      acc[businessId].push(review);
       return acc;
     }, {} as Record<string, any[]>);
 
-    // Transform each group to get only the latest review from each user
-    const transformedReviews = Object.entries(groupedReviews).map(([groupKey, reviews]) => {
-      const [businessId, userId] = groupKey.split('-');
-      const transformedGroup = transformReviews(reviews);
-      return transformedGroup.length > 0 ? { ...transformedGroup[0], businessId } : null;
-    }).filter(Boolean);
-
-    // Group transformed reviews by business to calculate stats
-    const businessStats = transformedReviews.reduce((acc, review) => {
-      const businessId = review.businessId;
-      if (!businessId) return acc;
+    // Calculate stats for each business using the same logic as EntityProfile
+    const businessStats = Object.entries(reviewsByBusiness).reduce((acc, [businessId, businessReviews]) => {
+      // Transform reviews to get latest versions (same as EntityProfile)
+      const transformedReviews = transformReviews(businessReviews);
       
-      if (!acc[businessId]) {
-        acc[businessId] = {
-          ratings: [],
-          count: 0
-        };
-      }
-      
-      acc[businessId].ratings.push(review.rating);
-      acc[businessId].count++;
-      return acc;
-    }, {} as Record<string, { ratings: number[], count: number }>);
-
-    // Calculate average rating for each business
-    const businessRatings = Object.entries(businessStats).reduce((acc, [businessId, stats]) => {
-      const averageRating = stats.ratings.length > 0 
-        ? stats.ratings.reduce((sum, rating) => sum + rating, 0) / stats.ratings.length
+      // Calculate average rating and count using only the latest review from each user
+      const averageRating = transformedReviews.length > 0 
+        ? Number((transformedReviews.reduce((sum, review) => sum + review.rating, 0) / transformedReviews.length).toFixed(1))
         : 0;
       
       acc[businessId] = {
         average_rating: averageRating,
-        review_count: stats.count
+        review_count: transformedReviews.length
       };
       return acc;
     }, {} as Record<string, { average_rating: number, review_count: number }>);
@@ -84,8 +58,8 @@ const BusinessDirectory = () => {
     // Return businesses with corrected stats
     return businesses.map(business => ({
       ...business,
-      average_rating: businessRatings[business.entity_id]?.average_rating || 0,
-      review_count: businessRatings[business.entity_id]?.review_count || 0
+      average_rating: businessStats[business.entity_id]?.average_rating || 0,
+      review_count: businessStats[business.entity_id]?.review_count || 0
     }));
   };
 
@@ -115,27 +89,10 @@ const BusinessDirectory = () => {
     return filtered;
   };
 
-  // Calculate statistics using transformed reviews (only latest from each user)
+  // Calculate statistics using the same logic as EntityProfile
   const getBusinessStats = () => {
-    // Group reviews by business and user, then transform
-    const groupedReviews = allReviews.reduce((acc, review) => {
-      const businessId = review.business_id;
-      const userId = review.user_id;
-      const groupKey = `${businessId}-${userId}`;
-      
-      if (!acc[groupKey]) {
-        acc[groupKey] = [];
-      }
-      
-      acc[groupKey].push(review);
-      return acc;
-    }, {} as Record<string, any[]>);
-
-    // Transform each group to get only the latest review from each user
-    const transformedReviews = Object.entries(groupedReviews).map(([groupKey, reviews]) => {
-      const transformedGroup = transformReviews(reviews);
-      return transformedGroup.length > 0 ? transformedGroup[0] : null;
-    }).filter(Boolean);
+    // Transform all reviews to get only the latest from each user
+    const transformedReviews = transformReviews(allReviews);
 
     // Calculate stats based on transformed reviews
     const totalReviews = transformedReviews.length;
