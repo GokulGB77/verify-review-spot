@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserRoles } from '@/hooks/useUserRoles';
-import { useBusinesses } from '@/hooks/useBusinesses';
+import { useEntities } from '@/hooks/useEntities';
 import { useReviews } from '@/hooks/useReviews';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -21,11 +21,12 @@ import VerificationManagement from '@/components/VerificationManagement';
 import ProofVerificationManagement from '@/components/ProofVerificationManagement';
 import EntityRegistrationManagement from '@/components/EntityRegistrationManagement';
 import BusinessEditForm from '@/components/BusinessEditForm';
+import EntityEditForm from '@/components/EntityEditForm';
 
 const SuperAdminDashboard = () => {
   const { user } = useAuth();
   const { isSuperAdmin, loading: rolesLoading } = useUserRoles();
-  const { data: businesses, isLoading: businessesLoading } = useBusinesses();
+  const { data: entities, isLoading: entitiesLoading } = useEntities();
   const { data: reviews, isLoading: reviewsLoading } = useReviews();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -35,84 +36,84 @@ const SuperAdminDashboard = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [verificationFilter, setVerificationFilter] = useState('all');
   const [activeSection, setActiveSection] = useState('businesses');
-  const [selectedBusiness, setSelectedBusiness] = useState<any>(null);
-  const [businessToDelete, setBusinessToDelete] = useState<any>(null);
+  const [selectedEntity, setSelectedEntity] = useState<any>(null);
+  const [entityToDelete, setEntityToDelete] = useState<any>(null);
   const [isEditMode, setIsEditMode] = useState(false);
 
-  // Delete business mutation
-  const deleteBusiness = useMutation({
-    mutationFn: async (businessId: string) => {
+  // Delete entity mutation
+  const deleteEntity = useMutation({
+    mutationFn: async (entityId: string) => {
       const { error } = await supabase
-        .from('businesses')
+        .from('entities')
         .delete()
-        .eq('id', businessId);
+        .eq('entity_id', entityId);
       
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['businesses'] });
+      queryClient.invalidateQueries({ queryKey: ['entities'] });
       toast({
-        title: "Business deleted",
-        description: "The business has been successfully deleted.",
+        title: "Entity deleted",
+        description: "The entity has been successfully deleted.",
       });
-      setBusinessToDelete(null);
+      setEntityToDelete(null);
     },
     onError: (error) => {
       toast({
         title: "Error",
-        description: "Failed to delete business. Please try again.",
+        description: "Failed to delete entity. Please try again.",
         variant: "destructive",
       });
     },
   });
 
-  // Deactivate business mutation (set status to 'inactive')
-  const deactivateBusiness = useMutation({
-    mutationFn: async (businessId: string) => {
+  // Deactivate entity mutation
+  const deactivateEntity = useMutation({
+    mutationFn: async (entityId: string) => {
       const { error } = await supabase
-        .from('businesses')
+        .from('entities')
         .update({ status: 'inactive' })
-        .eq('id', businessId);
+        .eq('entity_id', entityId);
       
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['businesses'] });
+      queryClient.invalidateQueries({ queryKey: ['entities'] });
       toast({
-        title: "Business deactivated",
-        description: "The business has been successfully deactivated.",
+        title: "Entity deactivated",
+        description: "The entity has been successfully deactivated.",
       });
     },
     onError: (error) => {
       toast({
         title: "Error",
-        description: "Failed to deactivate business. Please try again.",
+        description: "Failed to deactivate entity. Please try again.",
         variant: "destructive",
       });
     },
   });
 
-  // Reactivate business mutation (set status to 'active')
-  const reactivateBusiness = useMutation({
-    mutationFn: async (businessId: string) => {
+  // Reactivate entity mutation
+  const reactivateEntity = useMutation({
+    mutationFn: async (entityId: string) => {
       const { error } = await supabase
-        .from('businesses')
+        .from('entities')
         .update({ status: 'active' })
-        .eq('id', businessId);
+        .eq('entity_id', entityId);
       
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['businesses'] });
+      queryClient.invalidateQueries({ queryKey: ['entities'] });
       toast({
-        title: "Business reactivated",
-        description: "The business has been successfully reactivated.",
+        title: "Entity reactivated",
+        description: "The entity has been successfully reactivated.",
       });
     },
     onError: (error) => {
       toast({
         title: "Error",
-        description: "Failed to reactivate business. Please try again.",
+        description: "Failed to reactivate entity. Please try again.",
         variant: "destructive",
       });
     },
@@ -144,20 +145,21 @@ const SuperAdminDashboard = () => {
     );
   }
 
-  const filteredBusinesses = businesses?.filter(business => {
-    const matchesSearch = business.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         business.category.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || (business.status || 'active') === statusFilter;
-    const matchesVerification = verificationFilter === 'all' || business.verification_status === verificationFilter;
+  const filteredEntities = entities?.filter(entity => {
+    const matchesSearch = entity.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (entity.industry || '').toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || (entity.status || 'active') === statusFilter;
+    const matchesVerification = verificationFilter === 'all' || 
+                               (entity.is_verified ? 'Verified' : 'Unverified') === verificationFilter;
     return matchesSearch && matchesStatus && matchesVerification;
   });
 
   const stats = {
-    totalBusinesses: businesses?.length || 0,
+    totalBusinesses: entities?.length || 0,
     totalReviews: reviews?.length || 0,
-    verifiedBusinesses: businesses?.filter(b => b.verification_status === 'Verified').length || 0,
-    activeBusinesses: businesses?.filter(b => (b.status || 'active') === 'active').length || 0,
-    averageRating: businesses?.reduce((acc, b) => acc + (b.rating || 0), 0) / (businesses?.length || 1) || 0
+    verifiedBusinesses: entities?.filter(e => e.is_verified).length || 0,
+    activeBusinesses: entities?.filter(e => (e.status || 'active') === 'active').length || 0,
+    averageRating: entities?.reduce((acc, e) => acc + (e.average_rating || 0), 0) / (entities?.length || 1) || 0
   };
 
   // Menu items for the sidebar
@@ -200,7 +202,7 @@ const SuperAdminDashboard = () => {
   ];
 
   const handleViewDialogClose = () => {
-    setSelectedBusiness(null);
+    setSelectedEntity(null);
     setIsEditMode(false);
   };
 
@@ -214,17 +216,17 @@ const SuperAdminDashboard = () => {
         return (
           <Card>
             <CardHeader>
-              <CardTitle>Business Management</CardTitle>
-              <CardDescription>Manage and verify businesses on the platform</CardDescription>
+              <CardTitle>Entity Management</CardTitle>
+              <CardDescription>Manage and verify entities on the platform</CardDescription>
               
               <div className="flex gap-4 mt-4">
                 <div className="flex-1">
-                  <Label htmlFor="search">Search Businesses</Label>
+                  <Label htmlFor="search">Search Entities</Label>
                   <div className="relative">
                     <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                     <Input
                       id="search"
-                      placeholder="Search by name or category..."
+                      placeholder="Search by name or industry..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="pl-10"
@@ -264,14 +266,15 @@ const SuperAdminDashboard = () => {
             </CardHeader>
             
             <CardContent>
-              {businessesLoading ? (
-                <div className="text-center py-8">Loading businesses...</div>
+              {entitiesLoading ? (
+                <div className="text-center py-8">Loading entities...</div>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Name</TableHead>
-                      <TableHead>Category</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Industry</TableHead>
                       <TableHead>Rating</TableHead>
                       <TableHead>Reviews</TableHead>
                       <TableHead>Verification</TableHead>
@@ -280,20 +283,21 @@ const SuperAdminDashboard = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredBusinesses?.map((business) => (
-                      <TableRow key={business.id}>
-                        <TableCell className="font-medium">{business.name}</TableCell>
-                        <TableCell>{business.category}</TableCell>
-                        <TableCell>{business.rating || 0}/5</TableCell>
-                        <TableCell>{business.review_count || 0}</TableCell>
+                    {filteredEntities?.map((entity) => (
+                      <TableRow key={entity.entity_id}>
+                        <TableCell className="font-medium">{entity.name}</TableCell>
+                        <TableCell className="capitalize">{entity.entity_type.replace('_', ' ')}</TableCell>
+                        <TableCell>{entity.industry || 'N/A'}</TableCell>
+                        <TableCell>{entity.average_rating || 0}/5</TableCell>
+                        <TableCell>{entity.review_count || 0}</TableCell>
                         <TableCell>
-                          <Badge variant={business.verification_status === 'Verified' ? 'default' : 'secondary'}>
-                            {business.verification_status}
+                          <Badge variant={entity.is_verified ? 'default' : 'secondary'}>
+                            {entity.is_verified ? 'Verified' : 'Unverified'}
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <Badge variant={(business.status || 'active') === 'active' ? 'default' : 'destructive'}>
-                            {(business.status || 'active') === 'active' ? 'Active' : 'Inactive'}
+                          <Badge variant={(entity.status || 'active') === 'active' ? 'default' : 'destructive'}>
+                            {(entity.status || 'active') === 'active' ? 'Active' : 'Inactive'}
                           </Badge>
                         </TableCell>
                         <TableCell>
@@ -303,7 +307,7 @@ const SuperAdminDashboard = () => {
                                 <Button 
                                   variant="outline" 
                                   size="sm"
-                                  onClick={() => setSelectedBusiness(business)}
+                                  onClick={() => setSelectedEntity(entity)}
                                 >
                                   <Eye className="h-4 w-4 mr-1" />
                                   View
@@ -312,7 +316,7 @@ const SuperAdminDashboard = () => {
                               <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                                 <DialogHeader>
                                   <DialogTitle className="flex items-center gap-2">
-                                    Business Details
+                                    Entity Details
                                     {!isEditMode && (
                                       <Button
                                         variant="outline"
@@ -325,11 +329,11 @@ const SuperAdminDashboard = () => {
                                     )}
                                   </DialogTitle>
                                 </DialogHeader>
-                                {selectedBusiness && (
+                                {selectedEntity && (
                                   <div className="space-y-4">
                                     {isEditMode ? (
-                                      <BusinessEditForm
-                                        business={selectedBusiness}
+                                      <EntityEditForm
+                                        entity={selectedEntity}
                                         onCancel={() => setIsEditMode(false)}
                                         onSuccess={handleEditSuccess}
                                       />
@@ -338,63 +342,67 @@ const SuperAdminDashboard = () => {
                                         <div className="grid grid-cols-2 gap-4">
                                           <div>
                                             <Label className="font-semibold">Name</Label>
-                                            <p className="text-sm">{selectedBusiness.name}</p>
+                                            <p className="text-sm">{selectedEntity.name}</p>
                                           </div>
                                           <div>
-                                            <Label className="font-semibold">Category</Label>
-                                            <p className="text-sm">{selectedBusiness.category}</p>
+                                            <Label className="font-semibold">Legal Name</Label>
+                                            <p className="text-sm">{selectedEntity.legal_name || 'Not provided'}</p>
                                           </div>
                                           <div>
-                                            <Label className="font-semibold">Location</Label>
-                                            <p className="text-sm">{selectedBusiness.location || 'Not provided'}</p>
+                                            <Label className="font-semibold">Entity Type</Label>
+                                            <p className="text-sm capitalize">{selectedEntity.entity_type.replace('_', ' ')}</p>
+                                          </div>
+                                          <div>
+                                            <Label className="font-semibold">Industry</Label>
+                                            <p className="text-sm">{selectedEntity.industry || 'Not provided'}</p>
                                           </div>
                                           <div>
                                             <Label className="font-semibold">Rating</Label>
-                                            <p className="text-sm">{selectedBusiness.rating || 0}/5 ({selectedBusiness.review_count || 0} reviews)</p>
+                                            <p className="text-sm">{selectedEntity.average_rating || 0}/5 ({selectedEntity.review_count || 0} reviews)</p>
                                           </div>
                                           <div>
                                             <Label className="font-semibold">Website</Label>
-                                            <p className="text-sm">{selectedBusiness.website || 'Not provided'}</p>
+                                            <p className="text-sm">{selectedEntity.contact?.website || 'Not provided'}</p>
                                           </div>
                                           <div>
                                             <Label className="font-semibold">Phone</Label>
-                                            <p className="text-sm">{selectedBusiness.phone || 'Not provided'}</p>
+                                            <p className="text-sm">{selectedEntity.contact?.phone || 'Not provided'}</p>
                                           </div>
                                           <div>
                                             <Label className="font-semibold">Email</Label>
-                                            <p className="text-sm">{selectedBusiness.email || 'Not provided'}</p>
+                                            <p className="text-sm">{selectedEntity.contact?.email || 'Not provided'}</p>
                                           </div>
                                           <div>
                                             <Label className="font-semibold">Verification Status</Label>
                                             <div className="mt-1">
-                                              <Badge variant={selectedBusiness.verification_status === 'Verified' ? 'default' : 'secondary'}>
-                                                {selectedBusiness.verification_status}
+                                              <Badge variant={selectedEntity.is_verified ? 'default' : 'secondary'}>
+                                                {selectedEntity.is_verified ? 'Verified' : 'Unverified'}
                                               </Badge>
                                             </div>
                                           </div>
                                           <div>
                                             <Label className="font-semibold">Active Status</Label>
                                             <div className="mt-1">
-                                              <Badge variant={(selectedBusiness.status || 'active') === 'active' ? 'default' : 'destructive'}>
-                                                {(selectedBusiness.status || 'active') === 'active' ? 'Active' : 'Inactive'}
+                                              <Badge variant={(selectedEntity.status || 'active') === 'active' ? 'default' : 'destructive'}>
+                                                {(selectedEntity.status || 'active') === 'active' ? 'Active' : 'Inactive'}
                                               </Badge>
                                             </div>
                                           </div>
                                         </div>
-                                        {selectedBusiness.description && (
+                                        {selectedEntity.description && (
                                           <div>
                                             <Label className="font-semibold">Description</Label>
-                                            <p className="text-sm mt-1">{selectedBusiness.description}</p>
+                                            <p className="text-sm mt-1">{selectedEntity.description}</p>
                                           </div>
                                         )}
                                         <div className="grid grid-cols-2 gap-4">
                                           <div>
                                             <Label className="font-semibold">Founded Year</Label>
-                                            <p className="text-sm">{selectedBusiness.founded_year || 'Not provided'}</p>
+                                            <p className="text-sm">{selectedEntity.founded_year || 'Not provided'}</p>
                                           </div>
                                           <div>
                                             <Label className="font-semibold">Employee Count</Label>
-                                            <p className="text-sm">{selectedBusiness.employee_count || 'Not provided'}</p>
+                                            <p className="text-sm">{selectedEntity.number_of_employees || 'Not provided'}</p>
                                           </div>
                                         </div>
                                       </>
@@ -404,25 +412,25 @@ const SuperAdminDashboard = () => {
                               </DialogContent>
                             </Dialog>
                             
-                            {(business.status || 'active') === 'inactive' ? (
+                            {(entity.status || 'active') === 'inactive' ? (
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => reactivateBusiness.mutate(business.id)}
-                                disabled={reactivateBusiness.isPending}
+                                onClick={() => reactivateEntity.mutate(entity.entity_id)}
+                                disabled={reactivateEntity.isPending}
                               >
                                 <RefreshCcw className="h-4 w-4 mr-1" />
-                                {reactivateBusiness.isPending ? 'Reactivating...' : 'Reactivate'}
+                                {reactivateEntity.isPending ? 'Reactivating...' : 'Reactivate'}
                               </Button>
                             ) : (
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => deactivateBusiness.mutate(business.id)}
-                                disabled={deactivateBusiness.isPending}
+                                onClick={() => deactivateEntity.mutate(entity.entity_id)}
+                                disabled={deactivateEntity.isPending}
                               >
                                 <Ban className="h-4 w-4 mr-1" />
-                                {deactivateBusiness.isPending ? 'Deactivating...' : 'Deactivate'}
+                                {deactivateEntity.isPending ? 'Deactivating...' : 'Deactivate'}
                               </Button>
                             )}
                             
@@ -431,7 +439,7 @@ const SuperAdminDashboard = () => {
                                 <Button 
                                   variant="destructive" 
                                   size="sm"
-                                  onClick={() => setBusinessToDelete(business)}
+                                  onClick={() => setEntityToDelete(entity)}
                                 >
                                   <Trash2 className="h-4 w-4 mr-1" />
                                   Delete
@@ -439,24 +447,24 @@ const SuperAdminDashboard = () => {
                               </DialogTrigger>
                               <DialogContent>
                                 <DialogHeader>
-                                  <DialogTitle>Delete Business</DialogTitle>
+                                  <DialogTitle>Delete Entity</DialogTitle>
                                   <DialogDescription>
-                                    Are you sure you want to delete "{businessToDelete?.name}"? This action cannot be undone.
+                                    Are you sure you want to delete "{entityToDelete?.name}"? This action cannot be undone.
                                   </DialogDescription>
                                 </DialogHeader>
                                 <DialogFooter>
                                   <Button
                                     variant="outline"
-                                    onClick={() => setBusinessToDelete(null)}
+                                    onClick={() => setEntityToDelete(null)}
                                   >
                                     Cancel
                                   </Button>
                                   <Button
                                     variant="destructive"
-                                    onClick={() => businessToDelete && deleteBusiness.mutate(businessToDelete.id)}
-                                    disabled={deleteBusiness.isPending}
+                                    onClick={() => entityToDelete && deleteEntity.mutate(entityToDelete.entity_id)}
+                                    disabled={deleteEntity.isPending}
                                   >
-                                    {deleteBusiness.isPending ? 'Deleting...' : 'Delete'}
+                                    {deleteEntity.isPending ? 'Deleting...' : 'Delete'}
                                   </Button>
                                 </DialogFooter>
                               </DialogContent>
@@ -563,7 +571,7 @@ const SuperAdminDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-sm text-gray-600">
-                  <p>New businesses this month: {businesses?.filter(b => 
+                  <p>New businesses this month: {entities?.filter(b => 
                     new Date(b.created_at).getMonth() === new Date().getMonth()
                   ).length || 0}</p>
                   <p>New reviews this month: {reviews?.filter(r => 

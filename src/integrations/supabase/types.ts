@@ -9,66 +9,120 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      businesses: {
+      entities: {
         Row: {
-          category: string
+          apps: Json | null
+          average_rating: number | null
+          can_reply_to_reviews: boolean | null
+          category_tags: string[] | null
+          claimed_by_business: boolean | null
+          claimed_by_user_id: string | null
+          contact: Json | null
+          cover_image_url: string | null
           created_at: string
+          custom_fields: Json | null
           description: string | null
-          email: string | null
-          employee_count: string | null
+          entity_id: string
+          entity_type: Database["public"]["Enums"]["entity_type"]
+          flagged_for_review_fraud: boolean | null
           founded_year: number | null
-          has_subscription: boolean | null
-          id: string
-          location: string | null
+          founders: string[] | null
+          industry: string | null
+          is_verified: boolean | null
+          keywords: string[] | null
+          legal_name: string | null
+          location: Json | null
+          logo_url: string | null
+          media: Json | null
           name: string
-          phone: string | null
-          programs: string[] | null
-          rating: number | null
+          number_of_employees: string | null
+          platform_score: number | null
+          profile_completion: number | null
+          registration_info: Json | null
+          revenue_range: string | null
           review_count: number | null
+          social_links: Json | null
           status: string | null
+          sub_industry: string | null
+          tagline: string | null
+          trust_level: Database["public"]["Enums"]["trust_level"] | null
           updated_at: string
-          verification_status: string | null
-          website: string | null
         }
         Insert: {
-          category: string
+          apps?: Json | null
+          average_rating?: number | null
+          can_reply_to_reviews?: boolean | null
+          category_tags?: string[] | null
+          claimed_by_business?: boolean | null
+          claimed_by_user_id?: string | null
+          contact?: Json | null
+          cover_image_url?: string | null
           created_at?: string
+          custom_fields?: Json | null
           description?: string | null
-          email?: string | null
-          employee_count?: string | null
+          entity_id?: string
+          entity_type?: Database["public"]["Enums"]["entity_type"]
+          flagged_for_review_fraud?: boolean | null
           founded_year?: number | null
-          has_subscription?: boolean | null
-          id?: string
-          location?: string | null
+          founders?: string[] | null
+          industry?: string | null
+          is_verified?: boolean | null
+          keywords?: string[] | null
+          legal_name?: string | null
+          location?: Json | null
+          logo_url?: string | null
+          media?: Json | null
           name: string
-          phone?: string | null
-          programs?: string[] | null
-          rating?: number | null
+          number_of_employees?: string | null
+          platform_score?: number | null
+          profile_completion?: number | null
+          registration_info?: Json | null
+          revenue_range?: string | null
           review_count?: number | null
+          social_links?: Json | null
           status?: string | null
+          sub_industry?: string | null
+          tagline?: string | null
+          trust_level?: Database["public"]["Enums"]["trust_level"] | null
           updated_at?: string
-          verification_status?: string | null
-          website?: string | null
         }
         Update: {
-          category?: string
+          apps?: Json | null
+          average_rating?: number | null
+          can_reply_to_reviews?: boolean | null
+          category_tags?: string[] | null
+          claimed_by_business?: boolean | null
+          claimed_by_user_id?: string | null
+          contact?: Json | null
+          cover_image_url?: string | null
           created_at?: string
+          custom_fields?: Json | null
           description?: string | null
-          email?: string | null
-          employee_count?: string | null
+          entity_id?: string
+          entity_type?: Database["public"]["Enums"]["entity_type"]
+          flagged_for_review_fraud?: boolean | null
           founded_year?: number | null
-          has_subscription?: boolean | null
-          id?: string
-          location?: string | null
+          founders?: string[] | null
+          industry?: string | null
+          is_verified?: boolean | null
+          keywords?: string[] | null
+          legal_name?: string | null
+          location?: Json | null
+          logo_url?: string | null
+          media?: Json | null
           name?: string
-          phone?: string | null
-          programs?: string[] | null
-          rating?: number | null
+          number_of_employees?: string | null
+          platform_score?: number | null
+          profile_completion?: number | null
+          registration_info?: Json | null
+          revenue_range?: string | null
           review_count?: number | null
+          social_links?: Json | null
           status?: string | null
+          sub_industry?: string | null
+          tagline?: string | null
+          trust_level?: Database["public"]["Enums"]["trust_level"] | null
           updated_at?: string
-          verification_status?: string | null
-          website?: string | null
         }
         Relationships: []
       }
@@ -282,11 +336,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "reviews_business_id_fkey"
+            foreignKeyName: "reviews_entity_id_fkey"
             columns: ["business_id"]
             isOneToOne: false
-            referencedRelation: "businesses"
-            referencedColumns: ["id"]
+            referencedRelation: "entities"
+            referencedColumns: ["entity_id"]
           },
           {
             foreignKeyName: "reviews_parent_review_id_fkey"
@@ -327,8 +381,8 @@ export type Database = {
             foreignKeyName: "user_roles_entity_id_fkey"
             columns: ["entity_id"]
             isOneToOne: false
-            referencedRelation: "businesses"
-            referencedColumns: ["id"]
+            referencedRelation: "entities"
+            referencedColumns: ["entity_id"]
           },
         ]
       }
@@ -354,6 +408,16 @@ export type Database = {
     }
     Enums: {
       app_role: "super_admin" | "entity_admin" | "user"
+      entity_type:
+        | "business"
+        | "service"
+        | "movie_theatre"
+        | "institution"
+        | "learning_platform"
+        | "ecommerce"
+        | "product"
+        | "other"
+      trust_level: "basic" | "verified" | "trusted_partner"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -470,6 +534,17 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["super_admin", "entity_admin", "user"],
+      entity_type: [
+        "business",
+        "service",
+        "movie_theatre",
+        "institution",
+        "learning_platform",
+        "ecommerce",
+        "product",
+        "other",
+      ],
+      trust_level: ["basic", "verified", "trusted_partner"],
     },
   },
 } as const

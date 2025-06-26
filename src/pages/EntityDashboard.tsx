@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useBusiness } from '@/hooks/useBusinesses';
+import { useEntity } from '@/hooks/useEntities';
 import { useReviews } from '@/hooks/useReviews';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -19,7 +19,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 const EntityDashboard = () => {
   const { id } = useParams();
   const { user } = useAuth();
-  const { data: business, isLoading: businessLoading } = useBusiness(id!);
+  const { data: entity, isLoading: entityLoading } = useEntity(id!);
   const { data: reviews, isLoading: reviewsLoading } = useReviews(id);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -31,48 +31,67 @@ const EntityDashboard = () => {
     phone: '',
     email: '',
     website: '',
-    location: '',
-    category: ''
+    address: '',
+    city: '',
+    industry: '',
+    tagline: ''
   });
 
   React.useEffect(() => {
-    if (business) {
+    if (entity) {
       setFormData({
-        name: business.name || '',
-        description: business.description || '',
-        phone: business.phone || '',
-        email: business.email || '',
-        website: business.website || '',
-        location: business.location || '',
-        category: business.category || ''
+        name: entity.name || '',
+        description: entity.description || '',
+        phone: entity.contact?.phone || '',
+        email: entity.contact?.email || '',
+        website: entity.contact?.website || '',
+        address: entity.location?.address || '',
+        city: entity.location?.city || '',
+        industry: entity.industry || '',
+        tagline: entity.tagline || ''
       });
     }
-  }, [business]);
+  }, [entity]);
 
   const handleSave = async () => {
     try {
       const { error } = await supabase
-        .from('businesses')
-        .update(formData)
-        .eq('id', id);
+        .from('entities')
+        .update({
+          name: formData.name,
+          description: formData.description,
+          industry: formData.industry,
+          tagline: formData.tagline,
+          contact: {
+            phone: formData.phone,
+            email: formData.email,
+            website: formData.website
+          },
+          location: {
+            address: formData.address,
+            city: formData.city
+          },
+          updated_at: new Date().toISOString()
+        })
+        .eq('entity_id', id);
 
       if (error) throw error;
 
       toast({
         title: 'Success',
-        description: 'Business profile updated successfully',
+        description: 'Entity profile updated successfully',
       });
       setIsEditing(false);
     } catch (error) {
       toast({
         title: 'Error',
-        description: 'Failed to update business profile',
+        description: 'Failed to update entity profile',
         variant: 'destructive',
       });
     }
   };
 
-  if (businessLoading) {
+  if (entityLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">Loading...</div>
@@ -80,17 +99,17 @@ const EntityDashboard = () => {
     );
   }
 
-  if (!business) {
+  if (!entity) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <Card className="w-96">
           <CardHeader>
-            <CardTitle>Business Not Found</CardTitle>
-            <CardDescription>The business you're looking for doesn't exist.</CardDescription>
+            <CardTitle>Entity Not Found</CardTitle>
+            <CardDescription>The entity you're looking for doesn't exist.</CardDescription>
           </CardHeader>
           <CardContent>
             <Button onClick={() => navigate('/businesses')} className="w-full">
-              Browse Businesses
+              Browse Entities
             </Button>
           </CardContent>
         </Card>
@@ -98,7 +117,7 @@ const EntityDashboard = () => {
     );
   }
 
-  const averageRating = business.rating || 0;
+  const averageRating = entity.average_rating || 0;
   const totalReviews = reviews?.length || 0;
   const recentReviews = reviews?.slice(0, 5) || [];
 
@@ -106,8 +125,8 @@ const EntityDashboard = () => {
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">{business.name} Dashboard</h1>
-          <p className="text-gray-600 mt-2">Manage your business profile and reviews</p>
+          <h1 className="text-3xl font-bold text-gray-900">{entity.name} Dashboard</h1>
+          <p className="text-gray-600 mt-2">Manage your entity profile and reviews</p>
         </div>
 
         {/* Stats Cards */}
@@ -142,8 +161,8 @@ const EntityDashboard = () => {
                 <TrendingUp className="h-8 w-8 text-green-600" />
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Verification Status</p>
-                  <Badge variant={business.verification_status === 'Verified' ? 'default' : 'secondary'}>
-                    {business.verification_status}
+                  <Badge variant={entity.is_verified ? 'default' : 'secondary'}>
+                    {entity.is_verified ? 'Verified' : 'Unverified'}
                   </Badge>
                 </div>
               </div>
@@ -167,7 +186,7 @@ const EntityDashboard = () => {
 
         <Tabs defaultValue="profile" className="space-y-6">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="profile">Business Profile</TabsTrigger>
+            <TabsTrigger value="profile">Entity Profile</TabsTrigger>
             <TabsTrigger value="reviews">Reviews</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
           </TabsList>
@@ -176,8 +195,8 @@ const EntityDashboard = () => {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
-                  <CardTitle>Business Information</CardTitle>
-                  <CardDescription>Manage your business profile and contact information</CardDescription>
+                  <CardTitle>Entity Information</CardTitle>
+                  <CardDescription>Manage your entity profile and contact information</CardDescription>
                 </div>
                 <Button
                   onClick={() => isEditing ? handleSave() : setIsEditing(true)}
@@ -191,7 +210,7 @@ const EntityDashboard = () => {
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <Label htmlFor="name">Business Name</Label>
+                    <Label htmlFor="name">Entity Name</Label>
                     <Input
                       id="name"
                       value={formData.name}
@@ -201,24 +220,13 @@ const EntityDashboard = () => {
                   </div>
                   
                   <div>
-                    <Label htmlFor="category">Category</Label>
-                    <Select 
-                      value={formData.category} 
-                      onValueChange={(value) => setFormData({...formData, category: value})}
+                    <Label htmlFor="industry">Industry</Label>
+                    <Input
+                      id="industry"
+                      value={formData.industry}
+                      onChange={(e) => setFormData({...formData, industry: e.target.value})}
                       disabled={!isEditing}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Restaurant">Restaurant</SelectItem>
-                        <SelectItem value="Hotel">Hotel</SelectItem>
-                        <SelectItem value="Retail">Retail</SelectItem>
-                        <SelectItem value="Service">Service</SelectItem>
-                        <SelectItem value="Healthcare">Healthcare</SelectItem>
-                        <SelectItem value="Technology">Technology</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    />
                   </div>
                   
                   <div>
@@ -253,14 +261,35 @@ const EntityDashboard = () => {
                   </div>
                   
                   <div>
-                    <Label htmlFor="location">Location</Label>
+                    <Label htmlFor="city">City</Label>
                     <Input
-                      id="location"
-                      value={formData.location}
-                      onChange={(e) => setFormData({...formData, location: e.target.value})}
+                      id="city"
+                      value={formData.city}
+                      onChange={(e) => setFormData({...formData, city: e.target.value})}
                       disabled={!isEditing}
                     />
                   </div>
+                </div>
+                
+                <div>
+                  <Label htmlFor="tagline">Tagline</Label>
+                  <Input
+                    id="tagline"
+                    value={formData.tagline}
+                    onChange={(e) => setFormData({...formData, tagline: e.target.value})}
+                    disabled={!isEditing}
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="address">Address</Label>
+                  <Textarea
+                    id="address"
+                    value={formData.address}
+                    onChange={(e) => setFormData({...formData, address: e.target.value})}
+                    disabled={!isEditing}
+                    rows={2}
+                  />
                 </div>
                 
                 <div>
