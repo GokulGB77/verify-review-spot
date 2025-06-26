@@ -1,4 +1,5 @@
 
+
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -27,8 +28,70 @@ const BusinessDirectory = () => {
     console.log('Searching for:', searchQuery);
   };
 
+  // Calculate correct ratings and review counts for each business
+  const getBusinessWithCorrectStats = () => {
+    // Group reviews by business and user, then transform
+    const groupedReviews = allReviews.reduce((acc, review) => {
+      const businessId = review.business_id;
+      const userId = review.user_id;
+      const groupKey = `${businessId}-${userId}`;
+      
+      if (!acc[groupKey]) {
+        acc[groupKey] = [];
+      }
+      
+      acc[groupKey].push(review);
+      return acc;
+    }, {} as Record<string, any[]>);
+
+    // Transform each group to get only the latest review from each user
+    const transformedReviews = Object.entries(groupedReviews).map(([groupKey, reviews]) => {
+      const transformedGroup = transformReviews(reviews);
+      return transformedGroup.length > 0 ? transformedGroup[0] : null;
+    }).filter(Boolean);
+
+    // Group transformed reviews by business to calculate stats
+    const businessStats = transformedReviews.reduce((acc, review) => {
+      const businessId = review.businessId || allReviews.find(r => r.id === review.id)?.business_id;
+      if (!businessId) return acc;
+      
+      if (!acc[businessId]) {
+        acc[businessId] = {
+          ratings: [],
+          count: 0
+        };
+      }
+      
+      acc[businessId].ratings.push(review.rating);
+      acc[businessId].count++;
+      return acc;
+    }, {} as Record<string, { ratings: number[], count: number }>);
+
+    // Calculate average rating for each business
+    const businessRatings = Object.entries(businessStats).reduce((acc, [businessId, stats]) => {
+      const averageRating = stats.ratings.length > 0 
+        ? stats.ratings.reduce((sum, rating) => sum + rating, 0) / stats.ratings.length
+        : 0;
+      
+      acc[businessId] = {
+        average_rating: averageRating,
+        review_count: stats.count
+      };
+      return acc;
+    }, {} as Record<string, { average_rating: number, review_count: number }>);
+
+    // Return businesses with corrected stats
+    return businesses.map(business => ({
+      ...business,
+      average_rating: businessRatings[business.entity_id]?.average_rating || 0,
+      review_count: businessRatings[business.entity_id]?.review_count || 0
+    }));
+  };
+
+  const businessesWithCorrectStats = getBusinessWithCorrectStats();
+
   const getFilteredBusinesses = () => {
-    let filtered = businesses;
+    let filtered = businessesWithCorrectStats;
     
     if (searchQuery.trim()) {
       filtered = filtered.filter(business => 
@@ -254,3 +317,4 @@ const BusinessDirectory = () => {
 };
 
 export default BusinessDirectory;
+
