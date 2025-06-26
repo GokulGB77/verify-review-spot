@@ -132,12 +132,12 @@ const BusinessCard = ({
 
           <div className="flex gap-2 pt-2">
             <Button asChild className="flex-1 bg-blue-600 hover:bg-blue-700">
-              <Link to={`/business/${entity_id}`}>
+              <Link to={`/entities/${entity_id}`}>
                 View Reviews
               </Link>
             </Button>
             <Button variant="outline" asChild className="border-gray-300 hover:bg-gray-50">
-              <Link to={`/business/${entity_id}/write-review`}>
+              <Link to={`/write-review?entityId=${entity_id}`}>
                 Write Review
               </Link>
             </Button>
