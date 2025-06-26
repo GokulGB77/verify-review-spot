@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserRoles } from '@/hooks/useUserRoles';
@@ -63,12 +64,12 @@ const SuperAdminDashboard = () => {
     },
   });
 
-  // Deactivate business mutation (we'll set verification_status to 'Deactivated')
+  // Deactivate business mutation (set verification_status to 'Inactive')
   const deactivateBusiness = useMutation({
     mutationFn: async (businessId: string) => {
       const { error } = await supabase
         .from('businesses')
-        .update({ verification_status: 'Deactivated' })
+        .update({ verification_status: 'Inactive' })
         .eq('id', businessId);
       
       if (error) throw error;
@@ -89,9 +90,11 @@ const SuperAdminDashboard = () => {
     },
   });
 
-  // Reactivate business mutation (set verification_status back to 'Unverified')
+  // Reactivate business mutation (restore to previous status - default to 'Unverified')
   const reactivateBusiness = useMutation({
     mutationFn: async (businessId: string) => {
+      // For simplicity, we'll reactivate to 'Unverified' status
+      // In a more complex system, you might store the previous status
       const { error } = await supabase
         .from('businesses')
         .update({ verification_status: 'Unverified' })
@@ -228,7 +231,7 @@ const SuperAdminDashboard = () => {
                       <SelectItem value="Verified">Verified</SelectItem>
                       <SelectItem value="Unverified">Unverified</SelectItem>
                       <SelectItem value="Pending">Pending</SelectItem>
-                      <SelectItem value="Deactivated">Deactivated</SelectItem>
+                      <SelectItem value="Inactive">Inactive</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -338,7 +341,7 @@ const SuperAdminDashboard = () => {
                               </DialogContent>
                             </Dialog>
                             
-                            {business.verification_status === 'Deactivated' ? (
+                            {business.verification_status === 'Inactive' ? (
                               <Button
                                 variant="outline"
                                 size="sm"
