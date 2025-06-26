@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -54,7 +55,7 @@ const Homepage = () => {
 
   // Create a map of business ID to business details for easy lookup
   const businessMap = businesses.reduce((acc, business) => {
-    acc[business.id] = business;
+    acc[business.entity_id] = business;
     return acc;
   }, {} as Record<string, any>);
 
@@ -69,7 +70,7 @@ const Homepage = () => {
         id: review.id,
         businessId: review.business_id,
         businessName: business?.name || 'Unknown Business',
-        businessCategory: business?.category || 'Unknown Category',
+        businessCategory: business?.industry || 'Unknown Category',
         businessLocation: business?.location || 'Location not specified',
         userName: displayName,
         mainBadge: mainBadge,
