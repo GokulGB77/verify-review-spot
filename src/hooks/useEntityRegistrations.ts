@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -147,7 +146,7 @@ export const useEntityRegistrations = () => {
 
       if (error) throw error;
 
-      // If approved, create the entity
+      // If approved, create the entity with claimed_by_business set to true
       if (status === 'approved') {
         const registration = registrations.find(r => r.id === registrationId);
         if (registration) {
@@ -170,6 +169,13 @@ export const useEntityRegistrations = () => {
               },
               is_verified: true,
               trust_level: 'verified',
+              claimed_by_business: true, // Mark as business claimed
+              registration_info: {
+                registration_number: registration.registration_number,
+                tax_id: registration.tax_id,
+                owner_name: registration.owner_name,
+                owner_email: registration.owner_email
+              }
             });
 
           if (entityError) throw entityError;
@@ -179,7 +185,7 @@ export const useEntityRegistrations = () => {
       toast({
         title: `Registration ${status === 'approved' ? 'Approved' : 'Rejected'}`,
         description: status === 'approved' 
-          ? "The entity has been approved and added to the directory."
+          ? "The entity has been approved and added to the directory as a business claimed entity."
           : "The registration has been rejected.",
       });
 

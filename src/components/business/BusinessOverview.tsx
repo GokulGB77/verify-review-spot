@@ -31,7 +31,7 @@ const BusinessOverview = ({ business, totalReviews, verifiedReviewsCount }: Busi
             </div>
             <div className="flex justify-between">
               <span>Average Rating</span>
-              <span className="font-semibold">{(business.rating || 0).toFixed(1)}/5</span>
+              <span className="font-semibold">{(business.average_rating || 0).toFixed(1)}/5</span>
             </div>
           </div>
         </CardContent>
@@ -45,7 +45,7 @@ const BusinessOverview = ({ business, totalReviews, verifiedReviewsCount }: Busi
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <span>Identity Verified</span>
-              {business.verification_status === 'Verified' ? (
+              {business.is_verified ? (
                 <CheckCircle className="h-5 w-5 text-green-500" />
               ) : (
                 <AlertTriangle className="h-5 w-5 text-yellow-500" />
@@ -53,7 +53,7 @@ const BusinessOverview = ({ business, totalReviews, verifiedReviewsCount }: Busi
             </div>
             <div className="flex items-center justify-between">
               <span>Business Claimed</span>
-              {business.verification_status !== 'Unclaimed' ? (
+              {business.claimed_by_business ? (
                 <CheckCircle className="h-5 w-5 text-green-500" />
               ) : (
                 <AlertTriangle className="h-5 w-5 text-yellow-500" />
