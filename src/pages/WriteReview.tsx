@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -368,77 +367,35 @@ const WriteReview = () => {
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <History className="h-5 w-5 text-blue-500" />
-                  <span>Your Review History</span>
+                  <span>Your Existing Review</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {/* Original Review */}
-                  <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                    <div className="flex items-center justify-between mb-2">
-                      <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs px-2 py-1">
-                        Original
-                      </Badge>
-                      <div className="flex items-center space-x-2">
-                        <div className="flex items-center">
-                          {[...Array(5)].map((_, i) => (
-                            <Star
-                              key={i}
-                              className={`h-4 w-4 ${
-                                i < existingReview.rating
-                                  ? 'text-yellow-400 fill-current'
-                                  : 'text-gray-300'
-                              }`}
-                            />
-                          ))}
-                        </div>
-                        <span className="font-medium">{existingReview.rating}/5</span>
-                        <span className="text-sm text-gray-500">
-                          {new Date(existingReview.created_at).toLocaleDateString()}
-                        </span>
-                      </div>
-                    </div>
-                    <p className="text-gray-700 text-sm">
-                      {existingReview.content}
-                    </p>
-                  </div>
-
-                  {/* Review Updates */}
-                  {reviewUpdates.length > 0 && (
-                    <div className="space-y-3">
-                      <div className="text-sm font-medium text-gray-700">
-                        Previous Updates ({reviewUpdates.length})
-                      </div>
-                      {reviewUpdates.map((update: any) => (
-                        <div key={update.id} className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                          <div className="flex items-center justify-between mb-2">
-                            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs px-2 py-1">
-                              Update #{update.update_number}
-                            </Badge>
-                            <div className="flex items-center space-x-2">
-                              <div className="flex items-center">
-                                {[...Array(5)].map((_, i) => (
-                                  <Star
-                                    key={i}
-                                    className={`h-4 w-4 ${
-                                      i < update.rating
-                                        ? 'text-yellow-400 fill-current'
-                                        : 'text-gray-300'
-                                    }`}
-                                  />
-                                ))}
-                              </div>
-                              <span className="font-medium">{update.rating}/5</span>
-                              <span className="text-sm text-gray-500">
-                                {new Date(update.created_at).toLocaleDateString()}
-                              </span>
-                            </div>
-                          </div>
-                          <p className="text-gray-700 text-sm">
-                            {update.content}
-                          </p>
-                        </div>
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <div className="flex items-center">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`h-4 w-4 ${
+                            i < existingReview.rating
+                              ? 'text-yellow-400 fill-current'
+                              : 'text-gray-300'
+                          }`}
+                        />
                       ))}
+                    </div>
+                    <span className="font-medium">{existingReview.rating}/5</span>
+                    <span className="text-sm text-gray-500">
+                      Original review on {new Date(existingReview.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <p className="text-gray-700 text-sm bg-gray-50 p-3 rounded">
+                    {existingReview.content}
+                  </p>
+                  {reviewUpdates.length > 0 && (
+                    <div className="text-sm text-blue-600">
+                      You have {reviewUpdates.length} previous update{reviewUpdates.length !== 1 ? 's' : ''} for this review
                     </div>
                   )}
                 </div>
