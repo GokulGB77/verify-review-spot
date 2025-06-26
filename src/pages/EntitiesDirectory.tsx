@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -189,6 +188,7 @@ const BusinessDirectory = () => {
               location={business.location}
               contact={business.contact}
               trust_level={business.trust_level}
+              claimed_by_business={business.claimed_by_business}
             />
           ))}
         </div>

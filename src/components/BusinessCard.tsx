@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,6 +16,7 @@ interface BusinessCardProps {
   location?: any;
   contact?: any;
   trust_level?: string | null;
+  claimed_by_business?: boolean | null;
 }
 
 const BusinessCard = ({
@@ -29,7 +29,8 @@ const BusinessCard = ({
   is_verified,
   location,
   contact,
-  trust_level
+  trust_level,
+  claimed_by_business
 }: BusinessCardProps) => {
   const getVerificationBadgeColor = (verified: boolean | null) => {
     return verified 
@@ -55,7 +56,7 @@ const BusinessCard = ({
             <CardTitle className="text-xl font-semibold text-gray-900 line-clamp-1">
               {name}
             </CardTitle>
-            {trust_level === 'verified' && (
+            {claimed_by_business && (
               <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs">
                 Trusted
               </Badge>

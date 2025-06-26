@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -55,7 +54,7 @@ const BusinessHeader = ({ business, totalReviews }: BusinessHeaderProps) => {
               </CardDescription>
             </div>
             <div className="flex items-center gap-2">
-              {business.trust_level === 'verified' && (
+              {business.claimed_by_business && (
                 <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
                   Trusted
                 </Badge>
