@@ -80,7 +80,7 @@ const Homepage = () => {
         title: `Review for ${business?.name || 'Business'}`,
         content: review.content,
         isVerified: mainBadge === 'Verified User',
-        proofProvided: !!review.proof_url, // Check if proof_url exists instead of proof_provided
+        proofProvided: !!review.proof_url,
         upvotes: review.upvotes || 0,
         downvotes: review.downvotes || 0,
         pseudonym: review.profiles?.pseudonym,
@@ -240,7 +240,7 @@ const Homepage = () => {
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-2">
                         <Link 
-                          to={`/business/${review.businessId}`}
+                          to={`/entities/${review.businessId}`}
                           className="text-lg font-semibold text-blue-600 hover:text-blue-800"
                         >
                           {review.businessName}
@@ -249,7 +249,10 @@ const Homepage = () => {
                       </div>
                       <div className="flex items-center space-x-2 text-sm text-gray-600 mb-2">
                         <MapPin className="h-3 w-3" />
-                        {review.businessLocation}
+                        {typeof review.businessLocation === 'object' 
+                          ? `${(review.businessLocation as any)?.city || ''}, ${(review.businessLocation as any)?.state || ''}`
+                          : review.businessLocation
+                        }
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
@@ -278,7 +281,17 @@ const Homepage = () => {
           </div>
         ) : (
           <div className="text-center py-12">
-            <p className="text-gray-500">No reviews found matching your criteria.</p>
+            <p className="text-gray-500">
+              {businesses.length === 0 
+                ? "No reviews available. Add a business and write the first review!"
+                : "No reviews found matching your criteria."
+              }
+            </p>
+            {businesses.length > 0 && (
+              <Button className="mt-4" asChild>
+                <Link to="/write-review">Write the First Review</Link>
+              </Button>
+            )}
           </div>
         )}
 

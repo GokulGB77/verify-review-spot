@@ -1,5 +1,4 @@
 
-
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -9,6 +8,8 @@ import Footer from './components/common/Footer';
 import Homepage from './pages/Homepage';
 import EntitiesDirectory from './pages/EntitiesDirectory';
 import EntityProfile from './pages/EntityProfile';
+import WriteReview from './pages/WriteReview';
+import Reviews from './pages/Reviews';
 import Auth from './pages/Auth';
 import ProfileSettings from './pages/ProfileSettings';
 import EntityRegistration from './pages/EntityRegistration';
@@ -32,6 +33,8 @@ function App() {
                 <Route path="/" element={<Homepage />} />
                 <Route path="/entities" element={<EntitiesDirectory />} />
                 <Route path="/entities/:id" element={<EntityProfile />} />
+                <Route path="/write-review" element={<WriteReview />} />
+                <Route path="/reviews" element={<Reviews />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/profile" element={<ProfileSettings />} />
                 <Route path="/register-entity" element={<EntityRegistration />} />
@@ -71,4 +74,3 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
 }
 
 export default App;
-

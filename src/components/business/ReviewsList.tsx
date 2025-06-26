@@ -36,7 +36,7 @@ const ReviewsList = ({ reviews, businessId, isLoading }: ReviewsListProps) => {
         <p className="text-gray-500 mb-4">No reviews yet. Be the first to write one!</p>
         {user ? (
           <Button asChild>
-            <Link to={`/business/${businessId}/write-review`}>
+            <Link to="/write-review">
               Write the First Review
             </Link>
           </Button>
