@@ -10,7 +10,7 @@ import ReviewCard from '@/components/ReviewCard';
 import Header from "@/components/common/Header";
 import Footer from "@/components/common/Footer";
 import { useReviews } from '@/hooks/useReviews';
-import { useBusinesses } from '@/hooks/useBusinesses';
+import { useEntities } from '@/hooks/useEntities';
 import SingleReviewCard from '@/components/business/SingleReviewCard';
 import { transformReviews, getDisplayName, getMainBadge, getReviewSpecificBadge } from '@/utils/reviewHelpers';
 
@@ -20,7 +20,7 @@ const Homepage = () => {
   const [viewingHistory, setViewingHistory] = useState<Record<string, boolean>>({});
   
   const { data: allReviews = [], isLoading: reviewsLoading } = useReviews();
-  const { data: businesses = [] } = useBusinesses();
+  const { data: entities = [] } = useEntities();
 
   const handleSearch = () => {
     console.log('Searching for:', searchQuery);
@@ -47,9 +47,9 @@ const Homepage = () => {
     }));
   };
 
-  // Create a map of business ID to business details for easy lookup
-  const businessMap = businesses.reduce((acc, business) => {
-    acc[business.entity_id] = business;
+  // Create a map of entity_id to entity details for easy lookup
+  const entityMap = entities.reduce((acc, entity) => {
+    acc[entity.entity_id] = entity;
     return acc;
   }, {} as Record<string, any>);
 
@@ -70,7 +70,7 @@ const Homepage = () => {
   // Transform each group using the helper function
   const transformedReviews = Object.entries(groupedReviews).map(([groupKey, reviews]) => {
     const [businessId, userId] = groupKey.split('-');
-    const business = businessMap[businessId];
+    const entity = entityMap[businessId];
     
     const transformedGroup = transformReviews(reviews);
     if (transformedGroup.length === 0) return null;
@@ -80,10 +80,10 @@ const Homepage = () => {
     return {
       ...latestReview,
       businessId: businessId,
-      businessName: business?.name || 'Unknown Business',
-      businessCategory: business?.industry || 'Unknown Category',
-      businessLocation: formatLocation(business?.location),
-      title: `Review for ${business?.name || 'Business'}`,
+      businessName: entity?.name || 'Unknown Business',
+      businessCategory: entity?.industry || 'Unknown Category',
+      businessLocation: formatLocation(entity?.location),
+      title: `Review for ${entity?.name || 'Business'}`,
       isVerified: latestReview.mainBadge === 'Verified User',
     };
   }).filter(Boolean);
@@ -287,12 +287,12 @@ const Homepage = () => {
         ) : (
           <div className="text-center py-12">
             <p className="text-gray-500">
-              {businesses.length === 0 
+              {entities.length === 0 
                 ? "No reviews available. Add a business and write the first review!"
                 : "No reviews found matching your criteria."
               }
             </p>
-            {businesses.length > 0 && (
+            {entities.length > 0 && (
               <Button className="mt-4" asChild>
                 <Link to="/write-review">Write the First Review</Link>
               </Button>
@@ -307,7 +307,7 @@ const Homepage = () => {
               Load More Reviews
             </Button>
           </div>
-        )}
+          )}
       </div>
     </div>
   );
