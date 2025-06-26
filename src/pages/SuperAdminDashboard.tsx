@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Users, Building2, MessageSquare, TrendingUp, Search, Filter, Shield, FileCheck, UserCheck, BarChart3, ClipboardList, Eye, Trash2, Ban, RefreshCcw } from 'lucide-react';
+import { Users, Building2, MessageSquare, TrendingUp, Search, Filter, Shield, FileCheck, UserCheck, BarChart3, ClipboardList, Eye, Trash2, Ban, RefreshCcw, Edit } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -20,6 +20,7 @@ import RoleManagement from '@/components/RoleManagement';
 import VerificationManagement from '@/components/VerificationManagement';
 import ProofVerificationManagement from '@/components/ProofVerificationManagement';
 import EntityRegistrationManagement from '@/components/EntityRegistrationManagement';
+import BusinessEditForm from '@/components/BusinessEditForm';
 
 const SuperAdminDashboard = () => {
   const { user } = useAuth();
@@ -36,6 +37,7 @@ const SuperAdminDashboard = () => {
   const [activeSection, setActiveSection] = useState('businesses');
   const [selectedBusiness, setSelectedBusiness] = useState<any>(null);
   const [businessToDelete, setBusinessToDelete] = useState<any>(null);
+  const [isEditMode, setIsEditMode] = useState(false);
 
   // Delete business mutation
   const deleteBusiness = useMutation({
@@ -197,6 +199,15 @@ const SuperAdminDashboard = () => {
     }
   ];
 
+  const handleViewDialogClose = () => {
+    setSelectedBusiness(null);
+    setIsEditMode(false);
+  };
+
+  const handleEditSuccess = () => {
+    setIsEditMode(false);
+  };
+
   const renderContent = () => {
     switch (activeSection) {
       case 'businesses':
@@ -287,7 +298,7 @@ const SuperAdminDashboard = () => {
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-2">
-                            <Dialog>
+                            <Dialog onOpenChange={(open) => !open && handleViewDialogClose()}>
                               <DialogTrigger asChild>
                                 <Button 
                                   variant="outline" 
@@ -298,70 +309,92 @@ const SuperAdminDashboard = () => {
                                   View
                                 </Button>
                               </DialogTrigger>
-                              <DialogContent className="max-w-2xl">
+                              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                                 <DialogHeader>
-                                  <DialogTitle>Business Details</DialogTitle>
+                                  <DialogTitle className="flex items-center gap-2">
+                                    Business Details
+                                    {!isEditMode && (
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setIsEditMode(true)}
+                                      >
+                                        <Edit className="h-4 w-4 mr-1" />
+                                        Edit
+                                      </Button>
+                                    )}
+                                  </DialogTitle>
                                 </DialogHeader>
                                 {selectedBusiness && (
                                   <div className="space-y-4">
-                                    <div className="grid grid-cols-2 gap-4">
-                                      <div>
-                                        <Label className="font-semibold">Name</Label>
-                                        <p className="text-sm">{selectedBusiness.name}</p>
-                                      </div>
-                                      <div>
-                                        <Label className="font-semibold">Category</Label>
-                                        <p className="text-sm">{selectedBusiness.category}</p>
-                                      </div>
-                                      <div>
-                                        <Label className="font-semibold">Location</Label>
-                                        <p className="text-sm">{selectedBusiness.location || 'Not provided'}</p>
-                                      </div>
-                                      <div>
-                                        <Label className="font-semibold">Rating</Label>
-                                        <p className="text-sm">{selectedBusiness.rating || 0}/5 ({selectedBusiness.review_count || 0} reviews)</p>
-                                      </div>
-                                      <div>
-                                        <Label className="font-semibold">Website</Label>
-                                        <p className="text-sm">{selectedBusiness.website || 'Not provided'}</p>
-                                      </div>
-                                      <div>
-                                        <Label className="font-semibold">Phone</Label>
-                                        <p className="text-sm">{selectedBusiness.phone || 'Not provided'}</p>
-                                      </div>
-                                      <div>
-                                        <Label className="font-semibold">Email</Label>
-                                        <p className="text-sm">{selectedBusiness.email || 'Not provided'}</p>
-                                      </div>
-                                      <div>
-                                        <Label className="font-semibold">Verification Status</Label>
-                                        <Badge variant={selectedBusiness.verification_status === 'Verified' ? 'default' : 'secondary'}>
-                                          {selectedBusiness.verification_status}
-                                        </Badge>
-                                      </div>
-                                      <div>
-                                        <Label className="font-semibold">Active Status</Label>
-                                        <Badge variant={(selectedBusiness.status || 'active') === 'active' ? 'default' : 'destructive'}>
-                                          {(selectedBusiness.status || 'active') === 'active' ? 'Active' : 'Inactive'}
-                                        </Badge>
-                                      </div>
-                                    </div>
-                                    {selectedBusiness.description && (
-                                      <div>
-                                        <Label className="font-semibold">Description</Label>
-                                        <p className="text-sm mt-1">{selectedBusiness.description}</p>
-                                      </div>
+                                    {isEditMode ? (
+                                      <BusinessEditForm
+                                        business={selectedBusiness}
+                                        onCancel={() => setIsEditMode(false)}
+                                        onSuccess={handleEditSuccess}
+                                      />
+                                    ) : (
+                                      <>
+                                        <div className="grid grid-cols-2 gap-4">
+                                          <div>
+                                            <Label className="font-semibold">Name</Label>
+                                            <p className="text-sm">{selectedBusiness.name}</p>
+                                          </div>
+                                          <div>
+                                            <Label className="font-semibold">Category</Label>
+                                            <p className="text-sm">{selectedBusiness.category}</p>
+                                          </div>
+                                          <div>
+                                            <Label className="font-semibold">Location</Label>
+                                            <p className="text-sm">{selectedBusiness.location || 'Not provided'}</p>
+                                          </div>
+                                          <div>
+                                            <Label className="font-semibold">Rating</Label>
+                                            <p className="text-sm">{selectedBusiness.rating || 0}/5 ({selectedBusiness.review_count || 0} reviews)</p>
+                                          </div>
+                                          <div>
+                                            <Label className="font-semibold">Website</Label>
+                                            <p className="text-sm">{selectedBusiness.website || 'Not provided'}</p>
+                                          </div>
+                                          <div>
+                                            <Label className="font-semibold">Phone</Label>
+                                            <p className="text-sm">{selectedBusiness.phone || 'Not provided'}</p>
+                                          </div>
+                                          <div>
+                                            <Label className="font-semibold">Email</Label>
+                                            <p className="text-sm">{selectedBusiness.email || 'Not provided'}</p>
+                                          </div>
+                                          <div>
+                                            <Label className="font-semibold">Verification Status</Label>
+                                            <Badge variant={selectedBusiness.verification_status === 'Verified' ? 'default' : 'secondary'}>
+                                              {selectedBusiness.verification_status}
+                                            </Badge>
+                                          </div>
+                                          <div>
+                                            <Label className="font-semibold">Active Status</Label>
+                                            <Badge variant={(selectedBusiness.status || 'active') === 'active' ? 'default' : 'destructive'}>
+                                              {(selectedBusiness.status || 'active') === 'active' ? 'Active' : 'Inactive'}
+                                            </Badge>
+                                          </div>
+                                        </div>
+                                        {selectedBusiness.description && (
+                                          <div>
+                                            <Label className="font-semibold">Description</Label>
+                                            <p className="text-sm mt-1">{selectedBusiness.description}</p>
+                                          </div>
+                                        )}
+                                        <div className="grid grid-cols-2 gap-4">
+                                          <div>
+                                            <Label className="font-semibold">Founded Year</Label>
+                                            <p className="text-sm">{selectedBusiness.founded_year || 'Not provided'}</p>
+                                          </div>
+                                          <div>
+                                            <Label className="font-semibold">Employee Count</Label>
+                                            <p className="text-sm">{selectedBusiness.employee_count || 'Not provided'}</p>
+                                          </div>
+                                        </div>
+                                      </>
                                     )}
-                                    <div className="grid grid-cols-2 gap-4">
-                                      <div>
-                                        <Label className="font-semibold">Founded Year</Label>
-                                        <p className="text-sm">{selectedBusiness.founded_year || 'Not provided'}</p>
-                                      </div>
-                                      <div>
-                                        <Label className="font-semibold">Employee Count</Label>
-                                        <p className="text-sm">{selectedBusiness.employee_count || 'Not provided'}</p>
-                                      </div>
-                                    </div>
                                   </div>
                                 )}
                               </DialogContent>
