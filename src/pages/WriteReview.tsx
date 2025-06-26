@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -27,11 +26,20 @@ interface ReviewFormData {
   reviewSpecificBadge: string;
 }
 
+interface UserProfile {
+  id: string;
+  pseudonym: string | null;
+  pseudonym_set: boolean;
+  main_badge: string | null;
+  is_verified: boolean;
+}
+
 const WriteReview = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const { data: businesses = [] } = useBusinesses();
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedBusiness, setSelectedBusiness] = useState<any>(null);
@@ -59,13 +67,37 @@ const WriteReview = () => {
     reviewSpecificBadge: '',
   });
 
+  // Fetch user profile
+  useEffect(() => {
+    if (user) {
+      fetchProfile();
+    }
+  }, [user]);
+
+  const fetchProfile = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, pseudonym, pseudonym_set, main_badge, is_verified')
+        .eq('id', user.id)
+        .single();
+
+      if (error) throw error;
+      setProfile(data);
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+    }
+  };
+
   useEffect(() => {
     if (!user) {
       navigate('/auth');
       return;
     }
 
-    if (!profile?.pseudonym_set) {
+    if (profile && !profile.pseudonym_set) {
       toast({
         title: "Pseudonym Required",
         description: "Please set up your pseudonym before writing reviews.",
