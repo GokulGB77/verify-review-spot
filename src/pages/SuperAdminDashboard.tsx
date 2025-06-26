@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserRoles } from '@/hooks/useUserRoles';
@@ -33,6 +32,7 @@ const SuperAdminDashboard = () => {
   
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [verificationFilter, setVerificationFilter] = useState('all');
   const [activeSection, setActiveSection] = useState('businesses');
   const [selectedBusiness, setSelectedBusiness] = useState<any>(null);
   const [businessToDelete, setBusinessToDelete] = useState<any>(null);
@@ -64,12 +64,12 @@ const SuperAdminDashboard = () => {
     },
   });
 
-  // Deactivate business mutation (set verification_status to 'Inactive')
+  // Deactivate business mutation (set status to 'inactive')
   const deactivateBusiness = useMutation({
     mutationFn: async (businessId: string) => {
       const { error } = await supabase
         .from('businesses')
-        .update({ verification_status: 'Inactive' })
+        .update({ status: 'inactive' })
         .eq('id', businessId);
       
       if (error) throw error;
@@ -90,14 +90,12 @@ const SuperAdminDashboard = () => {
     },
   });
 
-  // Reactivate business mutation (restore to previous status - default to 'Unverified')
+  // Reactivate business mutation (set status to 'active')
   const reactivateBusiness = useMutation({
     mutationFn: async (businessId: string) => {
-      // For simplicity, we'll reactivate to 'Unverified' status
-      // In a more complex system, you might store the previous status
       const { error } = await supabase
         .from('businesses')
-        .update({ verification_status: 'Unverified' })
+        .update({ status: 'active' })
         .eq('id', businessId);
       
       if (error) throw error;
@@ -147,17 +145,20 @@ const SuperAdminDashboard = () => {
   const filteredBusinesses = businesses?.filter(business => {
     const matchesSearch = business.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          business.category.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || business.verification_status === statusFilter;
-    return matchesSearch && matchesStatus;
+    const matchesStatus = statusFilter === 'all' || (business.status || 'active') === statusFilter;
+    const matchesVerification = verificationFilter === 'all' || business.verification_status === verificationFilter;
+    return matchesSearch && matchesStatus && matchesVerification;
   });
 
   const stats = {
     totalBusinesses: businesses?.length || 0,
     totalReviews: reviews?.length || 0,
     verifiedBusinesses: businesses?.filter(b => b.verification_status === 'Verified').length || 0,
+    activeBusinesses: businesses?.filter(b => (b.status || 'active') === 'active').length || 0,
     averageRating: businesses?.reduce((acc, b) => acc + (b.rating || 0), 0) / (businesses?.length || 1) || 0
   };
 
+  // Menu items for the sidebar
   const menuItems = [
     {
       title: "Businesses",
@@ -228,10 +229,23 @@ const SuperAdminDashboard = () => {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Status</SelectItem>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="inactive">Inactive</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="verification">Filter by Verification</Label>
+                  <Select value={verificationFilter} onValueChange={setVerificationFilter}>
+                    <SelectTrigger className="w-40">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Verification</SelectItem>
                       <SelectItem value="Verified">Verified</SelectItem>
                       <SelectItem value="Unverified">Unverified</SelectItem>
                       <SelectItem value="Pending">Pending</SelectItem>
-                      <SelectItem value="Inactive">Inactive</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -249,6 +263,7 @@ const SuperAdminDashboard = () => {
                       <TableHead>Category</TableHead>
                       <TableHead>Rating</TableHead>
                       <TableHead>Reviews</TableHead>
+                      <TableHead>Verification</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
@@ -263,6 +278,11 @@ const SuperAdminDashboard = () => {
                         <TableCell>
                           <Badge variant={business.verification_status === 'Verified' ? 'default' : 'secondary'}>
                             {business.verification_status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={(business.status || 'active') === 'active' ? 'default' : 'destructive'}>
+                            {(business.status || 'active') === 'active' ? 'Active' : 'Inactive'}
                           </Badge>
                         </TableCell>
                         <TableCell>
@@ -314,9 +334,15 @@ const SuperAdminDashboard = () => {
                                         <p className="text-sm">{selectedBusiness.email || 'Not provided'}</p>
                                       </div>
                                       <div>
-                                        <Label className="font-semibold">Status</Label>
+                                        <Label className="font-semibold">Verification Status</Label>
                                         <Badge variant={selectedBusiness.verification_status === 'Verified' ? 'default' : 'secondary'}>
                                           {selectedBusiness.verification_status}
+                                        </Badge>
+                                      </div>
+                                      <div>
+                                        <Label className="font-semibold">Active Status</Label>
+                                        <Badge variant={(selectedBusiness.status || 'active') === 'active' ? 'default' : 'destructive'}>
+                                          {(selectedBusiness.status || 'active') === 'active' ? 'Active' : 'Inactive'}
                                         </Badge>
                                       </div>
                                     </div>
@@ -341,7 +367,7 @@ const SuperAdminDashboard = () => {
                               </DialogContent>
                             </Dialog>
                             
-                            {business.verification_status === 'Inactive' ? (
+                            {(business.status || 'active') === 'inactive' ? (
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -477,6 +503,10 @@ const SuperAdminDashboard = () => {
                     <span className="font-semibold">{stats.totalBusinesses}</span>
                   </div>
                   <div className="flex justify-between">
+                    <span>Active Businesses:</span>
+                    <span className="font-semibold">{stats.activeBusinesses}</span>
+                  </div>
+                  <div className="flex justify-between">
                     <span>Total Reviews:</span>
                     <span className="font-semibold">{stats.totalReviews}</span>
                   </div>
@@ -563,10 +593,10 @@ const SuperAdminDashboard = () => {
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center">
-                  <MessageSquare className="h-8 w-8 text-green-600" />
+                  <Users className="h-8 w-8 text-green-600" />
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Total Reviews</p>
-                    <p className="text-2xl font-bold text-gray-900">{stats.totalReviews}</p>
+                    <p className="text-sm font-medium text-gray-600">Active Businesses</p>
+                    <p className="text-2xl font-bold text-gray-900">{stats.activeBusinesses}</p>
                   </div>
                 </div>
               </CardContent>
@@ -575,7 +605,7 @@ const SuperAdminDashboard = () => {
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center">
-                  <Users className="h-8 w-8 text-purple-600" />
+                  <MessageSquare className="h-8 w-8 text-purple-600" />
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-600">Verified Businesses</p>
                     <p className="text-2xl font-bold text-gray-900">{stats.verifiedBusinesses}</p>

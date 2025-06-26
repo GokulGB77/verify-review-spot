@@ -25,6 +25,7 @@ export type Database = {
           programs: string[] | null
           rating: number | null
           review_count: number | null
+          status: string | null
           updated_at: string
           verification_status: string | null
           website: string | null
@@ -44,6 +45,7 @@ export type Database = {
           programs?: string[] | null
           rating?: number | null
           review_count?: number | null
+          status?: string | null
           updated_at?: string
           verification_status?: string | null
           website?: string | null
@@ -63,6 +65,7 @@ export type Database = {
           programs?: string[] | null
           rating?: number | null
           review_count?: number | null
+          status?: string | null
           updated_at?: string
           verification_status?: string | null
           website?: string | null
