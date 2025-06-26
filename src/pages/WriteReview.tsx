@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -11,7 +12,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Star, Search, Upload, AlertCircle, History } from 'lucide-react';
+import { Star, Search, Upload, AlertCircle, CheckCircle, History } from 'lucide-react';
 import { useEntities } from '@/hooks/useEntities';
 import { useCreateReview, useUserOriginalReviewForBusiness, useUserReviewUpdatesForBusiness } from '@/hooks/useReviews';
 
@@ -281,8 +282,75 @@ const WriteReview = () => {
           </p>
         </div>
 
+        {/* Show existing review info if this is an update */}
+        {isUpdate && existingReview && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <History className="h-5 w-5 text-blue-500" />
+                <span>Your Existing Review</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <div className="flex items-center">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`h-4 w-4 ${
+                          i < existingReview.rating
+                            ? 'text-yellow-400 fill-current'
+                            : 'text-gray-300'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <span className="font-medium">{existingReview.rating}/5</span>
+                  <span className="text-sm text-gray-500">
+                    Original review on {new Date(existingReview.created_at).toLocaleDateString()}
+                  </span>
+                </div>
+                <p className="text-gray-700 text-sm bg-gray-50 p-3 rounded">
+                  {existingReview.content}
+                </p>
+                {reviewUpdates.length > 0 && (
+                  <div className="text-sm text-blue-600">
+                    You have {reviewUpdates.length} previous update{reviewUpdates.length !== 1 ? 's' : ''} for this review
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* User Status */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <CheckCircle className="h-5 w-5 text-green-500" />
+              <span>Your Reviewer Status</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center space-x-4">
+              <div>
+                <p className="font-medium">Reviewing as: {profile.pseudonym}</p>
+                <div className="flex items-center space-x-2 mt-1">
+                  <Badge className={getBadgeColor(profile.main_badge || 'Unverified User')}>
+                    {profile.main_badge || 'Unverified User'}
+                  </Badge>
+                  {profile.is_verified && (
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                  )}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Business Selection - Moved to top */}
+          {/* Business Selection */}
           <Card>
             <CardHeader>
               <CardTitle>Business or Service</CardTitle>
@@ -360,48 +428,6 @@ const WriteReview = () => {
               )}
             </CardContent>
           </Card>
-
-          {/* Show existing review info if this is an update */}
-          {isUpdate && existingReview && (
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <History className="h-5 w-5 text-blue-500" />
-                  <span>Your Existing Review</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <div className="flex items-center">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`h-4 w-4 ${
-                            i < existingReview.rating
-                              ? 'text-yellow-400 fill-current'
-                              : 'text-gray-300'
-                          }`}
-                        />
-                      ))}
-                    </div>
-                    <span className="font-medium">{existingReview.rating}/5</span>
-                    <span className="text-sm text-gray-500">
-                      Original review on {new Date(existingReview.created_at).toLocaleDateString()}
-                    </span>
-                  </div>
-                  <p className="text-gray-700 text-sm bg-gray-50 p-3 rounded">
-                    {existingReview.content}
-                  </p>
-                  {reviewUpdates.length > 0 && (
-                    <div className="text-sm text-blue-600">
-                      You have {reviewUpdates.length} previous update{reviewUpdates.length !== 1 ? 's' : ''} for this review
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )}
 
           {/* Rating */}
           <Card>
