@@ -6,34 +6,46 @@ import { Star, MapPin, Globe, Phone, CheckCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { Business } from '@/hooks/useBusinesses';
 
-interface BusinessCardProps extends Business {}
+interface BusinessCardProps {
+  entity_id: string;
+  name: string;
+  industry?: string | null;
+  description?: string | null;
+  average_rating?: number | null;
+  review_count?: number | null;
+  is_verified?: boolean | null;
+  location?: any;
+  contact?: any;
+  trust_level?: string | null;
+}
 
 const BusinessCard = ({
-  id,
+  entity_id,
   name,
-  category,
+  industry,
   description,
-  rating,
+  average_rating,
   review_count,
-  verification_status,
+  is_verified,
   location,
-  website,
-  phone,
-  has_subscription
+  contact,
+  trust_level
 }: BusinessCardProps) => {
-  const getVerificationBadgeColor = (status: string | null) => {
-    switch (status) {
-      case 'Verified':
-        return 'bg-green-100 text-green-800 border-green-200';
-      case 'Claimed':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
+  const getVerificationBadgeColor = (verified: boolean | null) => {
+    return verified 
+      ? 'bg-green-100 text-green-800 border-green-200'
+      : 'bg-gray-100 text-gray-800 border-gray-200';
   };
 
-  const displayRating = rating || 0;
+  const displayRating = average_rating || 0;
   const displayReviewCount = review_count || 0;
+  
+  // Extract location and contact info from JSONB fields
+  const locationData = location as any;
+  const contactData = contact as any;
+  const displayLocation = locationData?.address || locationData?.city || '';
+  const website = contactData?.website || '';
+  const phone = contactData?.phone || '';
 
   return (
     <Card className="w-full h-full hover:shadow-lg transition-all duration-300 border border-gray-200 bg-white">
@@ -43,7 +55,7 @@ const BusinessCard = ({
             <CardTitle className="text-xl font-semibold text-gray-900 line-clamp-1">
               {name}
             </CardTitle>
-            {has_subscription && (
+            {trust_level === 'verified' && (
               <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs">
                 Trusted
               </Badge>
@@ -52,14 +64,14 @@ const BusinessCard = ({
           
           <div className="flex items-center gap-2 flex-wrap">
             <CardDescription className="text-sm font-medium text-gray-600">
-              {category}
+              {industry || 'Business'}
             </CardDescription>
             <Badge 
               variant="outline" 
-              className={`${getVerificationBadgeColor(verification_status)} flex items-center text-xs`}
+              className={`${getVerificationBadgeColor(is_verified)} flex items-center text-xs`}
             >
-              {verification_status === 'Verified' && <CheckCircle className="h-3 w-3 mr-1" />}
-              {verification_status || 'Unverified'}
+              {is_verified && <CheckCircle className="h-3 w-3 mr-1" />}
+              {is_verified ? 'Verified' : 'Unverified'}
             </Badge>
           </div>
 
@@ -91,10 +103,10 @@ const BusinessCard = ({
           )}
 
           <div className="space-y-2">
-            {location && (
+            {displayLocation && (
               <div className="flex items-center text-sm text-gray-600">
                 <MapPin className="h-4 w-4 mr-2 text-gray-400 flex-shrink-0" />
-                <span className="truncate">{location}</span>
+                <span className="truncate">{displayLocation}</span>
               </div>
             )}
             {website && (
@@ -120,12 +132,12 @@ const BusinessCard = ({
 
           <div className="flex gap-2 pt-2">
             <Button asChild className="flex-1 bg-blue-600 hover:bg-blue-700">
-              <Link to={`/business/${id}`}>
+              <Link to={`/business/${entity_id}`}>
                 View Reviews
               </Link>
             </Button>
             <Button variant="outline" asChild className="border-gray-300 hover:bg-gray-50">
-              <Link to={`/business/${id}/write-review`}>
+              <Link to={`/business/${entity_id}/write-review`}>
                 Write Review
               </Link>
             </Button>

@@ -17,7 +17,7 @@ const BusinessDirectory = () => {
   const [verificationFilter, setVerificationFilter] = useState('all');
   const { data: businesses = [], isLoading, error } = useBusinesses();
 
-  const categories = ['all', 'EdTech', 'Education', 'Food & Beverage', 'Health & Fitness', 'Marketing', 'Technology', 'Beauty & Wellness', 'Retail'];
+  const categories = ['all', 'Technology', 'Education', 'Food & Beverage', 'Health & Fitness', 'Marketing', 'Beauty & Wellness', 'Retail'];
   const verificationStatuses = ['all', 'Verified', 'Unverified'];
 
   const handleSearch = () => {
@@ -31,25 +31,26 @@ const BusinessDirectory = () => {
       filtered = filtered.filter(business => 
         business.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         business.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        business.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        business.location?.toLowerCase().includes(searchQuery.toLowerCase())
+        business.industry?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (business.location as any)?.address?.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
     if (categoryFilter !== 'all') {
-      filtered = filtered.filter(business => business.category === categoryFilter);
+      filtered = filtered.filter(business => business.industry === categoryFilter);
     }
 
     if (verificationFilter !== 'all') {
-      filtered = filtered.filter(business => business.verification_status === verificationFilter);
+      const isVerified = verificationFilter === 'Verified';
+      filtered = filtered.filter(business => business.is_verified === isVerified);
     }
 
     return filtered;
   };
 
   const totalBusinesses = businesses.length;
-  const verifiedBusinesses = businesses.filter(b => b.verification_status === 'Verified').length;
-  const averageRating = businesses.length > 0 ? (businesses.reduce((acc, b) => acc + (b.rating || 0), 0) / businesses.length).toFixed(1) : '0.0';
+  const verifiedBusinesses = businesses.filter(b => b.is_verified).length;
+  const averageRating = businesses.length > 0 ? (businesses.reduce((acc, b) => acc + (b.average_rating || 0), 0) / businesses.length).toFixed(1) : '0.0';
   const totalReviews = businesses.reduce((acc, b) => acc + (b.review_count || 0), 0);
 
   if (isLoading) {
@@ -82,7 +83,7 @@ const BusinessDirectory = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-
+      <Header/>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Page Header */}
         <div className="mb-8">
@@ -181,7 +182,19 @@ const BusinessDirectory = () => {
         {/* Business Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {getFilteredBusinesses().map((business) => (
-            <BusinessCard key={business.id} {...business} />
+            <BusinessCard 
+              key={business.entity_id} 
+              entity_id={business.entity_id}
+              name={business.name}
+              industry={business.industry}
+              description={business.description}
+              average_rating={business.average_rating}
+              review_count={business.review_count}
+              is_verified={business.is_verified}
+              location={business.location}
+              contact={business.contact}
+              trust_level={business.trust_level}
+            />
           ))}
         </div>
 
@@ -202,6 +215,7 @@ const BusinessDirectory = () => {
           </div>
         )}
       </div>
+      <Footer />
     </div>
   );
 };

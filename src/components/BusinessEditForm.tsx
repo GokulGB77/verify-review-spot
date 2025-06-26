@@ -17,17 +17,21 @@ interface BusinessEditFormProps {
 }
 
 const BusinessEditForm = ({ business, onCancel, onSuccess }: BusinessEditFormProps) => {
+  // Extract data from JSONB fields
+  const contactData = business.contact as any || {};
+  const locationData = business.location as any || {};
+  
   const [formData, setFormData] = useState({
     name: business.name,
-    category: business.category,
+    industry: business.industry || '',
     description: business.description || '',
-    location: business.location || '',
-    website: business.website || '',
-    phone: business.phone || '',
-    email: business.email || '',
+    location: locationData.address || '',
+    website: contactData.website || '',
+    phone: contactData.phone || '',
+    email: contactData.email || '',
     founded_year: business.founded_year || '',
-    employee_count: business.employee_count || '',
-    verification_status: business.verification_status || 'Unverified',
+    number_of_employees: business.number_of_employees || '',
+    is_verified: business.is_verified || false,
     status: business.status || 'active'
   });
 
@@ -37,26 +41,34 @@ const BusinessEditForm = ({ business, onCancel, onSuccess }: BusinessEditFormPro
   const updateBusiness = useMutation({
     mutationFn: async (data: typeof formData) => {
       const { error } = await supabase
-        .from('businesses')
+        .from('entities')
         .update({
           name: data.name,
-          category: data.category,
+          industry: data.industry || null,
           description: data.description || null,
-          location: data.location || null,
-          website: data.website || null,
-          phone: data.phone || null,
-          email: data.email || null,
           founded_year: data.founded_year ? parseInt(data.founded_year.toString()) : null,
-          employee_count: data.employee_count || null,
-          verification_status: data.verification_status,
-          status: data.status
+          number_of_employees: data.number_of_employees || null,
+          is_verified: data.is_verified,
+          status: data.status,
+          location: {
+            ...locationData,
+            address: data.location || ''
+          },
+          contact: {
+            ...contactData,
+            website: data.website || '',
+            phone: data.phone || '',
+            email: data.email || ''
+          },
+          updated_at: new Date().toISOString()
         })
-        .eq('id', business.id);
+        .eq('entity_id', business.entity_id);
       
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['businesses'] });
+      queryClient.invalidateQueries({ queryKey: ['entities'] });
       toast({
         title: "Business updated",
         description: "The business has been successfully updated.",
@@ -77,7 +89,7 @@ const BusinessEditForm = ({ business, onCancel, onSuccess }: BusinessEditFormPro
     updateBusiness.mutate(formData);
   };
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -94,11 +106,11 @@ const BusinessEditForm = ({ business, onCancel, onSuccess }: BusinessEditFormPro
           />
         </div>
         <div>
-          <Label htmlFor="category">Category *</Label>
+          <Label htmlFor="industry">Industry *</Label>
           <Input
-            id="category"
-            value={formData.category}
-            onChange={(e) => handleInputChange('category', e.target.value)}
+            id="industry"
+            value={formData.industry}
+            onChange={(e) => handleInputChange('industry', e.target.value)}
             required
           />
         </div>
@@ -148,23 +160,22 @@ const BusinessEditForm = ({ business, onCancel, onSuccess }: BusinessEditFormPro
           />
         </div>
         <div>
-          <Label htmlFor="employee_count">Employee Count</Label>
+          <Label htmlFor="number_of_employees">Employee Count</Label>
           <Input
-            id="employee_count"
-            value={formData.employee_count}
-            onChange={(e) => handleInputChange('employee_count', e.target.value)}
+            id="number_of_employees"
+            value={formData.number_of_employees}
+            onChange={(e) => handleInputChange('number_of_employees', e.target.value)}
           />
         </div>
         <div>
-          <Label htmlFor="verification_status">Verification Status</Label>
-          <Select value={formData.verification_status} onValueChange={(value) => handleInputChange('verification_status', value)}>
+          <Label htmlFor="is_verified">Verification Status</Label>
+          <Select value={formData.is_verified.toString()} onValueChange={(value) => handleInputChange('is_verified', value === 'true')}>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="Verified">Verified</SelectItem>
-              <SelectItem value="Unverified">Unverified</SelectItem>
-              <SelectItem value="Pending">Pending</SelectItem>
+              <SelectItem value="true">Verified</SelectItem>
+              <SelectItem value="false">Unverified</SelectItem>
             </SelectContent>
           </Select>
         </div>

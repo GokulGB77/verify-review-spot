@@ -17,6 +17,10 @@ interface EntityEditFormProps {
 }
 
 const EntityEditForm = ({ entity, onCancel, onSuccess }: EntityEditFormProps) => {
+  // Extract data from JSONB fields with proper type checking
+  const contactData = (entity.contact as any) || {};
+  const locationData = (entity.location as any) || {};
+  
   const [formData, setFormData] = useState({
     name: entity.name,
     legal_name: entity.legal_name || '',
@@ -31,15 +35,15 @@ const EntityEditForm = ({ entity, onCancel, onSuccess }: EntityEditFormProps) =>
     trust_level: entity.trust_level || 'basic',
     status: entity.status || 'active',
     // Contact info
-    website: entity.contact?.website || '',
-    email: entity.contact?.email || '',
-    phone: entity.contact?.phone || '',
+    website: contactData.website || '',
+    email: contactData.email || '',
+    phone: contactData.phone || '',
     // Location info
-    address: entity.location?.address || '',
-    city: entity.location?.city || '',
-    state: entity.location?.state || '',
-    country: entity.location?.country || '',
-    pincode: entity.location?.pincode || ''
+    address: locationData.address || '',
+    city: locationData.city || '',
+    state: locationData.state || '',
+    country: locationData.country || '',
+    pincode: locationData.pincode || ''
   });
 
   const { toast } = useToast();
