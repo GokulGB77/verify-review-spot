@@ -11,46 +11,19 @@ import Header from "@/components/common/Header";
 import Footer from "@/components/common/Footer";
 import { useReviews } from '@/hooks/useReviews';
 import { useBusinesses } from '@/hooks/useBusinesses';
+import SingleReviewCard from '@/components/business/SingleReviewCard';
+import { transformReviews, getDisplayName, getMainBadge, getReviewSpecificBadge } from '@/utils/reviewHelpers';
 
 const Homepage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('recent');
+  const [viewingHistory, setViewingHistory] = useState<Record<string, boolean>>({});
   
   const { data: allReviews = [], isLoading: reviewsLoading } = useReviews();
   const { data: businesses = [] } = useBusinesses();
 
   const handleSearch = () => {
     console.log('Searching for:', searchQuery);
-  };
-
-  // Helper function to get display name from profile
-  const getDisplayName = (review: any) => {
-    if (review.profiles?.display_name_preference === 'real_name' && review.profiles?.full_name) {
-      return review.profiles.full_name;
-    } else if (review.profiles?.pseudonym) {
-      return review.profiles.pseudonym;
-    }
-    return 'Anonymous Reviewer';
-  };
-
-  // Helper function to get main badge
-  const getMainBadge = (review: any): 'Verified User' | 'Unverified User' => {
-    // First check profiles main_badge, then fallback to user_badge
-    const profileBadge = review.profiles?.main_badge;
-    const userBadge = review.user_badge;
-    
-    if (profileBadge === 'Verified User') return 'Verified User';
-    if (userBadge === 'Verified User') return 'Verified User';
-    return 'Unverified User';
-  };
-
-  // Helper function to get review-specific badge
-  const getReviewSpecificBadge = (review: any): 'Verified Employee' | 'Verified Student' | null => {
-    const specificBadge = review.review_specific_badge;
-    if (specificBadge === 'Verified Employee' || specificBadge === 'Verified Student') {
-      return specificBadge;
-    }
-    return null;
   };
 
   // Helper function to format location
@@ -67,39 +40,56 @@ const Homepage = () => {
     return 'Location not specified';
   };
 
+  const toggleHistory = (userId: string) => {
+    setViewingHistory(prev => ({
+      ...prev,
+      [userId]: !prev[userId]
+    }));
+  };
+
   // Create a map of business ID to business details for easy lookup
   const businessMap = businesses.reduce((acc, business) => {
     acc[business.entity_id] = business;
     return acc;
   }, {} as Record<string, any>);
 
+  // Group reviews by business and user, then transform
+  const groupedReviews = allReviews.reduce((acc, review) => {
+    const businessId = review.business_id;
+    const userId = review.user_id;
+    const groupKey = `${businessId}-${userId}`;
+    
+    if (!acc[groupKey]) {
+      acc[groupKey] = [];
+    }
+    
+    acc[groupKey].push(review);
+    return acc;
+  }, {} as Record<string, any[]>);
+
+  // Transform each group using the helper function
+  const transformedReviews = Object.entries(groupedReviews).map(([groupKey, reviews]) => {
+    const [businessId, userId] = groupKey.split('-');
+    const business = businessMap[businessId];
+    
+    const transformedGroup = transformReviews(reviews);
+    if (transformedGroup.length === 0) return null;
+    
+    const latestReview = transformedGroup[0];
+    
+    return {
+      ...latestReview,
+      businessId: businessId,
+      businessName: business?.name || 'Unknown Business',
+      businessCategory: business?.industry || 'Unknown Category',
+      businessLocation: formatLocation(business?.location),
+      title: `Review for ${business?.name || 'Business'}`,
+      isVerified: latestReview.mainBadge === 'Verified User',
+    };
+  }).filter(Boolean);
+
   const getFilteredReviews = () => {
-    let filtered = allReviews.map(review => {
-      const business = businessMap[review.business_id];
-      const displayName = getDisplayName(review);
-      const mainBadge = getMainBadge(review);
-      const reviewSpecificBadge = getReviewSpecificBadge(review);
-      
-      return {
-        id: review.id,
-        businessId: review.business_id,
-        businessName: business?.name || 'Unknown Business',
-        businessCategory: business?.industry || 'Unknown Category',
-        businessLocation: formatLocation(business?.location),
-        userName: displayName,
-        mainBadge: mainBadge,
-        reviewSpecificBadge: reviewSpecificBadge,
-        rating: review.rating,
-        date: new Date(review.created_at).toLocaleDateString(),
-        title: `Review for ${business?.name || 'Business'}`,
-        content: review.content,
-        isVerified: mainBadge === 'Verified User',
-        proofProvided: !!review.proof_url,
-        upvotes: review.upvotes || 0,
-        downvotes: review.downvotes || 0,
-        pseudonym: review.profiles?.pseudonym,
-      };
-    });
+    let filtered = transformedReviews;
     
     if (searchQuery.trim()) {
       filtered = filtered.filter(review => 
@@ -248,7 +238,7 @@ const Homepage = () => {
         {filteredReviews.length > 0 ? (
           <div className="space-y-6">
             {filteredReviews.map((review) => (
-              <Card key={review.id} className="hover:shadow-lg transition-shadow">
+              <Card key={`${review.businessId}-${review.userId}`} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
@@ -285,7 +275,11 @@ const Homepage = () => {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <ReviewCard {...review} />
+                  <SingleReviewCard
+                    review={review}
+                    viewingHistory={viewingHistory}
+                    onToggleHistory={toggleHistory}
+                  />
                 </CardContent>
               </Card>
             ))}
