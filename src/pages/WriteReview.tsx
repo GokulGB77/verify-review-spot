@@ -12,9 +12,9 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Star, Search, Upload, AlertCircle, CheckCircle } from 'lucide-react';
+import { Star, Search, Upload, AlertCircle, CheckCircle, History } from 'lucide-react';
 import { useEntities } from '@/hooks/useEntities';
-import { useCreateReview } from '@/hooks/useReviews';
+import { useCreateReview, useUserOriginalReviewForBusiness, useUserReviewUpdatesForBusiness } from '@/hooks/useReviews';
 
 interface ReviewFormData {
   businessId: string;
@@ -55,6 +55,12 @@ const WriteReview = () => {
 
   // Get entityId from URL parameters
   const entityId = searchParams.get('entityId');
+
+  // Check if user already has a review for this business
+  const { data: existingReview } = useUserOriginalReviewForBusiness(formData.businessId);
+  const { data: reviewUpdates = [] } = useUserReviewUpdatesForBusiness(formData.businessId);
+
+  const isUpdate = !!existingReview;
 
   // Fetch user profile
   useEffect(() => {
@@ -206,20 +212,23 @@ const WriteReview = () => {
         proof_url: proofUrl,
         user_badge: profile.main_badge || 'Unverified User',
         review_specific_badge: formData.reviewSpecificBadge || undefined,
+        is_update: isUpdate,
       });
 
       toast({
-        title: "Review Submitted",
-        description: "Your review has been submitted successfully!",
+        title: isUpdate ? "Review Update Submitted" : "Review Submitted",
+        description: isUpdate 
+          ? "Your review update has been submitted successfully!" 
+          : "Your review has been submitted successfully!",
       });
 
       // Redirect to the entity page
       navigate(`/entities/${formData.businessId}`);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting review:', error);
       toast({
         title: "Submission Failed",
-        description: "There was an error submitting your review. Please try again.",
+        description: error.message || "There was an error submitting your review. Please try again.",
         variant: "destructive",
       });
     }
@@ -262,11 +271,58 @@ const WriteReview = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Write a Review</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            {isUpdate ? 'Update Your Review' : 'Write a Review'}
+          </h1>
           <p className="text-lg text-gray-600">
-            Share your authentic experience and help others make informed decisions
+            {isUpdate 
+              ? 'Add an update to your existing review'
+              : 'Share your authentic experience and help others make informed decisions'
+            }
           </p>
         </div>
+
+        {/* Show existing review info if this is an update */}
+        {isUpdate && existingReview && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <History className="h-5 w-5 text-blue-500" />
+                <span>Your Existing Review</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <div className="flex items-center">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`h-4 w-4 ${
+                          i < existingReview.rating
+                            ? 'text-yellow-400 fill-current'
+                            : 'text-gray-300'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <span className="font-medium">{existingReview.rating}/5</span>
+                  <span className="text-sm text-gray-500">
+                    Original review on {new Date(existingReview.created_at).toLocaleDateString()}
+                  </span>
+                </div>
+                <p className="text-gray-700 text-sm bg-gray-50 p-3 rounded">
+                  {existingReview.content}
+                </p>
+                {reviewUpdates.length > 0 && (
+                  <div className="text-sm text-blue-600">
+                    You have {reviewUpdates.length} previous update{reviewUpdates.length !== 1 ? 's' : ''} for this review
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* User Status */}
         <Card className="mb-6">
@@ -299,7 +355,10 @@ const WriteReview = () => {
             <CardHeader>
               <CardTitle>Business or Service</CardTitle>
               <CardDescription>
-                {selectedBusiness ? 'You are reviewing:' : 'Search for the business you want to review'}
+                {selectedBusiness ? 
+                  (isUpdate ? 'Updating review for:' : 'You are reviewing:') 
+                  : 'Search for the business you want to review'
+                }
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -310,17 +369,19 @@ const WriteReview = () => {
                       <h3 className="font-medium text-green-900">{selectedBusiness.name}</h3>
                       <p className="text-sm text-green-700">{selectedBusiness.industry}</p>
                     </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setSelectedBusiness(null);
-                        setFormData(prev => ({ ...prev, businessId: '', businessName: '' }));
-                      }}
-                    >
-                      Change
-                    </Button>
+                    {!isUpdate && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedBusiness(null);
+                          setFormData(prev => ({ ...prev, businessId: '', businessName: '' }));
+                        }}
+                      >
+                        Change
+                      </Button>
+                    )}
                   </div>
                 </div>
               ) : (
@@ -371,9 +432,14 @@ const WriteReview = () => {
           {/* Rating */}
           <Card>
             <CardHeader>
-              <CardTitle>Overall Rating</CardTitle>
+              <CardTitle>
+                {isUpdate ? 'Updated Rating' : 'Overall Rating'}
+              </CardTitle>
               <CardDescription>
-                How would you rate your overall experience?
+                {isUpdate 
+                  ? 'How would you rate your experience now?' 
+                  : 'How would you rate your overall experience?'
+                }
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -408,16 +474,24 @@ const WriteReview = () => {
           {/* Review Content */}
           <Card>
             <CardHeader>
-              <CardTitle>Your Review</CardTitle>
+              <CardTitle>
+                {isUpdate ? 'Your Update' : 'Your Review'}
+              </CardTitle>
               <CardDescription>
-                Share your detailed experience. Be honest and constructive.
+                {isUpdate 
+                  ? 'What has changed since your last review?' 
+                  : 'Share your detailed experience. Be honest and constructive.'
+                }
               </CardDescription>
             </CardHeader>
             <CardContent>
               <Textarea
                 value={formData.content}
                 onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
-                placeholder="Describe your experience with this business or service. What went well? What could be improved? Include specific details that would help others make informed decisions."
+                placeholder={isUpdate 
+                  ? "What's new? Have they improved? What changes have you noticed since your last review?"
+                  : "Describe your experience with this business or service. What went well? What could be improved? Include specific details that would help others make informed decisions."
+                }
                 rows={6}
                 className="w-full"
               />
@@ -514,12 +588,15 @@ const WriteReview = () => {
                 className="w-full"
                 size="lg"
               >
-                {createReviewMutation.isPending ? 'Submitting...' : 'Submit Review'}
+                {createReviewMutation.isPending 
+                  ? (isUpdate ? 'Submitting Update...' : 'Submitting...')
+                  : (isUpdate ? 'Submit Update' : 'Submit Review')
+                }
               </Button>
               
               {(!selectedBusiness || !formData.rating || formData.content.length < 50) && (
                 <p className="text-sm text-gray-500 text-center mt-3">
-                  Please complete all required fields to submit your review
+                  Please complete all required fields to submit your {isUpdate ? 'update' : 'review'}
                 </p>
               )}
             </CardContent>
