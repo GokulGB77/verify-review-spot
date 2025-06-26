@@ -56,13 +56,11 @@ const BusinessDirectory = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Header/>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center py-12">
             <p className="text-gray-500">Loading businesses...</p>
           </div>
         </div>
-        <Footer />
       </div>
     );
   }
@@ -70,20 +68,17 @@ const BusinessDirectory = () => {
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Header/>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center py-12">
             <p className="text-red-500">Error loading businesses. Please try again.</p>
           </div>
         </div>
-        <Footer />
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header/>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Page Header */}
         <div className="mb-8">
@@ -215,7 +210,6 @@ const BusinessDirectory = () => {
           </div>
         )}
       </div>
-      <Footer />
     </div>
   );
 };
