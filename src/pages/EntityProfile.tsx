@@ -144,24 +144,24 @@ const EntityProfile = () => {
         />
         
         <div className="mt-8">
-          <Tabs defaultValue="overview" className="w-full">
+          <Tabs defaultValue="reviews" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="about">About</TabsTrigger>
               <TabsTrigger value="reviews">Reviews ({transformedReviews.length})</TabsTrigger>
+              <TabsTrigger value="about">About</TabsTrigger>
+              <TabsTrigger value="overview">Overview</TabsTrigger>
             </TabsList>
             
-            <TabsContent value="overview" className="mt-6">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 space-y-6">
-                  <BusinessOverview 
-                    business={entity}
-                    totalReviews={transformedReviews.length}
-                    verifiedReviewsCount={verifiedReviewsCount}
-                  />
-                </div>
-                <div>
+            <TabsContent value="reviews" className="mt-6">
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <div className="lg:col-span-1">
                   <RatingBreakdown ratingDistribution={ratingDistribution} />
+                </div>
+                <div className="lg:col-span-3">
+                  <ReviewsList 
+                    reviews={transformedReviews}
+                    businessId={id || ''}
+                    isLoading={reviewsLoading}
+                  />
                 </div>
               </div>
             </TabsContent>
@@ -170,11 +170,11 @@ const EntityProfile = () => {
               <BusinessAbout business={entity} />
             </TabsContent>
             
-            <TabsContent value="reviews" className="mt-6">
-              <ReviewsList 
-                reviews={transformedReviews}
-                businessId={id || ''}
-                isLoading={reviewsLoading}
+            <TabsContent value="overview" className="mt-6">
+              <BusinessOverview 
+                business={entity}
+                totalReviews={transformedReviews.length}
+                verifiedReviewsCount={verifiedReviewsCount}
               />
             </TabsContent>
           </Tabs>
