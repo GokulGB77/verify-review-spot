@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,12 +10,15 @@ import BusinessCard from '@/components/BusinessCard';
 import Header from "@/components/common/Header";
 import Footer from "@/components/common/Footer";
 import { useBusinesses } from '@/hooks/useBusinesses';
+import { useReviews } from '@/hooks/useReviews';
+import { transformReviews } from '@/utils/reviewHelpers';
 
 const BusinessDirectory = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [verificationFilter, setVerificationFilter] = useState('all');
   const { data: businesses = [], isLoading, error } = useBusinesses();
+  const { data: allReviews = [] } = useReviews();
 
   const categories = ['all', 'Technology', 'Education', 'Food & Beverage', 'Health & Fitness', 'Marketing', 'Beauty & Wellness', 'Retail'];
   const verificationStatuses = ['all', 'Verified', 'Unverified'];
@@ -47,10 +51,45 @@ const BusinessDirectory = () => {
     return filtered;
   };
 
+  // Calculate statistics using transformed reviews (only latest from each user)
+  const getBusinessStats = () => {
+    // Group reviews by business and user, then transform
+    const groupedReviews = allReviews.reduce((acc, review) => {
+      const businessId = review.business_id;
+      const userId = review.user_id;
+      const groupKey = `${businessId}-${userId}`;
+      
+      if (!acc[groupKey]) {
+        acc[groupKey] = [];
+      }
+      
+      acc[groupKey].push(review);
+      return acc;
+    }, {} as Record<string, any[]>);
+
+    // Transform each group to get only the latest review from each user
+    const transformedReviews = Object.entries(groupedReviews).map(([groupKey, reviews]) => {
+      const transformedGroup = transformReviews(reviews);
+      return transformedGroup.length > 0 ? transformedGroup[0] : null;
+    }).filter(Boolean);
+
+    // Calculate stats based on transformed reviews
+    const totalReviews = transformedReviews.length;
+    const verifiedReviews = transformedReviews.filter(r => r.mainBadge === 'Verified User').length;
+    const averageRating = totalReviews > 0 
+      ? (transformedReviews.reduce((acc, r) => acc + r.rating, 0) / totalReviews).toFixed(1) 
+      : '0.0';
+
+    return {
+      totalReviews,
+      verifiedReviews,
+      averageRating
+    };
+  };
+
+  const stats = getBusinessStats();
   const totalBusinesses = businesses.length;
   const verifiedBusinesses = businesses.filter(b => b.is_verified).length;
-  const averageRating = businesses.length > 0 ? (businesses.reduce((acc, b) => acc + (b.average_rating || 0), 0) / businesses.length).toFixed(1) : '0.0';
-  const totalReviews = businesses.reduce((acc, b) => acc + (b.review_count || 0), 0);
 
   if (isLoading) {
     return (
@@ -161,13 +200,13 @@ const BusinessDirectory = () => {
           </Card>
           <Card>
             <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-yellow-600">{averageRating}</div>
+              <div className="text-2xl font-bold text-yellow-600">{stats.averageRating}</div>
               <div className="text-sm text-gray-600">Average Rating</div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-purple-600">{totalReviews}</div>
+              <div className="text-2xl font-bold text-purple-600">{stats.totalReviews}</div>
               <div className="text-sm text-gray-600">Total Reviews</div>
             </CardContent>
           </Card>
