@@ -45,16 +45,28 @@ const EntityProfile = () => {
   // Calculate rating distribution using only the latest review from each user
   const ratingDistribution = calculateRatingDistribution(transformedReviews);
 
+  // Calculate the correct average rating using only the latest reviews from each user
+  const averageRating = transformedReviews.length > 0 
+    ? Number((transformedReviews.reduce((sum, review) => sum + review.rating, 0) / transformedReviews.length).toFixed(1))
+    : 0;
+
   // Calculate verified reviews count
   const verifiedReviewsCount = transformedReviews.filter(review => 
     review.mainBadge === 'Verified User' || review.reviewSpecificBadge
   ).length;
 
+  // Create an updated entity object with the correct average rating
+  const entityWithCorrectRating = {
+    ...entity,
+    average_rating: averageRating,
+    review_count: transformedReviews.length
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <BusinessHeader 
-          business={entity} 
+          business={entityWithCorrectRating} 
           totalReviews={transformedReviews.length}
         />
         
@@ -87,7 +99,7 @@ const EntityProfile = () => {
             
             <TabsContent value="overview" className="mt-6">
               <BusinessOverview 
-                business={entity}
+                business={entityWithCorrectRating}
                 totalReviews={transformedReviews.length}
                 verifiedReviewsCount={verifiedReviewsCount}
               />
