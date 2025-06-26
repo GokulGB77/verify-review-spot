@@ -1,6 +1,5 @@
 
 import { useState } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
 
 interface ReviewContentProps {
   content: string;
@@ -21,19 +20,9 @@ const ReviewContent = ({ content, maxLength = 150, maxLines }: ReviewContentProp
         {content.length > 100 && (
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="text-blue-600 hover:text-blue-800 text-sm font-medium mt-2 flex items-center space-x-1"
+            className="text-blue-600 hover:text-blue-800 text-sm font-medium mt-2"
           >
-            {isExpanded ? (
-              <>
-                <ChevronUp className="h-4 w-4" />
-                <span>See less</span>
-              </>
-            ) : (
-              <>
-                <ChevronDown className="h-4 w-4" />
-                <span>See more</span>
-              </>
-            )}
+            {isExpanded ? 'See less' : 'See more'}
           </button>
         )}
       </div>
@@ -51,19 +40,9 @@ const ReviewContent = ({ content, maxLength = 150, maxLines }: ReviewContentProp
       {shouldTruncate && (
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="text-blue-600 hover:text-blue-800 text-sm font-medium mt-2 flex items-center space-x-1"
+          className="text-blue-600 hover:text-blue-800 text-sm font-medium mt-2"
         >
-          {isExpanded ? (
-            <>
-              <ChevronUp className="h-4 w-4" />
-              <span>See less</span>
-            </>
-          ) : (
-            <>
-              <ChevronDown className="h-4 w-4" />
-              <span>See more</span>
-            </>
-          )}
+          {isExpanded ? 'See less' : 'See more'}
         </button>
       )}
     </div>
