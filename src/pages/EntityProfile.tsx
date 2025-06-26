@@ -8,6 +8,7 @@ import BusinessAbout from '@/components/business/BusinessAbout';
 import RatingBreakdown from '@/components/business/RatingBreakdown';
 import ReviewsList from '@/components/business/ReviewsList';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { transformReviews, calculateRatingDistribution } from '@/utils/reviewHelpers';
 
 const EntityProfile = () => {
   const { id } = useParams<{ id: string }>();
@@ -38,97 +39,11 @@ const EntityProfile = () => {
     );
   }
 
-  // Group reviews by user to show latest versions with update history
-  const groupedReviews = allReviews.reduce((acc, review) => {
-    const userId = review.user_id;
-    
-    if (!acc[userId]) {
-      acc[userId] = {
-        original: null,
-        updates: [],
-        allReviews: []
-      };
-    }
-    
-    acc[userId].allReviews.push(review);
-    
-    if (!review.parent_review_id) {
-      acc[userId].original = review;
-    } else {
-      acc[userId].updates.push(review);
-    }
-    
-    return acc;
-  }, {} as Record<string, any>);
+  // Transform reviews to get latest versions with update history
+  const transformedReviews = transformReviews(allReviews);
 
-  // Transform grouped reviews for display - show latest version
-  const transformedReviews = Object.entries(groupedReviews).map(([userId, data]) => {
-    const sortedUpdates = data.updates.sort((a: any, b: any) => b.update_number - a.update_number);
-    const latestReview = sortedUpdates.length > 0 ? sortedUpdates[0] : data.original;
-    
-    if (!latestReview) return null;
-    
-    const hasUpdates = data.updates.length > 0;
-    const totalUpdates = data.updates.length;
-    
-    const getDisplayName = (review: any) => {
-      if (review.profiles?.display_name_preference === 'real_name' && review.profiles?.full_name) {
-        return review.profiles.full_name;
-      } else if (review.profiles?.pseudonym) {
-        return review.profiles.pseudonym;
-      }
-      return 'Anonymous Reviewer';
-    };
-
-    const getMainBadge = (review: any): 'Verified User' | 'Unverified User' => {
-      const profileBadge = review.profiles?.main_badge;
-      const userBadge = review.user_badge;
-      
-      if (profileBadge === 'Verified User') return 'Verified User';
-      if (userBadge === 'Verified User') return 'Verified User';
-      return 'Unverified User';
-    };
-
-    const getReviewSpecificBadge = (review: any): 'Verified Employee' | 'Verified Student' | null => {
-      const specificBadge = review.review_specific_badge;
-      if (specificBadge === 'Verified Employee' || specificBadge === 'Verified Student') {
-        return specificBadge;
-      }
-      return null;
-    };
-
-    return {
-      id: latestReview.id,
-      userId: userId,
-      userName: getDisplayName(latestReview),
-      rating: latestReview.rating,
-      content: latestReview.content,
-      mainBadge: getMainBadge(latestReview),
-      reviewSpecificBadge: getReviewSpecificBadge(latestReview),
-      proofProvided: !!latestReview.proof_url,
-      upvotes: latestReview.upvotes || 0,
-      downvotes: latestReview.downvotes || 0,
-      date: new Date(latestReview.created_at).toLocaleDateString(),
-      businessResponse: latestReview.business_response,
-      businessResponseDate: latestReview.business_response_date ? new Date(latestReview.business_response_date).toLocaleDateString() : undefined,
-      hasUpdates,
-      totalUpdates,
-      updateNumber: latestReview.update_number || 0,
-      allReviews: data.allReviews.sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
-    };
-  }).filter(Boolean);
-
-  // Calculate rating distribution for RatingBreakdown
-  const ratingCounts = [1, 2, 3, 4, 5].map(stars => ({
-    stars,
-    count: allReviews.filter(review => review.rating === stars).length
-  }));
-
-  const totalReviews = allReviews.length;
-  const ratingDistribution = ratingCounts.map(item => ({
-    ...item,
-    percentage: totalReviews > 0 ? Math.round((item.count / totalReviews) * 100) : 0
-  }));
+  // Calculate rating distribution using only the latest review from each user
+  const ratingDistribution = calculateRatingDistribution(transformedReviews);
 
   // Calculate verified reviews count
   const verifiedReviewsCount = transformedReviews.filter(review => 
