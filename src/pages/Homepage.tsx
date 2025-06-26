@@ -66,7 +66,7 @@ const Index = () => {
       );
       
       const latestReview = sortedReviews[0];
-      const business = businesses.find((b) => b.id === latestReview.business_id);
+      const business = businesses.find((b) => b.entity_id === latestReview.business_id);
       
       latestReviews.push({
         id: latestReview.id,
@@ -74,10 +74,10 @@ const Index = () => {
         rating: latestReview.rating || 0,
         content: latestReview.content || "",
         businessName: business?.name || "Unknown Business",
-        businessWebsite: business?.website || "",
+        businessWebsite: business?.contact?.website || "",
         userBadge: latestReview.user_badge || "Unverified User",
         date: new Date(latestReview.created_at).toLocaleDateString(),
-        businessCategory: business?.category || "Business",
+        businessCategory: business?.industry || "Business",
         isUpdate: latestReview.is_update || false,
         updateCount: reviews.filter(r => r.is_update).length,
         created_at: latestReview.created_at,
@@ -95,47 +95,47 @@ const Index = () => {
 
   // Get best entities (highest rated with minimum review count)
   const featuredReviews = businesses
-    .filter((business) => business.rating && business.rating >= 4)
+    .filter((business) => business.average_rating && business.average_rating >= 4)
     .slice(0, 3)
     .map((business) => ({
-      id: business.id,
+      id: business.entity_id,
       businessName: business.name,
-      rating: business.rating || 0,
+      rating: business.average_rating || 0,
       reviewCount: business.review_count || 0,
       verificationLevel:
-        business.verification_status === "Verified"
+        business.is_verified
           ? "Verified Business"
           : "Claimed Business",
-      category: business.category,
+      category: business.industry,
       badge:
-        business.verification_status === "Verified" ? "verified" : "claimed",
+        business.is_verified ? "verified" : "claimed",
     }));
 
   // Get best entities (highest rated with minimum review count)
   const bestEntities = businesses
     .filter(
       (business) =>
-        business.rating &&
-        business.rating >= 4.0 &&
+        business.average_rating &&
+        business.average_rating >= 4.0 &&
         business.review_count &&
         business.review_count >= 5
     )
     .sort((a, b) => {
       // Sort by rating first, then by review count
-      if (b.rating !== a.rating) {
-        return (b.rating || 0) - (a.rating || 0);
+      if (b.average_rating !== a.average_rating) {
+        return (b.average_rating || 0) - (a.average_rating || 0);
       }
       return (b.review_count || 0) - (a.review_count || 0);
     })
     .slice(0, 8) // Show up to 8 best entities
     .map((business) => ({
-      id: business.id,
+      id: business.entity_id,
       name: business.name,
-      category: business.category,
-      website: business.website,
-      rating: business.rating || 0,
+      category: business.industry,
+      website: business.contact?.website,
+      rating: business.average_rating || 0,
       reviewCount: business.review_count || 0,
-      verificationStatus: business.verification_status,
+      verificationStatus: business.is_verified ? "Verified" : "Unverified",
     }));
 
   const getUserInitials = (name: string) => {

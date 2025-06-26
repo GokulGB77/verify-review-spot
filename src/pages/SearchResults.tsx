@@ -34,11 +34,16 @@ const SearchResults = () => {
     if (!searchQuery.trim()) return true;
     
     const query = searchQuery.toLowerCase();
+    const industry = business.industry || '';
+    const description = business.description || '';
+    const locationData = business.location as any || {};
+    const location = locationData.address || '';
+    
     return (
       business.name.toLowerCase().includes(query) ||
-      business.category.toLowerCase().includes(query) ||
-      (business.description && business.description.toLowerCase().includes(query)) ||
-      (business.location && business.location.toLowerCase().includes(query))
+      industry.toLowerCase().includes(query) ||
+      description.toLowerCase().includes(query) ||
+      location.toLowerCase().includes(query)
     );
   });
 
@@ -135,7 +140,7 @@ const SearchResults = () => {
             {filteredBusinesses.length > 0 ? (
               <div className="space-y-4">
                 {filteredBusinesses.map((business) => (
-                  <BusinessCard key={business.id} {...business} />
+                  <BusinessCard key={business.entity_id} {...business} />
                 ))}
               </div>
             ) : (

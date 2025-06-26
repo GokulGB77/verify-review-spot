@@ -147,26 +147,32 @@ export const useEntityRegistrations = () => {
 
       if (error) throw error;
 
-      // If approved, create the business entity
+      // If approved, create the entity
       if (status === 'approved') {
         const registration = registrations.find(r => r.id === registrationId);
         if (registration) {
-          const { error: businessError } = await supabase
-            .from('businesses')
+          const { error: entityError } = await supabase
+            .from('entities')
             .insert({
               name: registration.entity_name,
-              category: registration.category,
-              website: registration.website,
+              industry: registration.category,
               description: registration.description,
-              email: registration.contact_email,
-              phone: registration.contact_phone,
-              location: [registration.address, registration.city, registration.state, registration.zip_code]
-                .filter(Boolean)
-                .join(', ') || null,
-              verification_status: 'Verified',
+              contact: {
+                website: registration.website,
+                email: registration.contact_email,
+                phone: registration.contact_phone
+              },
+              location: {
+                address: registration.address,
+                city: registration.city,
+                state: registration.state,
+                pincode: registration.zip_code
+              },
+              is_verified: true,
+              trust_level: 'verified',
             });
 
-          if (businessError) throw businessError;
+          if (entityError) throw entityError;
         }
       }
 
