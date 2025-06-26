@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Users, Building2, MessageSquare, TrendingUp, Search, Filter, Shield, FileCheck, UserCheck, BarChart3, ClipboardList, Eye, Trash2, Ban } from 'lucide-react';
+import { Users, Building2, MessageSquare, TrendingUp, Search, Filter, Shield, FileCheck, UserCheck, BarChart3, ClipboardList, Eye, Trash2, Ban, RefreshCcw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -84,6 +84,32 @@ const SuperAdminDashboard = () => {
       toast({
         title: "Error",
         description: "Failed to deactivate business. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Reactivate business mutation (set verification_status back to 'Unverified')
+  const reactivateBusiness = useMutation({
+    mutationFn: async (businessId: string) => {
+      const { error } = await supabase
+        .from('businesses')
+        .update({ verification_status: 'Unverified' })
+        .eq('id', businessId);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['businesses'] });
+      toast({
+        title: "Business reactivated",
+        description: "The business has been successfully reactivated.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to reactivate business. Please try again.",
         variant: "destructive",
       });
     },
@@ -312,15 +338,27 @@ const SuperAdminDashboard = () => {
                               </DialogContent>
                             </Dialog>
                             
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => deactivateBusiness.mutate(business.id)}
-                              disabled={business.verification_status === 'Deactivated'}
-                            >
-                              <Ban className="h-4 w-4 mr-1" />
-                              Deactivate
-                            </Button>
+                            {business.verification_status === 'Deactivated' ? (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => reactivateBusiness.mutate(business.id)}
+                                disabled={reactivateBusiness.isPending}
+                              >
+                                <RefreshCcw className="h-4 w-4 mr-1" />
+                                {reactivateBusiness.isPending ? 'Reactivating...' : 'Reactivate'}
+                              </Button>
+                            ) : (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => deactivateBusiness.mutate(business.id)}
+                                disabled={deactivateBusiness.isPending}
+                              >
+                                <Ban className="h-4 w-4 mr-1" />
+                                {deactivateBusiness.isPending ? 'Deactivating...' : 'Deactivate'}
+                              </Button>
+                            )}
                             
                             <Dialog>
                               <DialogTrigger asChild>
