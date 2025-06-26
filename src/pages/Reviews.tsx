@@ -53,6 +53,20 @@ const Homepage = () => {
     return null;
   };
 
+  // Helper function to format location
+  const formatLocation = (location: any) => {
+    if (!location) return 'Location not specified';
+    if (typeof location === 'string') return location;
+    if (typeof location === 'object') {
+      const parts = [];
+      if (location.city) parts.push(location.city);
+      if (location.state) parts.push(location.state);
+      if (location.country) parts.push(location.country);
+      return parts.length > 0 ? parts.join(', ') : 'Location not specified';
+    }
+    return 'Location not specified';
+  };
+
   // Create a map of business ID to business details for easy lookup
   const businessMap = businesses.reduce((acc, business) => {
     acc[business.entity_id] = business;
@@ -71,7 +85,7 @@ const Homepage = () => {
         businessId: review.business_id,
         businessName: business?.name || 'Unknown Business',
         businessCategory: business?.industry || 'Unknown Category',
-        businessLocation: business?.location || 'Location not specified',
+        businessLocation: formatLocation(business?.location),
         userName: displayName,
         mainBadge: mainBadge,
         reviewSpecificBadge: reviewSpecificBadge,
@@ -249,10 +263,7 @@ const Homepage = () => {
                       </div>
                       <div className="flex items-center space-x-2 text-sm text-gray-600 mb-2">
                         <MapPin className="h-3 w-3" />
-                        {typeof review.businessLocation === 'object' 
-                          ? `${(review.businessLocation as any)?.city || ''}, ${(review.businessLocation as any)?.state || ''}`
-                          : review.businessLocation
-                        }
+                        <span>{review.businessLocation}</span>
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
