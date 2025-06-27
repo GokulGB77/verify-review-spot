@@ -1,17 +1,14 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Star, Calendar, History, Edit } from 'lucide-react';
+import { Star, Calendar, History } from 'lucide-react';
 import { useUserReviews } from '@/hooks/useReviews';
 import { useAuth } from '@/contexts/AuthContext';
-import { useEditTimer } from '@/hooks/useEditTimer';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 const MyReviews = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const { data: reviews, isLoading, error } = useUserReviews();
   const [viewingHistory, setViewingHistory] = useState<Record<string, boolean>>({});
 
@@ -103,35 +100,6 @@ const MyReviews = () => {
     }));
   };
 
-  const handleEdit = (businessId: string, reviewId: string) => {
-    navigate(`/write-review?entityId=${businessId}&editReviewId=${reviewId}`);
-  };
-
-  const ReviewEditTimer = ({ review, businessId }: { review: any, businessId: string }) => {
-    const { canEdit, formattedTime } = useEditTimer(review.created_at);
-    
-    if (!canEdit) return null;
-    
-    return (
-      <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-blue-700">
-            You can edit this for the next {formattedTime}
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleEdit(businessId, review.id)}
-            className="h-7 text-sm px-3 bg-white hover:bg-blue-50"
-          >
-            <Edit className="h-3 w-3 mr-1" />
-            Edit
-          </Button>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="space-y-4">
       <h2 className="text-2xl font-bold mb-6">My Reviews</h2>
@@ -173,9 +141,6 @@ const MyReviews = () => {
             </CardHeader>
             <CardContent>
               <p className="text-gray-700 mb-3 leading-relaxed">{item.review.content}</p>
-              
-              {/* Edit Timer */}
-              <ReviewEditTimer review={item.review} businessId={item.businessId} />
               
               <div className="flex items-center justify-between text-sm text-gray-500 mt-3">
                 <div className="flex items-center space-x-4">
@@ -246,9 +211,6 @@ const MyReviews = () => {
                           <span className="text-sm font-medium">{historicalReview.rating}/5</span>
                         </div>
                         <p className="text-sm text-gray-700">{historicalReview.content}</p>
-                        
-                        {/* Edit Timer for historical reviews */}
-                        <ReviewEditTimer review={historicalReview} businessId={item.businessId} />
                       </div>
                     </div>
                   </div>

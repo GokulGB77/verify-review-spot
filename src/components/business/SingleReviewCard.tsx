@@ -2,11 +2,9 @@
 import { useState } from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Star, CheckCircle, MessageSquare, History, Edit } from 'lucide-react';
+import { Star, CheckCircle, MessageSquare, History } from 'lucide-react';
 import ReviewContent from './ReviewContent';
 import ReviewHistory from './ReviewHistory';
-import { useEditTimer } from '@/hooks/useEditTimer';
-import { useAuth } from '@/contexts/AuthContext';
 
 interface SingleReviewCardProps {
   review: {
@@ -34,14 +32,7 @@ interface SingleReviewCardProps {
   onEdit?: (reviewId: string) => void;
 }
 
-const SingleReviewCard = ({ review, viewingHistory, onToggleHistory, onEdit }: SingleReviewCardProps) => {
-  const { user } = useAuth();
-  const { canEdit, formattedTime } = useEditTimer(review.createdAt || review.date);
-  
-  // Check if current user is the author of this review
-  const isAuthor = user?.id === review.userId;
-  const showEditButton = isAuthor && canEdit && onEdit;
-
+const SingleReviewCard = ({ review, viewingHistory, onToggleHistory }: SingleReviewCardProps) => {
   return (
     <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 min-h-fit">
       {/* User Info and Rating */}
@@ -95,26 +86,6 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory, onEdit }: S
       <div className="mb-4">
         <ReviewContent content={review.content} maxLength={150} />
       </div>
-
-      {/* Edit Timer and Button */}
-      {showEditButton && (
-        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-blue-700">
-              You can edit this for the next {formattedTime}
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onEdit(review.id)}
-              className="h-7 text-sm px-3 bg-white hover:bg-blue-50"
-            >
-              <Edit className="h-3 w-3 mr-1" />
-              Edit
-            </Button>
-          </div>
-        </div>
-      )}
 
       {/* Business Response */}
       {review.businessResponse && (
