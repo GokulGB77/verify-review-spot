@@ -39,9 +39,22 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory }: SingleRev
   const navigate = useNavigate();
   const [timeLeft, setTimeLeft] = useState<number>(0);
 
+  // Debug logging
+  console.log('SingleReviewCard - review data:', review);
+  console.log('SingleReviewCard - user:', user);
+  console.log('SingleReviewCard - created_at:', review.created_at);
+  console.log('SingleReviewCard - userId match:', review.userId === user?.id);
+
   // Calculate if this review is editable (posted by current user and within 1 minute)
   useEffect(() => {
+    console.log('useEffect - checking edit eligibility');
+    console.log('user:', user);
+    console.log('review.created_at:', review.created_at);
+    console.log('review.userId:', review.userId);
+    console.log('user.id:', user?.id);
+
     if (!user || !review.created_at || review.userId !== user.id) {
+      console.log('Early return - conditions not met');
       setTimeLeft(0);
       return;
     }
@@ -51,13 +64,21 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory }: SingleRev
     const timeDiff = currentTime - reviewTime;
     const oneMinute = 60 * 1000; // 1 minute in milliseconds
 
+    console.log('reviewTime:', reviewTime);
+    console.log('currentTime:', currentTime);
+    console.log('timeDiff:', timeDiff);
+    console.log('oneMinute:', oneMinute);
+
     if (timeDiff >= oneMinute) {
+      console.log('Time expired');
       setTimeLeft(0);
       return;
     }
 
     const remaining = oneMinute - timeDiff;
-    setTimeLeft(Math.max(0, Math.floor(remaining / 1000)));
+    const initialTimeLeft = Math.max(0, Math.floor(remaining / 1000));
+    console.log('Setting initial timeLeft:', initialTimeLeft);
+    setTimeLeft(initialTimeLeft);
 
     const timer = setInterval(() => {
       const newCurrentTime = Date.now();
@@ -65,6 +86,7 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory }: SingleRev
       const newRemaining = oneMinute - newTimeDiff;
       const newTimeLeft = Math.max(0, Math.floor(newRemaining / 1000));
       
+      console.log('Timer update - newTimeLeft:', newTimeLeft);
       setTimeLeft(newTimeLeft);
       
       if (newTimeLeft <= 0) {
@@ -88,6 +110,7 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory }: SingleRev
   };
 
   const isEditable = timeLeft > 0 && user && review.userId === user.id;
+  console.log('isEditable:', isEditable, 'timeLeft:', timeLeft);
 
   return (
     <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 min-h-fit">
@@ -172,6 +195,16 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory }: SingleRev
               Edit
             </Button>
           </div>
+        </div>
+      )}
+
+      {/* Debug info - temporary */}
+      {user && review.userId === user.id && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded p-2 mb-4 text-xs">
+          <div>Debug: Your review</div>
+          <div>Created: {review.created_at}</div>
+          <div>Time left: {timeLeft}s</div>
+          <div>Is editable: {isEditable.toString()}</div>
         </div>
       )}
 
