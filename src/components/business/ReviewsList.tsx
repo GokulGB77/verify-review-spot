@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import SingleReviewCard from './SingleReviewCard';
 
@@ -13,6 +13,7 @@ interface ReviewsListProps {
 
 const ReviewsList = ({ reviews, businessId, isLoading }: ReviewsListProps) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [viewingHistory, setViewingHistory] = useState<Record<string, boolean>>({});
 
   const toggleHistory = (userId: string) => {
@@ -20,6 +21,11 @@ const ReviewsList = ({ reviews, businessId, isLoading }: ReviewsListProps) => {
       ...prev,
       [userId]: !prev[userId]
     }));
+  };
+
+  const handleEdit = (reviewId: string) => {
+    // Navigate to write review page with edit mode
+    navigate(`/write-review?entityId=${businessId}&editReviewId=${reviewId}`);
   };
 
   if (isLoading) {
@@ -61,9 +67,13 @@ const ReviewsList = ({ reviews, businessId, isLoading }: ReviewsListProps) => {
         {reviews.map((review) => (
           <SingleReviewCard
             key={review.userId}
-            review={review}
+            review={{
+              ...review,
+              createdAt: review.date // Map date to createdAt for the timer
+            }}
             viewingHistory={viewingHistory}
             onToggleHistory={toggleHistory}
+            onEdit={handleEdit}
           />
         ))}
       </div>
