@@ -85,5 +85,33 @@ export const calculateRatingDistribution = (reviews: any[]) => {
     }
   });
   
-  return distribution;
+  const total = reviews.length;
+  
+  // Convert to array format expected by RatingBreakdown component
+  return [
+    { stars: 5, count: distribution[5], percentage: total > 0 ? (distribution[5] / total) * 100 : 0 },
+    { stars: 4, count: distribution[4], percentage: total > 0 ? (distribution[4] / total) * 100 : 0 },
+    { stars: 3, count: distribution[3], percentage: total > 0 ? (distribution[3] / total) * 100 : 0 },
+    { stars: 2, count: distribution[2], percentage: total > 0 ? (distribution[2] / total) * 100 : 0 },
+    { stars: 1, count: distribution[1], percentage: total > 0 ? (distribution[1] / total) * 100 : 0 }
+  ];
+};
+
+// Helper function to get display name from review
+export const getDisplayName = (review: any) => {
+  const profile = review.profiles;
+  return profile?.display_name_preference === 'full_name' 
+    ? profile?.full_name 
+    : profile?.pseudonym || 'Anonymous User';
+};
+
+// Helper function to get main badge
+export const getMainBadge = (review: any) => {
+  const profile = review.profiles;
+  return (profile?.main_badge || 'Unverified User') as 'Verified User' | 'Unverified User';
+};
+
+// Helper function to get review specific badge
+export const getReviewSpecificBadge = (review: any) => {
+  return review.review_specific_badge as 'Verified Employee' | 'Verified Student' | null;
 };
