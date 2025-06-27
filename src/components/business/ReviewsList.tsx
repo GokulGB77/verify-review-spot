@@ -36,7 +36,7 @@ const ReviewsList = ({ reviews, businessId, isLoading }: ReviewsListProps) => {
         <p className="text-gray-500 mb-4">No reviews yet. Be the first to write one!</p>
         {user ? (
           <Button asChild>
-            <Link to="/write-review">
+            <Link to={`/write-review?entityId=${businessId}`}>
               Write the First Review
             </Link>
           </Button>
@@ -63,7 +63,7 @@ const ReviewsList = ({ reviews, businessId, isLoading }: ReviewsListProps) => {
             key={review.userId}
             review={{
               ...review,
-              created_at: review.created_at,
+              created_at: review.created_at, // Ensure the timestamp is passed through
               business_id: businessId
             }}
             viewingHistory={viewingHistory}

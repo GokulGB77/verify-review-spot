@@ -405,6 +405,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_review_editable: {
+        Args: { review_created_at: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "super_admin" | "entity_admin" | "user"
