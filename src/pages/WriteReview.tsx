@@ -59,7 +59,7 @@ const WriteReview = () => {
   const isEdit = searchParams.get('isEdit') === 'true';
 
   // Fetch the review being edited if in edit mode
-  const { data: editingReview } = useReview(reviewId || '');
+  const { data: editingReview, refetch: refetchEditingReview } = useReview(reviewId || '');
 
   // Check if user already has a review for this business
   const { data: existingReview } = useUserOriginalReviewForBusiness(formData.businessId);
@@ -235,6 +235,9 @@ const WriteReview = () => {
           .eq('id', editingReview.id);
 
         if (error) throw error;
+
+        // Refetch the updated review to ensure fresh data
+        await refetchEditingReview();
 
         toast({
           title: "Review Updated",

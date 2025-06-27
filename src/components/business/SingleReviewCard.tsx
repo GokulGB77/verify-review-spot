@@ -28,6 +28,7 @@ interface SingleReviewCardProps {
     updateNumber: number;
     allReviews: any[];
     created_at?: string;
+    updated_at?: string;
     business_id?: string;
   };
   viewingHistory: Record<string, boolean>;
@@ -39,16 +40,22 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory }: SingleRev
   const navigate = useNavigate();
   const [timeLeft, setTimeLeft] = useState<number>(0);
 
-  // Calculate if this review is editable (posted by current user and within 1 minute)
+  // Check if review has been edited (updated_at is different from created_at)
+  const hasBeenEdited = review.updated_at && review.created_at && 
+    new Date(review.updated_at).getTime() !== new Date(review.created_at).getTime();
+
+  // Calculate if this review is editable (posted by current user, within 1 minute, and not edited)
   useEffect(() => {
     console.log('SingleReviewCard - Review data:', {
       userId: review.userId,
       currentUserId: user?.id,
       created_at: review.created_at,
+      updated_at: review.updated_at,
+      hasBeenEdited: hasBeenEdited,
       userMatch: review.userId === user?.id
     });
 
-    if (!user || !review.created_at || review.userId !== user.id) {
+    if (!user || !review.created_at || review.userId !== user.id || hasBeenEdited) {
       setTimeLeft(0);
       return;
     }
@@ -89,7 +96,7 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory }: SingleRev
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [user, review.created_at, review.userId]);
+  }, [user, review.created_at, review.userId, hasBeenEdited, review.updated_at]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -103,11 +110,12 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory }: SingleRev
     }
   };
 
-  const isEditable = timeLeft > 0 && user && review.userId === user.id;
+  const isEditable = timeLeft > 0 && user && review.userId === user.id && !hasBeenEdited;
 
   console.log('Render state:', {
     isEditable,
     timeLeft,
+    hasBeenEdited,
     userMatch: user && review.userId === user.id,
     hasCreatedAt: !!review.created_at
   });
@@ -178,7 +186,7 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory }: SingleRev
         </div>
       )}
 
-      {/* Edit Section - Only show if user owns the review and within edit window */}
+      {/* Edit Section - Only show if user owns the review, within edit window, and hasn't been edited */}
       {isEditable && (
         <div className="bg-blue-50 border border-blue-200 rounded p-3 mb-4">
           <div className="flex items-center justify-between">
