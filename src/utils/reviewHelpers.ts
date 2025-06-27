@@ -1,111 +1,89 @@
 
-// Helper function to get main badge from profiles or review
-export const getMainBadge = (review: any): 'Verified User' | 'Unverified User' => {
-  const profileBadge = review.profiles?.main_badge;
-  const userBadge = review.user_badge;
+import type { Review } from '@/hooks/useReviews';
+
+export const transformReviews = (allReviews: Review[]) => {
+  // Group reviews by user_id to handle original reviews and their updates
+  const reviewsByUser = new Map<string, Review[]>();
   
-  if (profileBadge === 'Verified User') return 'Verified User';
-  if (userBadge === 'Verified User') return 'Verified User';
-  return 'Unverified User';
-};
-
-// Helper function to get review-specific badge
-export const getReviewSpecificBadge = (review: any): 'Verified Employee' | 'Verified Student' | null => {
-  const specificBadge = review.review_specific_badge;
-  if (specificBadge === 'Verified Employee' || specificBadge === 'Verified Student') {
-    return specificBadge;
-  }
-  return null;
-};
-
-// Helper function to get display name
-export const getDisplayName = (review: any) => {
-  if (review.profiles?.display_name_preference === 'real_name' && review.profiles?.full_name) {
-    return review.profiles.full_name;
-  } else if (review.profiles?.pseudonym) {
-    return review.profiles.pseudonym;
-  }
-  return 'Anonymous User';
-};
-
-// Define the grouped review structure type
-interface GroupedReviewData {
-  original: any | null;
-  updates: any[];
-  allReviews: any[];
-}
-
-// Transform grouped reviews for display
-export const transformReviews = (reviews: any[]) => {
-  // Group reviews by user and get the latest version for each user
-  const groupedReviews = reviews.reduce((acc, review) => {
+  allReviews.forEach(review => {
     const userId = review.user_id;
-    
-    if (!acc[userId]) {
-      acc[userId] = {
-        original: null,
-        updates: [],
-        allReviews: []
-      };
+    if (!reviewsByUser.has(userId)) {
+      reviewsByUser.set(userId, []);
     }
-    
-    acc[userId].allReviews.push(review);
-    
-    if (!review.parent_review_id) {
-      acc[userId].original = review;
-    } else {
-      acc[userId].updates.push(review);
-    }
-    
-    return acc;
-  }, {} as Record<string, GroupedReviewData>);
+    reviewsByUser.get(userId)!.push(review);
+  });
 
-  // Transform grouped reviews for display
-  return Object.entries(groupedReviews).map(([userId, data]: [string, GroupedReviewData]) => {
-    const sortedUpdates = data.updates.sort((a: any, b: any) => b.update_number - a.update_number);
-    const latestReview = sortedUpdates.length > 0 ? sortedUpdates[0] : data.original;
+  const transformedReviews = [];
+
+  for (const [userId, userReviews] of reviewsByUser) {
+    // Sort reviews by creation date (oldest first)
+    const sortedReviews = userReviews.sort((a, b) => 
+      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    );
+
+    // Find the original review (not an update)
+    const originalReview = sortedReviews.find(review => !review.is_update) || sortedReviews[0];
     
-    if (!latestReview) return null;
+    // Get all updates for this user's review
+    const updates = sortedReviews.filter(review => review.is_update);
     
-    const hasUpdates = data.updates.length > 0;
-    const totalUpdates = data.updates.length;
-    
-    return {
+    // Use the latest review (original or most recent update) as the current content
+    const latestReview = updates.length > 0 ? updates[updates.length - 1] : originalReview;
+
+    // Get user profile info
+    const profile = originalReview.profiles;
+    const displayName = profile?.display_name_preference === 'full_name' 
+      ? profile?.full_name 
+      : profile?.pseudonym || 'Anonymous User';
+
+    const transformedReview = {
       id: latestReview.id,
       userId: userId,
-      userName: getDisplayName(latestReview),
+      userName: displayName || 'Anonymous User',
       rating: latestReview.rating,
       content: latestReview.content,
-      mainBadge: getMainBadge(latestReview),
-      reviewSpecificBadge: getReviewSpecificBadge(latestReview),
-      proofProvided: !!latestReview.proof_url, // Check if proof_url exists
+      mainBadge: (profile?.main_badge || 'Unverified User') as 'Verified User' | 'Unverified User',
+      reviewSpecificBadge: latestReview.review_specific_badge as 'Verified Employee' | 'Verified Student' | null,
+      proofProvided: !!latestReview.proof_url,
       upvotes: latestReview.upvotes || 0,
       downvotes: latestReview.downvotes || 0,
       date: new Date(latestReview.created_at).toLocaleDateString(),
-      businessResponse: latestReview.business_response,
-      businessResponseDate: latestReview.business_response_date ? new Date(latestReview.business_response_date).toLocaleDateString() : undefined,
-      hasUpdates,
-      totalUpdates,
+      businessResponse: latestReview.business_response || undefined,
+      businessResponseDate: latestReview.business_response_date 
+        ? new Date(latestReview.business_response_date).toLocaleDateString() 
+        : undefined,
+      hasUpdates: updates.length > 0,
+      totalUpdates: updates.length,
       updateNumber: latestReview.update_number || 0,
-      allReviews: data.allReviews.sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()),
+      allReviews: sortedReviews.map(review => ({
+        content: review.content,
+        rating: review.rating,
+        date: new Date(review.created_at).toLocaleDateString(),
+        updateNumber: review.update_number || 0,
+        isUpdate: review.is_update || false
+      })),
+      // IMPORTANT: Pass through the created_at timestamp for edit window calculation
+      created_at: latestReview.created_at,
+      business_id: latestReview.business_id
     };
-  }).filter(Boolean);
+
+    transformedReviews.push(transformedReview);
+  }
+
+  // Sort by creation date (newest first) for display
+  return transformedReviews.sort((a, b) => 
+    new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
 };
 
-// Calculate rating distribution using only the latest review from each user
-export const calculateRatingDistribution = (transformedReviews: any[]) => {
-  const latestReviewsForRating = transformedReviews.map(review => ({
-    rating: review.rating
-  }));
+export const calculateRatingDistribution = (reviews: any[]) => {
+  const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
   
-  const ratingCounts = [1, 2, 3, 4, 5].map(rating => 
-    latestReviewsForRating.filter(review => review.rating === rating).length
-  );
+  reviews.forEach(review => {
+    if (review.rating >= 1 && review.rating <= 5) {
+      distribution[review.rating as keyof typeof distribution]++;
+    }
+  });
   
-  const totalReviews = latestReviewsForRating.length;
-  return ratingCounts.map((count, index) => ({
-    stars: index + 1,
-    count,
-    percentage: totalReviews > 0 ? Math.round((count / totalReviews) * 100) : 0
-  })).reverse();
+  return distribution;
 };

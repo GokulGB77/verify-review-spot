@@ -41,6 +41,13 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory }: SingleRev
 
   // Calculate if this review is editable (posted by current user and within 1 minute)
   useEffect(() => {
+    console.log('SingleReviewCard - Review data:', {
+      userId: review.userId,
+      currentUserId: user?.id,
+      created_at: review.created_at,
+      userMatch: review.userId === user?.id
+    });
+
     if (!user || !review.created_at || review.userId !== user.id) {
       setTimeLeft(0);
       return;
@@ -50,6 +57,14 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory }: SingleRev
     const currentTime = Date.now();
     const timeDiff = currentTime - reviewTime;
     const oneMinute = 60 * 1000; // 1 minute in milliseconds
+
+    console.log('Time calculation:', {
+      reviewTime: new Date(reviewTime),
+      currentTime: new Date(currentTime),
+      timeDiff: timeDiff,
+      oneMinute: oneMinute,
+      isWithinWindow: timeDiff < oneMinute
+    });
 
     if (timeDiff >= oneMinute) {
       setTimeLeft(0);
@@ -89,6 +104,13 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory }: SingleRev
   };
 
   const isEditable = timeLeft > 0 && user && review.userId === user.id;
+
+  console.log('Render state:', {
+    isEditable,
+    timeLeft,
+    userMatch: user && review.userId === user.id,
+    hasCreatedAt: !!review.created_at
+  });
 
   return (
     <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 min-h-fit">
