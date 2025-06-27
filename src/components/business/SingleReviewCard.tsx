@@ -1,8 +1,10 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Star, CheckCircle, MessageSquare, History } from 'lucide-react';
+import { Star, CheckCircle, MessageSquare, History, Edit } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import ReviewContent from './ReviewContent';
 import ReviewHistory from './ReviewHistory';
 
@@ -25,12 +27,68 @@ interface SingleReviewCardProps {
     totalUpdates: number;
     updateNumber: number;
     allReviews: any[];
+    created_at?: string;
+    business_id?: string;
   };
   viewingHistory: Record<string, boolean>;
   onToggleHistory: (userId: string) => void;
 }
 
 const SingleReviewCard = ({ review, viewingHistory, onToggleHistory }: SingleReviewCardProps) => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [timeLeft, setTimeLeft] = useState<number>(0);
+
+  // Calculate if this review is editable (posted by current user and within 1 minute)
+  useEffect(() => {
+    if (!user || !review.created_at || review.userId !== user.id) {
+      setTimeLeft(0);
+      return;
+    }
+
+    const reviewTime = new Date(review.created_at).getTime();
+    const currentTime = Date.now();
+    const timeDiff = currentTime - reviewTime;
+    const oneMinute = 60 * 1000; // 1 minute in milliseconds
+
+    if (timeDiff >= oneMinute) {
+      setTimeLeft(0);
+      return;
+    }
+
+    const remaining = oneMinute - timeDiff;
+    setTimeLeft(Math.max(0, Math.floor(remaining / 1000)));
+
+    const timer = setInterval(() => {
+      const newCurrentTime = Date.now();
+      const newTimeDiff = newCurrentTime - reviewTime;
+      const newRemaining = oneMinute - newTimeDiff;
+      const newTimeLeft = Math.max(0, Math.floor(newRemaining / 1000));
+      
+      setTimeLeft(newTimeLeft);
+      
+      if (newTimeLeft <= 0) {
+        clearInterval(timer);
+      }
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [user, review.created_at, review.userId]);
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const handleEdit = () => {
+    if (review.business_id) {
+      navigate(`/write-review?entityId=${review.business_id}`);
+    }
+  };
+
+  const isEditable = timeLeft > 0 && user && review.userId === user.id;
+
   return (
     <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 min-h-fit">
       {/* User Info and Rating */}
@@ -94,6 +152,26 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory }: SingleRev
             <span className="text-xs text-gray-500">{review.businessResponseDate}</span>
           </div>
           <p className="text-gray-700 text-sm leading-relaxed">{review.businessResponse}</p>
+        </div>
+      )}
+
+      {/* Edit Section - Only show if user owns the review and within edit window */}
+      {isEditable && (
+        <div className="bg-blue-50 border border-blue-200 rounded p-3 mb-4">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-blue-700">
+              You can edit this for the next {formatTime(timeLeft)}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleEdit}
+              className="text-blue-700 border-blue-300 hover:bg-blue-100 h-7 text-xs px-2"
+            >
+              <Edit className="h-3 w-3 mr-1" />
+              Edit
+            </Button>
+          </div>
         </div>
       )}
 
