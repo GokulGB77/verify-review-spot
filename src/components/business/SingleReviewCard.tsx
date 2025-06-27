@@ -25,11 +25,9 @@ interface SingleReviewCardProps {
     totalUpdates: number;
     updateNumber: number;
     allReviews: any[];
-    createdAt?: string;
   };
   viewingHistory: Record<string, boolean>;
   onToggleHistory: (userId: string) => void;
-  onEdit?: (reviewId: string) => void;
 }
 
 const SingleReviewCard = ({ review, viewingHistory, onToggleHistory }: SingleReviewCardProps) => {

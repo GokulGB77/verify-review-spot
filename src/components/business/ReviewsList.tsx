@@ -61,10 +61,7 @@ const ReviewsList = ({ reviews, businessId, isLoading }: ReviewsListProps) => {
         {reviews.map((review) => (
           <SingleReviewCard
             key={review.userId}
-            review={{
-              ...review,
-              createdAt: review.date // Map date to createdAt for consistency
-            }}
+            review={review}
             viewingHistory={viewingHistory}
             onToggleHistory={toggleHistory}
           />

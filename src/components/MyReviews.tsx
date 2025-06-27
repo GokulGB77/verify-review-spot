@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -141,8 +142,7 @@ const MyReviews = () => {
             </CardHeader>
             <CardContent>
               <p className="text-gray-700 mb-3 leading-relaxed">{item.review.content}</p>
-              
-              <div className="flex items-center justify-between text-sm text-gray-500 mt-3">
+              <div className="flex items-center justify-between text-sm text-gray-500">
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center space-x-2">
                     <Calendar className="h-4 w-4" />

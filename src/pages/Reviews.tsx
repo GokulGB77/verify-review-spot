@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,13 +13,11 @@ import { useReviews } from '@/hooks/useReviews';
 import { useEntities } from '@/hooks/useEntities';
 import SingleReviewCard from '@/components/business/SingleReviewCard';
 import { transformReviews, getDisplayName, getMainBadge, getReviewSpecificBadge } from '@/utils/reviewHelpers';
-import { useNavigate } from 'react-router-dom';
 
 const Homepage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('recent');
   const [viewingHistory, setViewingHistory] = useState<Record<string, boolean>>({});
-  const navigate = useNavigate();
   
   const { data: allReviews = [], isLoading: reviewsLoading } = useReviews();
   const { data: entities = [] } = useEntities();
@@ -88,14 +87,6 @@ const Homepage = () => {
       isVerified: latestReview.mainBadge === 'Verified User',
     };
   }).filter(Boolean);
-
-  const handleEdit = (reviewId: string) => {
-    // For the general reviews page, we need to find the business ID for this review
-    const review = filteredReviews.find(r => r.id === reviewId);
-    if (review) {
-      navigate(`/write-review?entityId=${review.businessId}&editReviewId=${reviewId}`);
-    }
-  };
 
   const getFilteredReviews = () => {
     let filtered = transformedReviews;
@@ -285,13 +276,9 @@ const Homepage = () => {
                 </CardHeader>
                 <CardContent>
                   <SingleReviewCard
-                    review={{
-                      ...review,
-                      createdAt: review.date // Map date to createdAt for the timer
-                    }}
+                    review={review}
                     viewingHistory={viewingHistory}
                     onToggleHistory={toggleHistory}
-                    onEdit={handleEdit}
                   />
                 </CardContent>
               </Card>
