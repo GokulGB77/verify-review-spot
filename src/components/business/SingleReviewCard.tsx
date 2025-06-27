@@ -99,7 +99,7 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory }: SingleRev
 
   const handleEdit = () => {
     if (review.business_id) {
-      navigate(`/write-review?entityId=${review.business_id}`);
+      navigate(`/write-review?entityId=${review.business_id}&reviewId=${review.id}&isEdit=true`);
     }
   };
 

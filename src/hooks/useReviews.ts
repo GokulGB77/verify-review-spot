@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
@@ -57,6 +56,25 @@ export const useReviews = (businessId?: string) => {
       
       return reviewsWithProfiles as Review[];
     },
+  });
+};
+
+export const useReview = (reviewId: string) => {
+  return useQuery({
+    queryKey: ['review', reviewId],
+    queryFn: async () => {
+      if (!reviewId) return null;
+      
+      const { data: review, error } = await supabase
+        .from('reviews')
+        .select('*')
+        .eq('id', reviewId)
+        .maybeSingle();
+      
+      if (error) throw error;
+      return review;
+    },
+    enabled: !!reviewId,
   });
 };
 

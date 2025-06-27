@@ -13,7 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Star, Search, Upload, AlertCircle, History, CheckCircle } from 'lucide-react';
 import { useEntities } from '@/hooks/useEntities';
-import { useCreateReview, useUserOriginalReviewForBusiness, useUserReviewUpdatesForBusiness } from '@/hooks/useReviews';
+import { useCreateReview, useUserOriginalReviewForBusiness, useUserReviewUpdatesForBusiness, useReview } from '@/hooks/useReviews';
 import ReviewContent from '@/components/business/ReviewContent';
 
 interface ReviewFormData {
@@ -53,14 +53,19 @@ const WriteReview = () => {
     reviewSpecificBadge: '',
   });
 
-  // Get entityId from URL parameters
+  // Get parameters from URL
   const entityId = searchParams.get('entityId');
+  const reviewId = searchParams.get('reviewId');
+  const isEdit = searchParams.get('isEdit') === 'true';
+
+  // Fetch the review being edited if in edit mode
+  const { data: editingReview } = useReview(reviewId || '');
 
   // Check if user already has a review for this business
   const { data: existingReview } = useUserOriginalReviewForBusiness(formData.businessId);
   const { data: reviewUpdates = [] } = useUserReviewUpdatesForBusiness(formData.businessId);
 
-  const isUpdate = !!existingReview;
+  const isUpdate = !!existingReview && !isEdit;
 
   // Fetch user profile
   useEffect(() => {
@@ -83,6 +88,18 @@ const WriteReview = () => {
       }
     }
   }, [entityId, entities]);
+
+  // Prefill form with existing review data if editing
+  useEffect(() => {
+    if (isEdit && editingReview && user && editingReview.user_id === user.id) {
+      setFormData(prev => ({
+        ...prev,
+        rating: editingReview.rating,
+        content: editingReview.content,
+        reviewSpecificBadge: editingReview.review_specific_badge || '',
+      }));
+    }
+  }, [isEdit, editingReview, user]);
 
   const fetchProfile = async () => {
     if (!user) return;
@@ -204,23 +221,44 @@ const WriteReview = () => {
         proofUrl = uploadData.path;
       }
 
-      // Submit review using the mutation
-      await createReviewMutation.mutateAsync({
-        business_id: formData.businessId,
-        rating: formData.rating,
-        content: formData.content.trim(),
-        proof_url: proofUrl,
-        user_badge: profile.main_badge || 'Unverified User',
-        review_specific_badge: formData.reviewSpecificBadge || undefined,
-        is_update: isUpdate,
-      });
+      if (isEdit && editingReview) {
+        // Update existing review directly
+        const { error } = await supabase
+          .from('reviews')
+          .update({
+            rating: formData.rating,
+            content: formData.content.trim(),
+            review_specific_badge: formData.reviewSpecificBadge || null,
+            proof_url: proofUrl || editingReview.proof_url,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', editingReview.id);
 
-      toast({
-        title: isUpdate ? "Review Update Submitted" : "Review Submitted",
-        description: isUpdate 
-          ? "Your review update has been submitted successfully!" 
-          : "Your review has been submitted successfully!",
-      });
+        if (error) throw error;
+
+        toast({
+          title: "Review Updated",
+          description: "Your review has been updated successfully!",
+        });
+      } else {
+        // Submit review using the mutation (for new reviews or updates)
+        await createReviewMutation.mutateAsync({
+          business_id: formData.businessId,
+          rating: formData.rating,
+          content: formData.content.trim(),
+          proof_url: proofUrl,
+          user_badge: profile.main_badge || 'Unverified User',
+          review_specific_badge: formData.reviewSpecificBadge || undefined,
+          is_update: isUpdate,
+        });
+
+        toast({
+          title: isUpdate ? "Review Update Submitted" : "Review Submitted",
+          description: isUpdate 
+            ? "Your review update has been submitted successfully!" 
+            : "Your review has been submitted successfully!",
+        });
+      }
 
       // Redirect to the entity page
       navigate(`/entities/${formData.businessId}`);
@@ -272,12 +310,15 @@ const WriteReview = () => {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            {isUpdate ? 'Update Your Review' : 'Write a Review'}
+            {isEdit ? 'Edit Your Review' : (isUpdate ? 'Update Your Review' : 'Write a Review')}
           </h1>
           <p className="text-lg text-gray-600">
-            {isUpdate 
-              ? 'Add an update to your existing review'
-              : 'Share your authentic experience and help others make informed decisions'
+            {isEdit 
+              ? 'Make changes to your existing review'
+              : (isUpdate 
+                ? 'Add an update to your existing review'
+                : 'Share your authentic experience and help others make informed decisions'
+              )
             }
           </p>
         </div>
@@ -289,7 +330,7 @@ const WriteReview = () => {
               <CardTitle>Business or Service</CardTitle>
               <CardDescription>
                 {selectedBusiness ? 
-                  (isUpdate ? 'Updating review for:' : 'You are reviewing:') 
+                  (isEdit ? 'Editing review for:' : (isUpdate ? 'Updating review for:' : 'You are reviewing:'))
                   : 'Search for the business you want to review'
                 }
               </CardDescription>
@@ -302,7 +343,7 @@ const WriteReview = () => {
                       <h3 className="font-medium text-green-900">{selectedBusiness.name}</h3>
                       <p className="text-sm text-green-700">{selectedBusiness.industry}</p>
                     </div>
-                    {!isUpdate && (
+                    {!isUpdate && !isEdit && (
                       <Button
                         type="button"
                         variant="outline"
@@ -362,7 +403,7 @@ const WriteReview = () => {
             </CardContent>
           </Card>
 
-          {/* Show existing review info if this is an update */}
+          {/* Show existing review info if this is an update (not edit) */}
           {isUpdate && existingReview && (
             <Card className="mb-6">
               <CardHeader>
@@ -455,12 +496,15 @@ const WriteReview = () => {
           <Card>
             <CardHeader>
               <CardTitle>
-                {isUpdate ? 'Updated Rating' : 'Overall Rating'}
+                {isEdit ? 'Updated Rating' : (isUpdate ? 'Updated Rating' : 'Overall Rating')}
               </CardTitle>
               <CardDescription>
-                {isUpdate 
-                  ? 'How would you rate your experience now?' 
-                  : 'How would you rate your overall experience?'
+                {isEdit 
+                  ? 'Update your rating for this experience'
+                  : (isUpdate 
+                    ? 'How would you rate your experience now?' 
+                    : 'How would you rate your overall experience?'
+                  )
                 }
               </CardDescription>
             </CardHeader>
@@ -497,12 +541,15 @@ const WriteReview = () => {
           <Card>
             <CardHeader>
               <CardTitle>
-                {isUpdate ? 'Your Update' : 'Your Review'}
+                {isEdit ? 'Your Review' : (isUpdate ? 'Your Update' : 'Your Review')}
               </CardTitle>
               <CardDescription>
-                {isUpdate 
-                  ? 'What has changed since your last review?' 
-                  : 'Share your detailed experience. Be honest and constructive.'
+                {isEdit 
+                  ? 'Update your review content'
+                  : (isUpdate 
+                    ? 'What has changed since your last review?' 
+                    : 'Share your detailed experience. Be honest and constructive.'
+                  )
                 }
               </CardDescription>
             </CardHeader>
@@ -510,9 +557,12 @@ const WriteReview = () => {
               <Textarea
                 value={formData.content}
                 onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
-                placeholder={isUpdate 
-                  ? "What's new? Have they improved? What changes have you noticed since your last review?"
-                  : "Describe your experience with this business or service. What went well? What could be improved? Include specific details that would help others make informed decisions."
+                placeholder={isEdit 
+                  ? "Update your review with new thoughts or experiences..."
+                  : (isUpdate 
+                    ? "What's new? Have they improved? What changes have you noticed since your last review?"
+                    : "Describe your experience with this business or service. What went well? What could be improved? Include specific details that would help others make informed decisions."
+                  )
                 }
                 rows={6}
                 className="w-full"
@@ -611,14 +661,14 @@ const WriteReview = () => {
                 size="lg"
               >
                 {createReviewMutation.isPending 
-                  ? (isUpdate ? 'Submitting Update...' : 'Submitting...')
-                  : (isUpdate ? 'Submit Update' : 'Submit Review')
+                  ? (isEdit ? 'Updating...' : (isUpdate ? 'Submitting Update...' : 'Submitting...'))
+                  : (isEdit ? 'Update Review' : (isUpdate ? 'Submit Update' : 'Submit Review'))
                 }
               </Button>
               
               {(!selectedBusiness || !formData.rating || formData.content.length < 50) && (
                 <p className="text-sm text-gray-500 text-center mt-3">
-                  Please complete all required fields to submit your {isUpdate ? 'update' : 'review'}
+                  Please complete all required fields to {isEdit ? 'update' : 'submit'} your {isEdit ? 'review' : (isUpdate ? 'update' : 'review')}
                 </p>
               )}
             </CardContent>
