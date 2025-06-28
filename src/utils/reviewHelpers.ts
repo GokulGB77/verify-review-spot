@@ -107,5 +107,37 @@ export const calculateRatingDistribution = (reviews: TransformedReview[]) => {
     }
   });
 
-  return distribution;
+  const total = reviews.length;
+  
+  // Convert to array format expected by RatingBreakdown component
+  return [5, 4, 3, 2, 1].map(stars => ({
+    stars,
+    count: distribution[stars as keyof typeof distribution],
+    percentage: total > 0 ? Math.round((distribution[stars as keyof typeof distribution] / total) * 100) : 0
+  }));
+};
+
+// Helper functions for backward compatibility
+export const getDisplayName = (profile: any) => {
+  if (!profile) return 'Anonymous User';
+  
+  if (profile.display_name_preference === 'full_name' && profile.full_name) {
+    return profile.full_name;
+  } else if (profile.display_name_preference === 'pseudonym' && profile.pseudonym) {
+    return profile.pseudonym;
+  } else if (profile.pseudonym) {
+    return profile.pseudonym;
+  } else if (profile.full_name) {
+    return profile.full_name;
+  }
+  
+  return 'Anonymous User';
+};
+
+export const getMainBadge = (profile: any) => {
+  return (profile?.main_badge as 'Verified User' | 'Unverified User') || 'Unverified User';
+};
+
+export const getReviewSpecificBadge = (review: any) => {
+  return review.review_specific_badge as 'Verified Employee' | 'Verified Student' | null;
 };
