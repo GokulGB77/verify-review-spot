@@ -69,7 +69,7 @@ const ProfileSettings = () => {
       setActiveTab(tab);
       
       // Optional: Clean up URL after setting the tab (removes the query parameter)
-      window.history.replaceState({}, document.title, window.location.pathname);
+      // window.history.replaceState({}, document.title, window.location.pathname);
     }
   }, []);
 
