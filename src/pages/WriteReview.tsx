@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -68,6 +69,14 @@ const WriteReview = () => {
   const { data: reviewUpdates = [] } = useUserReviewUpdatesForBusiness(formData.businessId);
 
   const isUpdate = !!existingReview && !isEdit;
+
+  // Clear file when reviewSpecificBadge changes to empty
+  useEffect(() => {
+    if (formData.reviewSpecificBadge === '' && formData.proofFile) {
+      console.log('Clearing file because connection changed to "No specific connection"');
+      setFormData(prev => ({ ...prev, proofFile: null }));
+    }
+  }, [formData.reviewSpecificBadge, formData.proofFile]);
 
   // Fetch user profile
   useEffect(() => {
@@ -164,12 +173,34 @@ const WriteReview = () => {
         });
         return;
       }
+      console.log('File selected:', file.name);
       setFormData(prev => ({ ...prev, proofFile: file }));
     }
   };
 
+  const handleConnectionChange = (value: string) => {
+    console.log('Connection changed to:', value);
+    setFormData(prev => {
+      const newFormData = { ...prev, reviewSpecificBadge: value };
+      // Clear file if switching to "No specific connection"
+      if (value === '' && prev.proofFile) {
+        console.log('Clearing file due to connection change');
+        newFormData.proofFile = null;
+      }
+      return newFormData;
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    console.log('Submit attempt with form data:', {
+      businessId: formData.businessId,
+      rating: formData.rating,
+      contentLength: formData.content.length,
+      hasFile: !!formData.proofFile,
+      connection: formData.reviewSpecificBadge
+    });
     
     if (!user || !profile) {
       toast({
@@ -203,6 +234,7 @@ const WriteReview = () => {
 
       // Upload proof file if provided
       if (formData.proofFile) {
+        console.log('Uploading file:', formData.proofFile.name);
         const fileExt = formData.proofFile.name.split('.').pop();
         const fileName = `${user.id}-${Date.now()}.${fileExt}`;
         
@@ -221,6 +253,7 @@ const WriteReview = () => {
         }
 
         proofUrl = uploadData.path;
+        console.log('File uploaded successfully to:', proofUrl);
       }
 
       if (isEdit && editingReview) {
@@ -316,6 +349,18 @@ const WriteReview = () => {
 
   // Check if proof upload should be shown
   const shouldShowProofUpload = formData.reviewSpecificBadge === 'Verified Employee' || formData.reviewSpecificBadge === 'Verified Student';
+
+  // Check if form is valid for submission
+  const isFormValid = selectedBusiness && formData.rating > 0 && formData.content.length >= 50;
+
+  console.log('Form validation:', {
+    selectedBusiness: !!selectedBusiness,
+    rating: formData.rating,
+    contentLength: formData.content.length,
+    isFormValid,
+    shouldShowProofUpload,
+    hasFile: !!formData.proofFile
+  });
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -596,7 +641,7 @@ const WriteReview = () => {
             <CardContent>
               <RadioGroup
                 value={formData.reviewSpecificBadge}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, reviewSpecificBadge: value }))}
+                onValueChange={handleConnectionChange}
               >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="" id="none" />
@@ -670,7 +715,7 @@ const WriteReview = () => {
             <CardContent className="pt-6">
               <Button
                 type="submit"
-                disabled={createReviewMutation.isPending || !selectedBusiness || !formData.rating || formData.content.length < 50}
+                disabled={createReviewMutation.isPending || !isFormValid}
                 className="w-full"
                 size="lg"
               >
@@ -680,7 +725,7 @@ const WriteReview = () => {
                 }
               </Button>
               
-              {(!selectedBusiness || !formData.rating || formData.content.length < 50) && (
+              {!isFormValid && (
                 <p className="text-sm text-gray-500 text-center mt-3">
                   Please complete all required fields to {isEdit ? 'update' : 'submit'} your {isEdit ? 'review' : (isUpdate ? 'update' : 'review')}
                 </p>
