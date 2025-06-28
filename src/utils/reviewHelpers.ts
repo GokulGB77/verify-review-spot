@@ -1,4 +1,3 @@
-
 import type { Review } from '@/hooks/useReviews';
 
 interface TransformedReview {
@@ -107,5 +106,39 @@ export const calculateRatingDistribution = (reviews: TransformedReview[]) => {
     }
   });
 
-  return distribution;
+  const total = reviews.length;
+  
+  // Convert to array format expected by RatingBreakdown component
+  return [5, 4, 3, 2, 1].map(stars => ({
+    stars,
+    count: distribution[stars as keyof typeof distribution],
+    percentage: total > 0 ? Math.round((distribution[stars as keyof typeof distribution] / total) * 100) : 0
+  }));
+};
+
+export const getDisplayName = (review: any): string => {
+  const profile = review.profiles;
+  
+  if (profile) {
+    if (profile.display_name_preference === 'full_name' && profile.full_name) {
+      return profile.full_name;
+    } else if (profile.display_name_preference === 'pseudonym' && profile.pseudonym) {
+      return profile.pseudonym;
+    } else if (profile.pseudonym) {
+      return profile.pseudonym;
+    } else if (profile.full_name) {
+      return profile.full_name;
+    }
+  }
+  
+  return 'Anonymous User';
+};
+
+export const getMainBadge = (review: any): 'Verified User' | 'Unverified User' => {
+  const profile = review.profiles;
+  return (profile?.main_badge as 'Verified User' | 'Unverified User') || 'Unverified User';
+};
+
+export const getReviewSpecificBadge = (review: any): 'Verified Employee' | 'Verified Student' | null => {
+  return review.review_specific_badge as 'Verified Employee' | 'Verified Student' | null;
 };
