@@ -314,6 +314,9 @@ const WriteReview = () => {
     }
   };
 
+  // Check if proof upload should be shown
+  const shouldShowProofUpload = formData.reviewSpecificBadge === 'Verified Employee' || formData.reviewSpecificBadge === 'Verified Student';
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -611,54 +614,56 @@ const WriteReview = () => {
             </CardContent>
           </Card>
 
-          {/* Proof Upload */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Supporting Evidence (Optional)</CardTitle>
-              <CardDescription>
-                Upload proof of your experience (receipts, screenshots, certificates, etc.)
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                  <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <Label htmlFor="proof-upload" className="cursor-pointer">
-                    <span className="text-blue-600 font-medium">Click to upload</span>
-                    <span className="text-gray-600"> or drag and drop</span>
-                  </Label>
-                  <Input
-                    id="proof-upload"
-                    type="file"
-                    onChange={handleFileChange}
-                    accept="image/*,.pdf,.doc,.docx"
-                    className="hidden"
-                  />
-                  <p className="text-xs text-gray-500 mt-2">
-                    PNG, JPG, PDF up to 5MB
-                  </p>
-                </div>
-                
-                {formData.proofFile && (
-                  <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                    <div className="flex items-center space-x-2">
-                      <CheckCircle className="h-4 w-4 text-green-600" />
-                      <span className="text-sm text-green-800">
-                        {formData.proofFile.name} ready to upload
-                      </span>
-                    </div>
+          {/* Proof Upload - Only show if specific connection is selected */}
+          {shouldShowProofUpload && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Supporting Evidence (Optional)</CardTitle>
+                <CardDescription>
+                  Upload proof of your experience (receipts, screenshots, certificates, etc.)
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                    <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <Label htmlFor="proof-upload" className="cursor-pointer">
+                      <span className="text-blue-600 font-medium">Click to upload</span>
+                      <span className="text-gray-600"> or drag and drop</span>
+                    </Label>
+                    <Input
+                      id="proof-upload"
+                      type="file"
+                      onChange={handleFileChange}
+                      accept="image/*,.pdf,.doc,.docx"
+                      className="hidden"
+                    />
+                    <p className="text-xs text-gray-500 mt-2">
+                      PNG, JPG, PDF up to 5MB
+                    </p>
                   </div>
-                )}
+                  
+                  {formData.proofFile && (
+                    <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <div className="flex items-center space-x-2">
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <span className="text-sm text-green-800">
+                          {formData.proofFile.name} ready to upload
+                        </span>
+                      </div>
+                    </div>
+                  )}
 
-                <Alert>
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>
-                    Providing proof increases the credibility of your review. All uploads are manually reviewed for relevance and appropriateness.
-                  </AlertDescription>
-                </Alert>
-              </div>
-            </CardContent>
-          </Card>
+                  <Alert>
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      Providing proof increases the credibility of your review. All uploads are manually reviewed for relevance and appropriateness.
+                    </AlertDescription>
+                  </Alert>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Submit Button */}
           <Card>
