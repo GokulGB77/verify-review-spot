@@ -44,17 +44,17 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory }: SingleRev
   const hasBeenEdited = review.updated_at && review.created_at && 
     new Date(review.updated_at).getTime() !== new Date(review.created_at).getTime();
 
+  console.log('SingleReviewCard - Edit check:', {
+    reviewId: review.id,
+    created_at: review.created_at,
+    updated_at: review.updated_at,
+    hasBeenEdited: hasBeenEdited,
+    userId: review.userId,
+    currentUserId: user?.id
+  });
+
   // Calculate if this review is editable (posted by current user, within 1 minute, and not edited)
   useEffect(() => {
-    console.log('SingleReviewCard - Review data:', {
-      userId: review.userId,
-      currentUserId: user?.id,
-      created_at: review.created_at,
-      updated_at: review.updated_at,
-      hasBeenEdited: hasBeenEdited,
-      userMatch: review.userId === user?.id
-    });
-
     if (!user || !review.created_at || review.userId !== user.id || hasBeenEdited) {
       setTimeLeft(0);
       return;
@@ -64,14 +64,6 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory }: SingleRev
     const currentTime = Date.now();
     const timeDiff = currentTime - reviewTime;
     const oneMinute = 60 * 1000; // 1 minute in milliseconds
-
-    console.log('Time calculation:', {
-      reviewTime: new Date(reviewTime),
-      currentTime: new Date(currentTime),
-      timeDiff: timeDiff,
-      oneMinute: oneMinute,
-      isWithinWindow: timeDiff < oneMinute
-    });
 
     if (timeDiff >= oneMinute) {
       setTimeLeft(0);
@@ -111,14 +103,6 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory }: SingleRev
   };
 
   const isEditable = timeLeft > 0 && user && review.userId === user.id && !hasBeenEdited;
-
-  console.log('Render state:', {
-    isEditable,
-    timeLeft,
-    hasBeenEdited,
-    userMatch: user && review.userId === user.id,
-    hasCreatedAt: !!review.created_at
-  });
 
   return (
     <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 min-h-fit">
