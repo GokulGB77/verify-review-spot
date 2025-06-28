@@ -23,18 +23,18 @@ const Footer = () => {
                 Browse Entities
               </Link>
             </li>
-            {/* <li>
+            <li>
               <Link to="/reviews" className="hover:text-white">
                 Explore Reviews
               </Link>
-            </li> */}
+            </li>
             <li>
               <Link to="/write-review" className="hover:text-white">
                 Write a Review
               </Link>
             </li>
             <li>
-              <Link to="/profile?tab=verification" className="hover:text-white">
+              <Link to="/profile/verification" className="hover:text-white">
                 Get Verified
               </Link>
             </li>
