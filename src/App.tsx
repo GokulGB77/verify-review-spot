@@ -39,7 +39,6 @@ function App() {
                 <Route path="/profile" element={<ProfileSettings />} />
                 <Route path="/register-entity" element={<EntityRegistration />} />
                 <Route path="/register-entity/success" element={<EntityRegistrationSuccess />} />
-                {/* Redirect old business routes to new entity routes */}
                 <Route path="/businesses" element={<Navigate to="/entities" replace />} />
                 <Route path="/business/:id" element={<Navigate to="/entities/:id" replace />} />
                 <Route

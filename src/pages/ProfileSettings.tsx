@@ -57,6 +57,32 @@ const ProfileSettings = () => {
     back: null
   });
 
+  // Handle direct tab navigation via URL parameters
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tab = urlParams.get('tab');
+    
+    // Valid tab options
+    const validTabs = ['details', 'verification', 'aadhaar'];
+    
+    if (tab && validTabs.includes(tab)) {
+      setActiveTab(tab);
+      
+      // Optional: Clean up URL after setting the tab (removes the query parameter)
+      // window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
+
+  // Update URL when tab changes (optional - for better UX)
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    
+    // Update URL to reflect current tab
+    const url = new URL(window.location.href);
+    url.searchParams.set('tab', tab);
+    window.history.replaceState({}, document.title, url.toString());
+  };
+
   useEffect(() => {
     if (user) {
       fetchProfile();
@@ -637,7 +663,7 @@ const ProfileSettings = () => {
           <ProfileHeader profile={profile} />
           <ProfileTabs
             activeTab={activeTab}
-            setActiveTab={setActiveTab}
+            setActiveTab={handleTabChange} // Use the new function that updates URL
             profile={profile}
           />
           <CardContent className="pt-6">
