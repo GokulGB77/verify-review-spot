@@ -556,51 +556,104 @@ const SuperAdminDashboard = () => {
 
       case 'analytics':
         return (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Platform Overview</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between">
-                    <span>Total Businesses:</span>
-                    <span className="font-semibold">{stats.totalBusinesses}</span>
+          <>
+            {/* Stats Cards - Now moved inside the analytics tab */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center">
+                    <Building2 className="h-8 w-8 text-blue-600" />
+                    <div className="ml-4">
+                      <p className="text-sm font-medium text-gray-600">Total Businesses</p>
+                      <p className="text-2xl font-bold text-gray-900">{stats.totalBusinesses}</p>
+                    </div>
                   </div>
-                  <div className="flex justify-between">
-                    <span>Active Businesses:</span>
-                    <span className="font-semibold">{stats.activeBusinesses}</span>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center">
+                    <Users className="h-8 w-8 text-green-600" />
+                    <div className="ml-4">
+                      <p className="text-sm font-medium text-gray-600">Active Businesses</p>
+                      <p className="text-2xl font-bold text-gray-900">{stats.activeBusinesses}</p>
+                    </div>
                   </div>
-                  <div className="flex justify-between">
-                    <span>Total Reviews:</span>
-                    <span className="font-semibold">{stats.totalReviews}</span>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center">
+                    <MessageSquare className="h-8 w-8 text-purple-600" />
+                    <div className="ml-4">
+                      <p className="text-sm font-medium text-gray-600">Verified Businesses</p>
+                      <p className="text-2xl font-bold text-gray-900">{stats.verifiedBusinesses}</p>
+                    </div>
                   </div>
-                  <div className="flex justify-between">
-                    <span>Verification Rate:</span>
-                    <span className="font-semibold">
-                      {stats.totalBusinesses > 0 ? Math.round((stats.verifiedBusinesses / stats.totalBusinesses) * 100) : 0}%
-                    </span>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center">
+                    <TrendingUp className="h-8 w-8 text-orange-600" />
+                    <div className="ml-4">
+                      <p className="text-sm font-medium text-gray-600">Average Rating</p>
+                      <p className="text-2xl font-bold text-gray-900">{stats.averageRating.toFixed(1)}</p>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Activity</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-sm text-gray-600">
-                  <p>New businesses this month: {entities?.filter(b => 
-                    new Date(b.created_at).getMonth() === new Date().getMonth()
-                  ).length || 0}</p>
-                  <p>New reviews this month: {reviews?.filter(r => 
-                    new Date(r.created_at).getMonth() === new Date().getMonth()
-                  ).length || 0}</p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Platform Overview</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex justify-between">
+                      <span>Total Businesses:</span>
+                      <span className="font-semibold">{stats.totalBusinesses}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Active Businesses:</span>
+                      <span className="font-semibold">{stats.activeBusinesses}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Total Reviews:</span>
+                      <span className="font-semibold">{stats.totalReviews}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Verification Rate:</span>
+                      <span className="font-semibold">
+                        {stats.totalBusinesses > 0 ? Math.round((stats.verifiedBusinesses / stats.totalBusinesses) * 100) : 0}%
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Recent Activity</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-sm text-gray-600">
+                    <p>New businesses this month: {entities?.filter(b => 
+                      new Date(b.created_at).getMonth() === new Date().getMonth()
+                    ).length || 0}</p>
+                    <p>New reviews this month: {reviews?.filter(r => 
+                      new Date(r.created_at).getMonth() === new Date().getMonth()
+                    ).length || 0}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </>
         );
 
       default:
@@ -639,57 +692,6 @@ const SuperAdminDashboard = () => {
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900">Super Admin Dashboard</h1>
             <p className="text-gray-600 mt-2">Manage businesses, reviews, and platform analytics</p>
-          </div>
-
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <Building2 className="h-8 w-8 text-blue-600" />
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Total Businesses</p>
-                    <p className="text-2xl font-bold text-gray-900">{stats.totalBusinesses}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <Users className="h-8 w-8 text-green-600" />
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Active Businesses</p>
-                    <p className="text-2xl font-bold text-gray-900">{stats.activeBusinesses}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <MessageSquare className="h-8 w-8 text-purple-600" />
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Verified Businesses</p>
-                    <p className="text-2xl font-bold text-gray-900">{stats.verifiedBusinesses}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <TrendingUp className="h-8 w-8 text-orange-600" />
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Average Rating</p>
-                    <p className="text-2xl font-bold text-gray-900">{stats.averageRating.toFixed(1)}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
           </div>
 
           {/* Dynamic Content */}
