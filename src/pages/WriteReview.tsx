@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -198,9 +199,7 @@ const WriteReview = () => {
       rating: formData.rating,
       contentLength: formData.content.length,
       hasFile: !!formData.proofFile,
-      connection: formData.reviewSpecificBadge,
-      isUpdate,
-      isEdit
+      connection: formData.reviewSpecificBadge
     });
     
     if (!user || !profile) {
@@ -225,16 +224,6 @@ const WriteReview = () => {
       toast({
         title: "Review too short",
         description: "Please write at least 50 characters for your review.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Additional validation for specific connection with proof requirement
-    if ((formData.reviewSpecificBadge === 'Verified Employee' || formData.reviewSpecificBadge === 'Verified Student') && !formData.proofFile && !isEdit) {
-      toast({
-        title: "Supporting Evidence Required",
-        description: "Please upload supporting evidence for your connection to this business.",
         variant: "destructive",
       });
       return;
@@ -358,15 +347,11 @@ const WriteReview = () => {
     }
   };
 
-  // Check if proof upload should be shown - show for updates too
-  const shouldShowProofUpload = formData.reviewSpecificBadge === 'Verified Employee' || 
-                                formData.reviewSpecificBadge === 'Verified Student' || 
-                                isUpdate;
+  // Check if proof upload should be shown
+  const shouldShowProofUpload = formData.reviewSpecificBadge === 'Verified Employee' || formData.reviewSpecificBadge === 'Verified Student';
 
-  // Simplified form validation - only check essential fields
-  const isFormValid = selectedBusiness && 
-                      formData.rating > 0 && 
-                      formData.content.length >= 50;
+  // Check if form is valid for submission
+  const isFormValid = selectedBusiness && formData.rating > 0 && formData.content.length >= 50;
 
   console.log('Form validation:', {
     selectedBusiness: !!selectedBusiness,
@@ -374,8 +359,7 @@ const WriteReview = () => {
     contentLength: formData.content.length,
     isFormValid,
     shouldShowProofUpload,
-    hasFile: !!formData.proofFile,
-    reviewSpecificBadge: formData.reviewSpecificBadge
+    hasFile: !!formData.proofFile
   });
 
   return (
@@ -675,16 +659,13 @@ const WriteReview = () => {
             </CardContent>
           </Card>
 
-          {/* Proof Upload - Show for specific connections OR when updating */}
+          {/* Proof Upload - Only show if specific connection is selected */}
           {shouldShowProofUpload && (
             <Card>
               <CardHeader>
                 <CardTitle>Supporting Evidence (Optional)</CardTitle>
                 <CardDescription>
-                  {isUpdate 
-                    ? "Upload additional proof or evidence to support your update"
-                    : "Upload proof of your experience (receipts, screenshots, certificates, etc.)"
-                  }
+                  Upload proof of your experience (receipts, screenshots, certificates, etc.)
                 </CardDescription>
               </CardHeader>
               <CardContent>
