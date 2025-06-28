@@ -15,6 +15,7 @@ import { Star, Search, Upload, AlertCircle, History, CheckCircle } from 'lucide-
 import { useEntities } from '@/hooks/useEntities';
 import { useCreateReview, useUserOriginalReviewForBusiness, useUserReviewUpdatesForBusiness, useReview } from '@/hooks/useReviews';
 import ReviewContent from '@/components/business/ReviewContent';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface ReviewFormData {
   businessId: string;
@@ -43,6 +44,7 @@ const WriteReview = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedBusiness, setSelectedBusiness] = useState<any>(null);
   const createReviewMutation = useCreateReview();
+  const queryClient = useQueryClient();
 
   const [formData, setFormData] = useState<ReviewFormData>({
     businessId: '',
@@ -236,8 +238,12 @@ const WriteReview = () => {
 
         if (error) throw error;
 
-        // Refetch the updated review to ensure fresh data
-        await refetchEditingReview();
+        // Invalidate all review-related queries to force refetch with updated data
+        queryClient.invalidateQueries({ queryKey: ['reviews'] });
+        queryClient.invalidateQueries({ queryKey: ['review', editingReview.id] });
+        queryClient.invalidateQueries({ queryKey: ['user-reviews'] });
+        queryClient.invalidateQueries({ queryKey: ['entities'] });
+        queryClient.invalidateQueries({ queryKey: ['entity', formData.businessId] });
 
         toast({
           title: "Review Updated",

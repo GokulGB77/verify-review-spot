@@ -17,10 +17,10 @@ export const useReviews = (businessId?: string) => {
   return useQuery({
     queryKey: ['reviews', businessId],
     queryFn: async () => {
-      // First get the reviews
+      // First get the reviews - make sure to select updated_at
       let query = supabase
         .from('reviews')
-        .select('*')
+        .select('*, updated_at, created_at')
         .order('created_at', { ascending: false });
 
       if (businessId) {
@@ -67,7 +67,7 @@ export const useReview = (reviewId: string) => {
       
       const { data: review, error } = await supabase
         .from('reviews')
-        .select('*')
+        .select('*, updated_at, created_at')
         .eq('id', reviewId)
         .maybeSingle();
       
