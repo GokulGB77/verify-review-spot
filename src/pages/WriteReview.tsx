@@ -315,10 +315,7 @@ const WriteReview = () => {
   };
 
   // Check if proof upload should be shown
-  const shouldShowProofUpload = formData.reviewSpecificBadge === 'Verified Employee' || 
-                                formData.reviewSpecificBadge === 'Verified Student' ||
-                                isUpdate || 
-                                isEdit;
+  const shouldShowProofUpload = formData.reviewSpecificBadge === 'Verified Employee' || formData.reviewSpecificBadge === 'Verified Student';
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -617,16 +614,13 @@ const WriteReview = () => {
             </CardContent>
           </Card>
 
-          {/* Proof Upload - Show for specific connections OR when updating/editing */}
+          {/* Proof Upload - Only show if specific connection is selected */}
           {shouldShowProofUpload && (
             <Card>
               <CardHeader>
                 <CardTitle>Supporting Evidence (Optional)</CardTitle>
                 <CardDescription>
-                  {(isUpdate || isEdit) && !formData.reviewSpecificBadge ? 
-                    "Upload proof of your experience (receipts, screenshots, etc.)" :
-                    "Upload proof of your experience (receipts, screenshots, certificates, etc.)"
-                  }
+                  Upload proof of your experience (receipts, screenshots, certificates, etc.)
                 </CardDescription>
               </CardHeader>
               <CardContent>
