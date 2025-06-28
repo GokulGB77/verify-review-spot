@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Card,
   CardContent,
@@ -29,18 +29,63 @@ import CTASection from "@/components/CtaSection";
 import { useBusinesses } from "@/hooks/useBusinesses";
 import { useReviews } from "@/hooks/useReviews";
 import { getDisplayName } from "@/utils/reviewHelpers";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
   const navigate = useNavigate();
   const { data: businesses = [] } = useBusinesses();
   const { data: allReviews = [] } = useReviews();
+  const searchInputRef = useRef(null);
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
       navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      setShowSuggestions(false);
     }
   };
+
+  // Update suggestions when search query changes
+  useEffect(() => {
+    if (searchQuery.trim().length > 0) {
+      const filtered = businesses
+        .filter((business) =>
+          business.name.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+        .slice(0, 5); // Show max 5 suggestions
+      setSuggestions(filtered);
+      setShowSuggestions(true);
+    } else {
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
+  }, [searchQuery, businesses]);
+
+  const handleSuggestionClick = (business) => {
+    setSearchQuery(business.name);
+    setShowSuggestions(false);
+    navigate(`/entities/${business.entity_id}`);
+  };
+
+  // Close suggestions when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchInputRef.current && !searchInputRef.current.contains(event.target)) {
+        setShowSuggestions(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   // Filter reviews to only include those from active entities
   const activeEntityReviews = allReviews.filter((review) => {
@@ -185,8 +230,8 @@ const Index = () => {
           <TypingAnimation />
 
           {/* Search Bar */}
-          <div className="max-w-2xl mx-auto mb-12">
-            <div className="flex gap-2">
+          <div className="max-w-2xl mx-auto mb-12" ref={searchInputRef}>
+            <div className="flex gap-2 relative">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                 <Input
@@ -195,7 +240,51 @@ const Index = () => {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10 h-12 text-lg"
                   onKeyPress={(e) => e.key === "Enter" && handleSearch()}
+                  onFocus={() => {
+                    if (searchQuery.trim().length > 0 && suggestions.length > 0) {
+                      setShowSuggestions(true);
+                    }
+                  }}
                 />
+                
+                {/* Suggestions Dropdown */}
+                {showSuggestions && suggestions.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-md shadow-lg z-50 mt-1">
+                    {suggestions.map((business) => (
+                      <div
+                        key={business.entity_id}
+                        className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                        onClick={() => handleSuggestionClick(business)}
+                      >
+                        <div className="flex items-center space-x-3">
+                          <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <span className="text-sm font-bold text-blue-600">
+                              {business.name.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                          <div className="flex-1">
+                            <div className="font-medium text-gray-900">
+                              {business.name}
+                            </div>
+                            {business.industry && (
+                              <div className="text-sm text-gray-500">
+                                {business.industry}
+                              </div>
+                            )}
+                          </div>
+                          {business.average_rating && (
+                            <div className="flex items-center space-x-1">
+                              <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                              <span className="text-sm text-gray-600">
+                                {business.average_rating.toFixed(1)}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               <Button onClick={handleSearch} size="lg" className="h-12">
                 Search

@@ -14,6 +14,7 @@ import Auth from './pages/Auth';
 import ProfileSettings from './pages/ProfileSettings';
 import EntityRegistration from './pages/EntityRegistration';
 import EntityRegistrationSuccess from './pages/EntityRegistrationSuccess';
+import SearchResults from './pages/SearchResults';
 import SuperAdminDashboard from './pages/SuperAdminDashboard';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserRoles } from '@/hooks/useUserRoles';
@@ -39,6 +40,7 @@ function App() {
                 <Route path="/profile" element={<ProfileSettings />} />
                 <Route path="/register-entity" element={<EntityRegistration />} />
                 <Route path="/register-entity/success" element={<EntityRegistrationSuccess />} />
+                <Route path="/search" element={<SearchResults />} />
                 {/* Redirect old business routes to new entity routes */}
                 <Route path="/businesses" element={<Navigate to="/entities" replace />} />
                 <Route path="/business/:id" element={<Navigate to="/entities/:id" replace />} />
