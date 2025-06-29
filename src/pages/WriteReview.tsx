@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { History } from 'lucide-react';
+import { History, Star } from 'lucide-react';
 import { useEntities } from '@/hooks/useEntities';
 import { useCreateReview, useUserOriginalReviewForBusiness, useUserReviewUpdatesForBusiness, useReview } from '@/hooks/useReviews';
 import ReviewContent from '@/components/business/ReviewContent';
