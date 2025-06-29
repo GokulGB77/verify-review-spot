@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -105,6 +106,22 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory }: SingleRev
 
   const isEditable = timeLeft > 0 && user && review.userId === user.id && !hasBeenEdited;
 
+  const getMainBadgeDisplay = () => {
+    if (review.mainBadge === 'Verified User') {
+      return {
+        badge: 'Verified User',
+        color: 'bg-green-100 text-green-800 border-green-200',
+        icon: <CheckCircle className="h-4 w-4 mr-1" />
+      };
+    } else {
+      return {
+        badge: 'Unverified User',
+        color: 'bg-gray-100 text-gray-800 border-gray-200',
+        icon: null
+      };
+    }
+  };
+
   // Get the correct badge display based on verification status
   const getReviewSpecificBadgeDisplay = () => {
     if (!review.reviewSpecificBadge) return null;
@@ -175,14 +192,10 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory }: SingleRev
             <div className="flex items-center space-x-2">
               <Badge 
                 variant="outline" 
-                className={`text-xs px-2 py-1 h-5 ${
-                  review.mainBadge === 'Verified User' 
-                    ? 'bg-green-50 text-green-700 border-green-200' 
-                    : 'bg-gray-50 text-gray-600 border-gray-200'
-                }`}
+                className={`text-xs px-2 py-1 h-5 ${mainBadgeDisplay.color}`}
               >
-                {review.mainBadge === 'Verified User' && <CheckCircle className="h-3 w-3 mr-1" />}
-                {review.mainBadge === 'Verified User' ? 'Verified' : 'Unverified'}
+                {mainBadgeDisplay.icon}
+                {mainBadgeDisplay.badge === 'Verified User' ? 'Verified' : 'Unverified'}
               </Badge>
               {reviewSpecificBadgeDisplay && (
                 <Badge 
