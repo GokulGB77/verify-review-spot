@@ -12,7 +12,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Star, Search, Upload, AlertCircle, History, CheckCircle } from 'lucide-react';
+import { Star, Search, Upload, AlertCircle, History, CheckCircle, X } from 'lucide-react';
 import { useEntities } from '@/hooks/useEntities';
 import { useCreateReview, useUserOriginalReviewForBusiness, useUserReviewUpdatesForBusiness, useReview } from '@/hooks/useReviews';
 import ReviewContent from '@/components/business/ReviewContent';
@@ -69,14 +69,6 @@ const WriteReview = () => {
   const { data: reviewUpdates = [] } = useUserReviewUpdatesForBusiness(formData.businessId);
 
   const isUpdate = !!existingReview && !isEdit;
-
-  // Clear file when reviewSpecificBadge changes to empty
-  useEffect(() => {
-    if (formData.reviewSpecificBadge === '' && formData.proofFile) {
-      console.log('Clearing file because connection changed to "No specific connection"');
-      setFormData(prev => ({ ...prev, proofFile: null }));
-    }
-  }, [formData.reviewSpecificBadge, formData.proofFile]);
 
   // Fetch user profile
   useEffect(() => {
@@ -173,7 +165,7 @@ const WriteReview = () => {
         });
         return;
       }
-      console.log('File selected:', file.name);
+      console.log('File selected:', file.name, 'Size:', file.size);
       setFormData(prev => ({ ...prev, proofFile: file }));
     }
   };
@@ -191,6 +183,11 @@ const WriteReview = () => {
     });
   };
 
+  const removeFile = () => {
+    console.log('Removing uploaded file');
+    setFormData(prev => ({ ...prev, proofFile: null }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -199,7 +196,9 @@ const WriteReview = () => {
       rating: formData.rating,
       contentLength: formData.content.length,
       hasFile: !!formData.proofFile,
-      connection: formData.reviewSpecificBadge
+      connection: formData.reviewSpecificBadge,
+      isUpdate,
+      isEdit
     });
     
     if (!user || !profile) {
@@ -224,6 +223,17 @@ const WriteReview = () => {
       toast({
         title: "Review too short",
         description: "Please write at least 50 characters for your review.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check if proof is required but missing
+    const needsProof = formData.reviewSpecificBadge === 'Verified Employee' || formData.reviewSpecificBadge === 'Verified Student';
+    if (needsProof && !formData.proofFile) {
+      toast({
+        title: "Proof Required",
+        description: "Please upload proof or select 'No specific connection' to proceed.",
         variant: "destructive",
       });
       return;
@@ -258,15 +268,32 @@ const WriteReview = () => {
 
       if (isEdit && editingReview) {
         // Update existing review directly
+        const updateData: any = {
+          rating: formData.rating,
+          content: formData.content.trim(),
+          review_specific_badge: formData.reviewSpecificBadge || null,
+          updated_at: new Date().toISOString(),
+        };
+
+        // Add proof-related fields if file was uploaded
+        if (proofUrl) {
+          updateData.proof_url = proofUrl;
+          updateData.proof_verified = null; // Reset verification status for new proof
+          updateData.proof_verified_by = null;
+          updateData.proof_verified_at = null;
+          updateData.proof_rejection_reason = null;
+        } else if (!formData.reviewSpecificBadge) {
+          // Clear proof fields if no connection selected
+          updateData.proof_url = null;
+          updateData.proof_verified = null;
+          updateData.proof_verified_by = null;
+          updateData.proof_verified_at = null;
+          updateData.proof_rejection_reason = null;
+        }
+
         const { error } = await supabase
           .from('reviews')
-          .update({
-            rating: formData.rating,
-            content: formData.content.trim(),
-            review_specific_badge: formData.reviewSpecificBadge || null,
-            proof_url: proofUrl || editingReview.proof_url,
-            updated_at: new Date().toISOString(),
-          })
+          .update(updateData)
           .eq('id', editingReview.id);
 
         if (error) throw error;
@@ -284,7 +311,7 @@ const WriteReview = () => {
         });
       } else {
         // Submit review using the mutation (for new reviews or updates)
-        await createReviewMutation.mutateAsync({
+        const reviewData: any = {
           business_id: formData.businessId,
           rating: formData.rating,
           content: formData.content.trim(),
@@ -292,7 +319,9 @@ const WriteReview = () => {
           user_badge: profile.main_badge || 'Unverified User',
           review_specific_badge: formData.reviewSpecificBadge || undefined,
           is_update: isUpdate,
-        });
+        };
+
+        await createReviewMutation.mutateAsync(reviewData);
 
         toast({
           title: isUpdate ? "Review Update Submitted" : "Review Submitted",
@@ -350,16 +379,17 @@ const WriteReview = () => {
   // Check if proof upload should be shown
   const shouldShowProofUpload = formData.reviewSpecificBadge === 'Verified Employee' || formData.reviewSpecificBadge === 'Verified Student';
 
-  // Check if form is valid for submission
+  // Form validation - simplified to focus on core requirements
   const isFormValid = selectedBusiness && formData.rating > 0 && formData.content.length >= 50;
+  const needsProof = shouldShowProofUpload;
+  const hasRequiredProof = !needsProof || (needsProof && formData.proofFile);
 
-  console.log('Form validation:', {
-    selectedBusiness: !!selectedBusiness,
-    rating: formData.rating,
-    contentLength: formData.content.length,
+  console.log('Form validation state:', {
     isFormValid,
-    shouldShowProofUpload,
-    hasFile: !!formData.proofFile
+    needsProof,
+    hasRequiredProof,
+    hasFile: !!formData.proofFile,
+    canSubmit: isFormValid && hasRequiredProof
   });
 
   return (
@@ -381,7 +411,7 @@ const WriteReview = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Business Selection - Moved to top */}
+          {/* Business Selection */}
           <Card>
             <CardHeader>
               <CardTitle>Business or Service</CardTitle>
@@ -659,42 +689,58 @@ const WriteReview = () => {
             </CardContent>
           </Card>
 
-          {/* Proof Upload - Only show if specific connection is selected */}
+          {/* Proof Upload - Show when specific connection is selected */}
           {shouldShowProofUpload && (
             <Card>
               <CardHeader>
-                <CardTitle>Supporting Evidence (Optional)</CardTitle>
+                <CardTitle>Supporting Evidence (Required)</CardTitle>
                 <CardDescription>
                   Upload proof of your experience (receipts, screenshots, certificates, etc.)
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                    <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <Label htmlFor="proof-upload" className="cursor-pointer">
-                      <span className="text-blue-600 font-medium">Click to upload</span>
-                      <span className="text-gray-600"> or drag and drop</span>
-                    </Label>
-                    <Input
-                      id="proof-upload"
-                      type="file"
-                      onChange={handleFileChange}
-                      accept="image/*,.pdf,.doc,.docx"
-                      className="hidden"
-                    />
-                    <p className="text-xs text-gray-500 mt-2">
-                      PNG, JPG, PDF up to 5MB
-                    </p>
-                  </div>
-                  
-                  {formData.proofFile && (
-                    <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                      <div className="flex items-center space-x-2">
-                        <CheckCircle className="h-4 w-4 text-green-600" />
-                        <span className="text-sm text-green-800">
-                          {formData.proofFile.name} ready to upload
-                        </span>
+                  {!formData.proofFile ? (
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                      <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <Label htmlFor="proof-upload" className="cursor-pointer">
+                        <span className="text-blue-600 font-medium">Click to upload</span>
+                        <span className="text-gray-600"> or drag and drop</span>
+                      </Label>
+                      <Input
+                        id="proof-upload"
+                        type="file"
+                        onChange={handleFileChange}
+                        accept="image/*,.pdf,.doc,.docx"
+                        className="hidden"
+                      />
+                      <p className="text-xs text-gray-500 mt-2">
+                        PNG, JPG, PDF up to 5MB
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <CheckCircle className="h-5 w-5 text-green-600" />
+                          <div>
+                            <p className="text-sm font-medium text-green-800">
+                              {formData.proofFile.name}
+                            </p>
+                            <p className="text-xs text-green-600">
+                              {(formData.proofFile.size / 1024 / 1024).toFixed(2)} MB
+                            </p>
+                          </div>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={removeFile}
+                          className="text-red-600 hover:text-red-800"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
                   )}
@@ -715,7 +761,7 @@ const WriteReview = () => {
             <CardContent className="pt-6">
               <Button
                 type="submit"
-                disabled={createReviewMutation.isPending || !isFormValid}
+                disabled={createReviewMutation.isPending || !isFormValid || !hasRequiredProof}
                 className="w-full"
                 size="lg"
               >
@@ -725,10 +771,15 @@ const WriteReview = () => {
                 }
               </Button>
               
-              {!isFormValid && (
-                <p className="text-sm text-gray-500 text-center mt-3">
-                  Please complete all required fields to {isEdit ? 'update' : 'submit'} your {isEdit ? 'review' : (isUpdate ? 'update' : 'review')}
-                </p>
+              {(!isFormValid || !hasRequiredProof) && (
+                <div className="text-sm text-gray-500 text-center mt-3 space-y-1">
+                  {!isFormValid && (
+                    <p>Please complete all required fields</p>
+                  )}
+                  {needsProof && !formData.proofFile && (
+                    <p>Please upload proof or select 'No specific connection' to proceed</p>
+                  )}
+                </div>
               )}
             </CardContent>
           </Card>
