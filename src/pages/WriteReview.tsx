@@ -228,7 +228,6 @@ const WriteReview = () => {
     if (uploadError) {
       console.error('Upload error details:', {
         message: uploadError.message,
-        statusCode: uploadError.statusCode,
         error: uploadError
       });
       throw new Error(`Upload failed: ${uploadError.message}`);
