@@ -9,29 +9,7 @@ export const uploadFileToStorage = async (file: File, userId: string): Promise<s
   
   console.log('Attempting to upload file:', fileName, 'to review-proofs bucket');
   
-  // First, let's check if the bucket exists and create it if it doesn't
-  const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
-  
-  if (bucketsError) {
-    console.error('Error listing buckets:', bucketsError);
-    throw new Error('Failed to access storage');
-  }
-  
-  const bucketExists = buckets?.some(bucket => bucket.name === 'review-proofs');
-  
-  if (!bucketExists) {
-    console.log('Creating review-proofs bucket');
-    const { error: createBucketError } = await supabase.storage.createBucket('review-proofs', {
-      public: false
-    });
-    
-    if (createBucketError) {
-      console.error('Error creating bucket:', createBucketError);
-      throw new Error('Failed to create storage bucket');
-    }
-  }
-  
-  // Upload the file
+  // Upload the file directly to the existing bucket
   const { data: uploadData, error: uploadError } = await supabase.storage
     .from('review-proofs')
     .upload(fileName, file, {
