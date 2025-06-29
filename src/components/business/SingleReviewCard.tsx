@@ -18,7 +18,7 @@ interface SingleReviewCardProps {
     mainBadge: 'Verified User' | 'Unverified User';
     reviewSpecificBadge?: 'Verified Employee' | 'Verified Student' | null;
     proofProvided: boolean;
-    proofVerified?: boolean; // New field for proof verification
+    proofVerified?: boolean;
     upvotes: number;
     downvotes: number;
     date: string;
@@ -31,7 +31,7 @@ interface SingleReviewCardProps {
     created_at?: string;
     updated_at?: string;
     business_id?: string;
-    pseudonym?: string; // New field for pseudonym
+    pseudonym?: string;
   };
   viewingHistory: Record<string, boolean>;
   onToggleHistory: (userId: string) => void;
@@ -106,7 +106,36 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory }: SingleRev
 
   const isEditable = timeLeft > 0 && user && review.userId === user.id && !hasBeenEdited;
 
-  const getMainBadgeDisplay = () => {
+  // Get the single badge to display based on proof status
+  const getBadgeDisplay = () => {
+    // If proof is provided and verified, show the review-specific badge
+    if (review.proofProvided && review.proofVerified === true && review.reviewSpecificBadge) {
+      if (review.reviewSpecificBadge === 'Verified Employee') {
+        return {
+          badge: 'Verified Employee',
+          color: 'bg-blue-100 text-blue-800 border-blue-200',
+          icon: <Shield className="h-4 w-4 mr-1" />
+        };
+      } else if (review.reviewSpecificBadge === 'Verified Student') {
+        return {
+          badge: 'Verified Student',
+          color: 'bg-purple-100 text-purple-800 border-purple-200',
+          icon: <Shield className="h-4 w-4 mr-1" />
+        };
+      }
+    }
+    
+    // If proof is provided but pending verification
+    if (review.proofProvided && review.proofVerified === false && review.reviewSpecificBadge) {
+      const badgeText = review.reviewSpecificBadge === 'Verified Employee' ? 'Employee' : 'Student';
+      return {
+        badge: `${badgeText} (Pending Verification)`,
+        color: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+        icon: <Clock className="h-4 w-4 mr-1" />
+      };
+    }
+    
+    // Default to profile-based verification status
     if (review.mainBadge === 'Verified User') {
       return {
         badge: 'Verified User',
@@ -122,60 +151,9 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory }: SingleRev
     }
   };
 
-  // Get the correct badge display based on verification status
-  const getReviewSpecificBadgeDisplay = () => {
-    if (!review.reviewSpecificBadge) return null;
-    
-    if (review.reviewSpecificBadge === 'Verified Employee') {
-      // Check if proof is verified
-      if (review.proofVerified === true) {
-        return {
-          badge: 'Verified Employee',
-          color: 'bg-blue-100 text-blue-800 border-blue-200',
-          icon: <Shield className="h-4 w-4 mr-1" />
-        };
-      } else if (review.proofVerified === false) {
-        return {
-          badge: 'Employee (Pending Verification)',
-          color: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-          icon: <Clock className="h-4 w-4 mr-1" />
-        };
-      } else {
-        return {
-          badge: 'Employee',
-          color: 'bg-gray-100 text-gray-800 border-gray-200',
-          icon: <Shield className="h-4 w-4 mr-1" />
-        };
-      }
-    } else if (review.reviewSpecificBadge === 'Verified Student') {
-      // Check if proof is verified
-      if (review.proofVerified === true) {
-        return {
-          badge: 'Verified Student',
-          color: 'bg-purple-100 text-purple-800 border-purple-200',
-          icon: <Shield className="h-4 w-4 mr-1" />
-        };
-      } else if (review.proofVerified === false) {
-        return {
-          badge: 'Student (Pending Verification)',
-          color: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-          icon: <Clock className="h-4 w-4 mr-1" />
-        };
-      } else {
-        return {
-          badge: 'Student',
-          color: 'bg-gray-100 text-gray-800 border-gray-200',
-          icon: <Shield className="h-4 w-4 mr-1" />
-        };
-      }
-    }
-    return null;
-  };
-
   // Display pseudonym if set, otherwise show generic term
   const displayName = review.pseudonym || review.userName || 'Anonymous Reviewer';
-  const mainBadgeDisplay = getMainBadgeDisplay();
-  const reviewSpecificBadgeDisplay = getReviewSpecificBadgeDisplay();
+  const badgeDisplay = getBadgeDisplay();
 
   return (
     <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 min-h-fit">
@@ -192,20 +170,11 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory }: SingleRev
             <div className="flex items-center space-x-2">
               <Badge 
                 variant="outline" 
-                className={`text-xs px-2 py-1 h-5 ${mainBadgeDisplay.color}`}
+                className={`text-xs px-2 py-1 h-5 ${badgeDisplay.color}`}
               >
-                {mainBadgeDisplay.icon}
-                {mainBadgeDisplay.badge === 'Verified User' ? 'Verified' : 'Unverified'}
+                {badgeDisplay.icon}
+                {badgeDisplay.badge}
               </Badge>
-              {reviewSpecificBadgeDisplay && (
-                <Badge 
-                  variant="outline" 
-                  className={`${reviewSpecificBadgeDisplay.color} text-xs px-2 py-1 h-5 flex items-center`}
-                >
-                  {reviewSpecificBadgeDisplay.icon}
-                  {reviewSpecificBadgeDisplay.badge}
-                </Badge>
-              )}
             </div>
           </div>
         </div>
