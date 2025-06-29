@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -165,7 +164,7 @@ const WriteReview = () => {
         });
         return;
       }
-      console.log('File selected:', file.name, 'Size:', file.size);
+      console.log('File selected:', file.name, 'Size:', file.size, 'Type:', file.type);
       setFormData(prev => ({ ...prev, proofFile: file }));
     }
   };
@@ -186,6 +185,61 @@ const WriteReview = () => {
   const removeFile = () => {
     console.log('Removing uploaded file');
     setFormData(prev => ({ ...prev, proofFile: null }));
+  };
+
+  const uploadFileToStorage = async (file: File): Promise<string> => {
+    if (!user) throw new Error('User not authenticated');
+    
+    const fileExt = file.name.split('.').pop()?.toLowerCase();
+    const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+    
+    console.log('Attempting to upload file:', fileName, 'to review-proofs bucket');
+    
+    // First, let's check if the bucket exists and create it if it doesn't
+    const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
+    
+    if (bucketsError) {
+      console.error('Error listing buckets:', bucketsError);
+      throw new Error('Failed to access storage');
+    }
+    
+    const bucketExists = buckets?.some(bucket => bucket.name === 'review-proofs');
+    
+    if (!bucketExists) {
+      console.log('Creating review-proofs bucket');
+      const { error: createBucketError } = await supabase.storage.createBucket('review-proofs', {
+        public: false
+      });
+      
+      if (createBucketError) {
+        console.error('Error creating bucket:', createBucketError);
+        throw new Error('Failed to create storage bucket');
+      }
+    }
+    
+    // Upload the file
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('review-proofs')
+      .upload(fileName, file, {
+        cacheControl: '3600',
+        upsert: false
+      });
+
+    if (uploadError) {
+      console.error('Upload error details:', {
+        message: uploadError.message,
+        statusCode: uploadError.statusCode,
+        error: uploadError
+      });
+      throw new Error(`Upload failed: ${uploadError.message}`);
+    }
+
+    if (!uploadData?.path) {
+      throw new Error('Upload succeeded but no path returned');
+    }
+
+    console.log('File uploaded successfully to:', uploadData.path);
+    return uploadData.path;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -244,26 +298,9 @@ const WriteReview = () => {
 
       // Upload proof file if provided
       if (formData.proofFile) {
-        console.log('Uploading file:', formData.proofFile.name);
-        const fileExt = formData.proofFile.name.split('.').pop();
-        const fileName = `${user.id}-${Date.now()}.${fileExt}`;
-        
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('review-proofs')
-          .upload(fileName, formData.proofFile);
-
-        if (uploadError) {
-          console.error('Upload error:', uploadError);
-          toast({
-            title: "Upload Failed",
-            description: "Failed to upload proof file. Please try again.",
-            variant: "destructive",
-          });
-          return;
-        }
-
-        proofUrl = uploadData.path;
-        console.log('File uploaded successfully to:', proofUrl);
+        console.log('Starting file upload process for:', formData.proofFile.name);
+        proofUrl = await uploadFileToStorage(formData.proofFile);
+        console.log('File upload completed, URL:', proofUrl);
       }
 
       if (isEdit && editingReview) {
@@ -326,9 +363,12 @@ const WriteReview = () => {
 
         toast({
           title: isUpdate ? "Review Update Submitted" : "Review Submitted",
-          description: isUpdate 
-            ? "Your review update has been submitted successfully!" 
-            : "Your review has been submitted successfully!",
+          description: proofUrl 
+            ? "Your review has been submitted and is pending verification!"
+            : (isUpdate 
+              ? "Your review update has been submitted successfully!" 
+              : "Your review has been submitted successfully!"
+            ),
         });
       }
 
