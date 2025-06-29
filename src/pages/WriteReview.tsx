@@ -175,8 +175,8 @@ const WriteReview = () => {
     setFormData(prev => {
       const newFormData = { ...prev, reviewSpecificBadge: value };
       // Clear file if switching to "No specific connection"
-      if (value === '' && prev.proofFile) {
-        console.log('Clearing file due to connection change');
+      if (value === '') {
+        console.log('Clearing file due to connection change to no specific connection');
         newFormData.proofFile = null;
       }
       return newFormData;
@@ -321,6 +321,7 @@ const WriteReview = () => {
           is_update: isUpdate,
         };
 
+        console.log('Submitting review with data:', reviewData);
         await createReviewMutation.mutateAsync(reviewData);
 
         toast({
@@ -379,17 +380,18 @@ const WriteReview = () => {
   // Check if proof upload should be shown
   const shouldShowProofUpload = formData.reviewSpecificBadge === 'Verified Employee' || formData.reviewSpecificBadge === 'Verified Student';
 
-  // Form validation - simplified to focus on core requirements
-  const isFormValid = selectedBusiness && formData.rating > 0 && formData.content.length >= 50;
+  // Simplified form validation
+  const isBasicFormValid = selectedBusiness && formData.rating > 0 && formData.content.length >= 50;
   const needsProof = shouldShowProofUpload;
   const hasRequiredProof = !needsProof || (needsProof && formData.proofFile);
+  const canSubmit = isBasicFormValid && hasRequiredProof;
 
   console.log('Form validation state:', {
-    isFormValid,
+    isBasicFormValid,
     needsProof,
     hasRequiredProof,
     hasFile: !!formData.proofFile,
-    canSubmit: isFormValid && hasRequiredProof
+    canSubmit
   });
 
   return (
@@ -761,7 +763,7 @@ const WriteReview = () => {
             <CardContent className="pt-6">
               <Button
                 type="submit"
-                disabled={createReviewMutation.isPending || !isFormValid || !hasRequiredProof}
+                disabled={createReviewMutation.isPending || !canSubmit}
                 className="w-full"
                 size="lg"
               >
@@ -771,10 +773,10 @@ const WriteReview = () => {
                 }
               </Button>
               
-              {(!isFormValid || !hasRequiredProof) && (
+              {!canSubmit && (
                 <div className="text-sm text-gray-500 text-center mt-3 space-y-1">
-                  {!isFormValid && (
-                    <p>Please complete all required fields</p>
+                  {!isBasicFormValid && (
+                    <p>Please complete all required fields (business, rating, review text)</p>
                   )}
                   {needsProof && !formData.proofFile && (
                     <p>Please upload proof or select 'No specific connection' to proceed</p>
