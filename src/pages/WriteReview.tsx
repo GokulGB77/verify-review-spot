@@ -283,6 +283,13 @@ const WriteReview = () => {
 
     // Check if proof is required but missing
     const needsProof = formData.reviewSpecificBadge === 'Verified Employee' || formData.reviewSpecificBadge === 'Verified Student';
+    
+    console.log('Proof validation:', {
+      needsProof,
+      hasFile: !!formData.proofFile,
+      connection: formData.reviewSpecificBadge
+    });
+
     if (needsProof && !formData.proofFile) {
       toast({
         title: "Proof Required",
@@ -419,18 +426,19 @@ const WriteReview = () => {
   // Check if proof upload should be shown
   const shouldShowProofUpload = formData.reviewSpecificBadge === 'Verified Employee' || formData.reviewSpecificBadge === 'Verified Student';
 
-  // Simplified form validation
+  // Form validation logic
   const isBasicFormValid = selectedBusiness && formData.rating > 0 && formData.content.length >= 50;
   const needsProof = shouldShowProofUpload;
   const hasRequiredProof = !needsProof || (needsProof && formData.proofFile);
-  const canSubmit = isBasicFormValid && hasRequiredProof;
+  const canSubmit = isBasicFormValid && hasRequiredProof && !createReviewMutation.isPending;
 
   console.log('Form validation state:', {
     isBasicFormValid,
     needsProof,
     hasRequiredProof,
     hasFile: !!formData.proofFile,
-    canSubmit
+    canSubmit,
+    isPending: createReviewMutation.isPending
   });
 
   return (
@@ -802,7 +810,7 @@ const WriteReview = () => {
             <CardContent className="pt-6">
               <Button
                 type="submit"
-                disabled={createReviewMutation.isPending || !canSubmit}
+                disabled={!canSubmit}
                 className="w-full"
                 size="lg"
               >
