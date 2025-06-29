@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
@@ -195,6 +196,9 @@ export const useCreateReview = () => {
         throw new Error('Cannot create an update without an original review.');
       }
       
+      // Set proof verification status based on whether proof is provided
+      const proofVerified = reviewData.proof_url ? false : null; // false = pending verification, null = no proof needed
+      
       if (reviewData.is_update && existingOriginalReview) {
         // Get the current highest update number for this review chain
         const { data: latestUpdate } = await supabase
@@ -220,7 +224,8 @@ export const useCreateReview = () => {
             update_number: nextUpdateNumber,
             user_badge: reviewData.user_badge || 'Unverified User',
             review_specific_badge: reviewData.review_specific_badge || null,
-            proof_url: reviewData.proof_url || null
+            proof_url: reviewData.proof_url || null,
+            proof_verified: proofVerified
           }])
           .select()
           .single();
@@ -241,7 +246,8 @@ export const useCreateReview = () => {
             update_number: 0,
             user_badge: reviewData.user_badge || 'Unverified User',
             review_specific_badge: reviewData.review_specific_badge || null,
-            proof_url: reviewData.proof_url || null
+            proof_url: reviewData.proof_url || null,
+            proof_verified: proofVerified
           }])
           .select()
           .single();

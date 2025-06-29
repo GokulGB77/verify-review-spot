@@ -1,8 +1,7 @@
-
 import { useState, useEffect } from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Star, CheckCircle, MessageSquare, History, Edit } from 'lucide-react';
+import { Star, CheckCircle, MessageSquare, History, Edit, Shield, Clock } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import ReviewContent from './ReviewContent';
@@ -18,6 +17,7 @@ interface SingleReviewCardProps {
     mainBadge: 'Verified User' | 'Unverified User';
     reviewSpecificBadge?: 'Verified Employee' | 'Verified Student' | null;
     proofProvided: boolean;
+    proofVerified?: boolean; // New field for proof verification
     upvotes: number;
     downvotes: number;
     date: string;
@@ -30,6 +30,7 @@ interface SingleReviewCardProps {
     created_at?: string;
     updated_at?: string;
     business_id?: string;
+    pseudonym?: string; // New field for pseudonym
   };
   viewingHistory: Record<string, boolean>;
   onToggleHistory: (userId: string) => void;
@@ -104,6 +105,61 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory }: SingleRev
 
   const isEditable = timeLeft > 0 && user && review.userId === user.id && !hasBeenEdited;
 
+  // Get the correct badge display based on verification status
+  const getReviewSpecificBadgeDisplay = () => {
+    if (!review.reviewSpecificBadge) return null;
+    
+    if (review.reviewSpecificBadge === 'Verified Employee') {
+      // Check if proof is verified
+      if (review.proofVerified === true) {
+        return {
+          badge: 'Verified Employee',
+          color: 'bg-blue-100 text-blue-800 border-blue-200',
+          icon: <Shield className="h-4 w-4 mr-1" />
+        };
+      } else if (review.proofVerified === false) {
+        return {
+          badge: 'Employee (Pending Verification)',
+          color: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+          icon: <Clock className="h-4 w-4 mr-1" />
+        };
+      } else {
+        return {
+          badge: 'Employee',
+          color: 'bg-gray-100 text-gray-800 border-gray-200',
+          icon: <Shield className="h-4 w-4 mr-1" />
+        };
+      }
+    } else if (review.reviewSpecificBadge === 'Verified Student') {
+      // Check if proof is verified
+      if (review.proofVerified === true) {
+        return {
+          badge: 'Verified Student',
+          color: 'bg-purple-100 text-purple-800 border-purple-200',
+          icon: <Shield className="h-4 w-4 mr-1" />
+        };
+      } else if (review.proofVerified === false) {
+        return {
+          badge: 'Student (Pending Verification)',
+          color: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+          icon: <Clock className="h-4 w-4 mr-1" />
+        };
+      } else {
+        return {
+          badge: 'Student',
+          color: 'bg-gray-100 text-gray-800 border-gray-200',
+          icon: <Shield className="h-4 w-4 mr-1" />
+        };
+      }
+    }
+    return null;
+  };
+
+  // Display pseudonym if set, otherwise show generic term
+  const displayName = review.pseudonym || review.userName || 'Anonymous Reviewer';
+  const mainBadgeDisplay = getMainBadgeDisplay();
+  const reviewSpecificBadgeDisplay = getReviewSpecificBadgeDisplay();
+
   return (
     <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 min-h-fit">
       {/* User Info and Rating */}
@@ -128,9 +184,13 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory }: SingleRev
                 {review.mainBadge === 'Verified User' && <CheckCircle className="h-3 w-3 mr-1" />}
                 {review.mainBadge === 'Verified User' ? 'Verified' : 'Unverified'}
               </Badge>
-              {review.reviewSpecificBadge && (
-                <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs px-2 py-1 h-5">
-                  {review.reviewSpecificBadge === 'Verified Employee' ? 'Employee' : 'Student'}
+              {reviewSpecificBadgeDisplay && (
+                <Badge 
+                  variant="outline" 
+                  className={`${reviewSpecificBadgeDisplay.color} text-xs px-2 py-1 h-5 flex items-center`}
+                >
+                  {reviewSpecificBadgeDisplay.icon}
+                  {reviewSpecificBadgeDisplay.badge}
                 </Badge>
               )}
             </div>

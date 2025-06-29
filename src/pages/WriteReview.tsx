@@ -233,7 +233,7 @@ const WriteReview = () => {
         // Add proof-related fields if file was uploaded
         if (proofUrl) {
           updateData.proof_url = proofUrl;
-          updateData.proof_verified = null; // Reset verification status for new proof
+          updateData.proof_verified = false; // Reset to pending verification for new proof
           updateData.proof_verified_by = null;
           updateData.proof_verified_at = null;
           updateData.proof_rejection_reason = null;

@@ -93,17 +93,47 @@ const ReviewCard = ({
     if (!reviewSpecificBadge) return null;
     
     if (reviewSpecificBadge === 'Verified Employee') {
-      return {
-        badge: 'Verified Employee',
-        color: 'bg-blue-100 text-blue-800 border-blue-200',
-        icon: <Shield className="h-4 w-4 mr-1" />
-      };
+      // Check if proof is verified
+      if (proofVerified === true) {
+        return {
+          badge: 'Verified Employee',
+          color: 'bg-blue-100 text-blue-800 border-blue-200',
+          icon: <Shield className="h-4 w-4 mr-1" />
+        };
+      } else if (proofVerified === false) {
+        return {
+          badge: 'Employee (Pending Verification)',
+          color: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+          icon: <Clock className="h-4 w-4 mr-1" />
+        };
+      } else {
+        return {
+          badge: 'Employee',
+          color: 'bg-gray-100 text-gray-800 border-gray-200',
+          icon: <Shield className="h-4 w-4 mr-1" />
+        };
+      }
     } else if (reviewSpecificBadge === 'Verified Student') {
-      return {
-        badge: 'Verified Student',
-        color: 'bg-purple-100 text-purple-800 border-purple-200',
-        icon: <Shield className="h-4 w-4 mr-1" />
-      };
+      // Check if proof is verified
+      if (proofVerified === true) {
+        return {
+          badge: 'Verified Student',
+          color: 'bg-purple-100 text-purple-800 border-purple-200',
+          icon: <Shield className="h-4 w-4 mr-1" />
+        };
+      } else if (proofVerified === false) {
+        return {
+          badge: 'Student (Pending Verification)',
+          color: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+          icon: <Clock className="h-4 w-4 mr-1" />
+        };
+      } else {
+        return {
+          badge: 'Student',
+          color: 'bg-gray-100 text-gray-800 border-gray-200',
+          icon: <Shield className="h-4 w-4 mr-1" />
+        };
+      }
     }
     return null;
   };
