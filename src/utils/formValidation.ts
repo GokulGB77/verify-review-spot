@@ -6,6 +6,17 @@ export const validateForm = (formData: ReviewFormData, selectedBusiness: any) =>
   const needsProof = formData.reviewSpecificBadge === 'Verified Employee' || formData.reviewSpecificBadge === 'Verified Student';
   const hasRequiredProof = !needsProof || (needsProof && formData.proofFile);
   
+  console.log('Form validation debug:', {
+    selectedBusiness: !!selectedBusiness,
+    rating: formData.rating,
+    contentLength: formData.content.length,
+    reviewSpecificBadge: formData.reviewSpecificBadge,
+    needsProof,
+    hasFile: !!formData.proofFile,
+    hasRequiredProof,
+    isBasicFormValid
+  });
+  
   return {
     isBasicFormValid,
     needsProof,
