@@ -67,9 +67,13 @@ export const transformReviews = (allReviews: Review[]): TransformedReview[] => {
       main_badge: profile?.main_badge
     });
 
+    // Determine if proof was provided and verified
+    const proofProvided = !!latestReview.proof_url;
+    const proofVerified = latestReview.proof_verified;
+
     console.log('transformReviews - Debug badge logic:', {
-      proofProvided: !!latestReview.proof_url,
-      proofVerified: latestReview.proof_verified,
+      proofProvided,
+      proofVerified,
       reviewSpecificBadge: latestReview.review_specific_badge,
       mainBadge: (profile?.main_badge === 'Verified User') ? 'Verified User' : 'Unverified User'
     });
@@ -82,8 +86,8 @@ export const transformReviews = (allReviews: Review[]): TransformedReview[] => {
       content: latestReview.content,
       mainBadge: (profile?.main_badge === 'Verified User') ? 'Verified User' : 'Unverified User',
       reviewSpecificBadge: latestReview.review_specific_badge as 'Verified Employee' | 'Verified Student' | null,
-      proofProvided: !!latestReview.proof_url,
-      proofVerified: latestReview.proof_verified,
+      proofProvided,
+      proofVerified,
       upvotes: latestReview.upvotes || 0,
       downvotes: latestReview.downvotes || 0,
       date: new Date(latestReview.created_at).toLocaleDateString(),

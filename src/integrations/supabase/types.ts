@@ -351,6 +351,44 @@ export type Database = {
           },
         ]
       }
+      user_business_connections: {
+        Row: {
+          approved_at: string
+          approved_by: string | null
+          business_id: string
+          connection_type: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          approved_at?: string
+          approved_by?: string | null
+          business_id: string
+          connection_type: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          approved_at?: string
+          approved_by?: string | null
+          business_id?: string
+          connection_type?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_business_connections_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "entities"
+            referencedColumns: ["entity_id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           assigned_at: string | null

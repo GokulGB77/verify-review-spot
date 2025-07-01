@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -21,6 +20,7 @@ import ReviewContentInput from '@/components/review/ReviewContentInput';
 import ConnectionSelection from '@/components/review/ConnectionSelection';
 import ProofUpload from '@/components/review/ProofUpload';
 import SubmitSection from '@/components/review/SubmitSection';
+import { useUserBusinessConnection } from '@/hooks/useUserBusinessConnections';
 
 const WriteReview = () => {
   const navigate = useNavigate();
@@ -153,6 +153,9 @@ const WriteReview = () => {
     });
   };
 
+  // Check if user has an approved connection for this business
+  const { data: existingConnection } = useUserBusinessConnection(formData.businessId);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -162,6 +165,7 @@ const WriteReview = () => {
       contentLength: formData.content.length,
       hasFile: !!formData.proofFile,
       connection: formData.reviewSpecificBadge,
+      existingConnection: existingConnection?.connection_type,
       isUpdate,
       isEdit
     });
@@ -193,13 +197,17 @@ const WriteReview = () => {
       return;
     }
 
-    // Check if proof is required but missing
-    const needsProof = formData.reviewSpecificBadge === 'Verified Employee' || formData.reviewSpecificBadge === 'Verified Student';
+    // Use existing connection if available, otherwise use form selection
+    const effectiveConnection = existingConnection?.connection_type || formData.reviewSpecificBadge;
+    
+    // Check if proof is required but missing (only if no existing connection)
+    const needsProof = !existingConnection && (formData.reviewSpecificBadge === 'Verified Employee' || formData.reviewSpecificBadge === 'Verified Student');
     
     console.log('Proof validation:', {
       needsProof,
       hasFile: !!formData.proofFile,
-      connection: formData.reviewSpecificBadge
+      connection: effectiveConnection,
+      existingConnection: !!existingConnection
     });
 
     if (needsProof && !formData.proofFile) {
@@ -214,8 +222,8 @@ const WriteReview = () => {
     try {
       let proofUrl = null;
 
-      // Upload proof file if provided
-      if (formData.proofFile) {
+      // Upload proof file if provided (only if no existing connection)
+      if (formData.proofFile && !existingConnection) {
         console.log('Starting file upload process for:', formData.proofFile.name);
         proofUrl = await uploadFileToStorage(formData.proofFile, user.id);
         console.log('File upload completed, URL:', proofUrl);
@@ -226,7 +234,7 @@ const WriteReview = () => {
         const updateData: any = {
           rating: formData.rating,
           content: formData.content.trim(),
-          review_specific_badge: formData.reviewSpecificBadge || null,
+          review_specific_badge: effectiveConnection || null,
           updated_at: new Date().toISOString(),
         };
 
@@ -237,8 +245,8 @@ const WriteReview = () => {
           updateData.proof_verified_by = null;
           updateData.proof_verified_at = null;
           updateData.proof_rejection_reason = null;
-        } else if (!formData.reviewSpecificBadge) {
-          // Clear proof fields if no connection selected
+        } else if (!effectiveConnection) {
+          // Clear proof fields if no connection selected and no existing connection
           updateData.proof_url = null;
           updateData.proof_verified = null;
           updateData.proof_verified_by = null;
@@ -272,7 +280,7 @@ const WriteReview = () => {
           content: formData.content.trim(),
           proof_url: proofUrl,
           user_badge: profile.main_badge || 'Unverified User',
-          review_specific_badge: formData.reviewSpecificBadge || undefined,
+          review_specific_badge: effectiveConnection || undefined,
           is_update: isUpdate,
         };
 
@@ -333,8 +341,12 @@ const WriteReview = () => {
     ...validation,
     hasFile: !!formData.proofFile,
     canSubmit,
-    isPending: createReviewMutation.isPending
+    isPending: createReviewMutation.isPending,
+    existingConnection: existingConnection?.connection_type
   });
+
+  // Override form data with existing connection if available
+  const effectiveReviewSpecificBadge = existingConnection?.connection_type || formData.reviewSpecificBadge;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -472,12 +484,35 @@ const WriteReview = () => {
             isUpdate={isUpdate}
           />
 
-          <ConnectionSelection
-            selectedConnection={formData.reviewSpecificBadge}
-            onConnectionChange={handleConnectionChange}
-          />
+          {/* Show existing connection info or connection selection */}
+          {existingConnection ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>Your Verified Connection</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center space-x-2">
+                  <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200">
+                    {existingConnection.connection_type}
+                  </Badge>
+                  <span className="text-sm text-gray-600">
+                    Verified on {new Date(existingConnection.approved_at).toLocaleDateString()}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-500 mt-2">
+                  Your connection to this business has been verified. This badge will be automatically applied to your review.
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <ConnectionSelection
+              selectedConnection={formData.reviewSpecificBadge}
+              onConnectionChange={handleConnectionChange}
+            />
+          )}
 
-          {shouldShowProofUpload && (
+          {/* Only show proof upload if no existing connection and connection is selected */}
+          {!existingConnection && shouldShowProofUpload && (
             <ProofUpload
               proofFile={formData.proofFile}
               onFileChange={(file) => setFormData(prev => ({ ...prev, proofFile: file }))}
@@ -490,7 +525,7 @@ const WriteReview = () => {
             isEdit={isEdit}
             isUpdate={isUpdate}
             isBasicFormValid={validation.isBasicFormValid}
-            needsProof={validation.needsProof}
+            needsProof={validation.needsProof && !existingConnection}
             hasFile={!!formData.proofFile}
           />
         </form>

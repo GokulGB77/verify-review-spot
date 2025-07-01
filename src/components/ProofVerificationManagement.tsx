@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Star, FileText, Check, X, Eye, ExternalLink, Filter } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { useCreateUserBusinessConnection } from '@/hooks/useUserBusinessConnections';
 
 interface ReviewWithProof {
   id: string;
@@ -39,6 +39,7 @@ const ProofVerificationManagement = () => {
   const [selectedReview, setSelectedReview] = useState<ReviewWithProof | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const createConnectionMutation = useCreateUserBusinessConnection();
 
   // Fetch reviews with submitted proofs - now filter by proof_url existence
   const { data: reviewsWithProof, isLoading } = useQuery({
@@ -88,10 +89,32 @@ const ProofVerificationManagement = () => {
         .eq('id', reviewId);
       
       if (error) throw error;
+      return { reviewId, isApproved };
     },
-    onSuccess: (_, { isApproved }) => {
+    onSuccess: async (data, variables) => {
+      const { reviewId, isApproved } = data;
+      
+      // If approved, create a user business connection record
+      if (isApproved && selectedReview) {
+        try {
+          await createConnectionMutation.mutateAsync({
+            user_id: selectedReview.user_id,
+            business_id: selectedReview.business_id,
+            connection_type: selectedReview.user_badge as 'Verified Employee' | 'Verified Student',
+            approved_by: user?.id || '',
+          });
+          
+          console.log('Created user business connection for approved proof');
+        } catch (connectionError) {
+          console.error('Error creating user business connection:', connectionError);
+          // Don't show error to user as the main action (proof approval) succeeded
+        }
+      }
+      
       queryClient.invalidateQueries({ queryKey: ['reviews-with-proof'] });
       queryClient.invalidateQueries({ queryKey: ['reviews'] });
+      queryClient.invalidateQueries({ queryKey: ['user-business-connection'] });
+      
       toast({
         title: isApproved ? 'Proof Approved' : 'Proof Rejected',
         description: `The proof has been ${isApproved ? 'approved' : 'rejected'} successfully.`,
