@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Star, CheckCircle, MessageSquare, History, Edit } from 'lucide-react';
+import { Star, CheckCircle, MessageSquare, History, Edit, Shield, Clock } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import ReviewContent from './ReviewContent';
@@ -18,6 +18,7 @@ interface SingleReviewCardProps {
     mainBadge: 'Verified User' | 'Unverified User';
     reviewSpecificBadge?: 'Verified Employee' | 'Verified Student' | null;
     proofProvided: boolean;
+    proofVerified?: boolean | null;
     upvotes: number;
     downvotes: number;
     date: string;
@@ -104,6 +105,45 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory }: SingleRev
 
   const isEditable = timeLeft > 0 && user && review.userId === user.id && !hasBeenEdited;
 
+  // Badge display logic - show only one badge per review
+  const getBadgeDisplay = () => {
+    // Priority 1: If proof is uploaded and verified, show review-specific verification badge
+    if (review.proofProvided && review.proofVerified === true && review.reviewSpecificBadge) {
+      return {
+        text: review.reviewSpecificBadge === 'Verified Employee' ? 'Verified Employee' : 'Verified Student',
+        className: 'bg-blue-50 text-blue-700 border-blue-200',
+        icon: <Shield className="h-3 w-3 mr-1" />
+      };
+    }
+    
+    // Priority 2: If proof is uploaded but not yet verified, show pending verification
+    if (review.proofProvided && review.proofVerified === false) {
+      return {
+        text: 'Pending Verification',
+        className: 'bg-yellow-50 text-yellow-700 border-yellow-200',
+        icon: <Clock className="h-3 w-3 mr-1" />
+      };
+    }
+    
+    // Priority 3: Fall back to profile-based verification status
+    if (review.mainBadge === 'Verified User') {
+      return {
+        text: 'Verified',
+        className: 'bg-green-50 text-green-700 border-green-200',
+        icon: <CheckCircle className="h-3 w-3 mr-1" />
+      };
+    }
+    
+    // Default: Unverified
+    return {
+      text: 'Unverified',
+      className: 'bg-gray-50 text-gray-600 border-gray-200',
+      icon: null
+    };
+  };
+
+  const badgeDisplay = getBadgeDisplay();
+
   return (
     <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 min-h-fit">
       {/* User Info and Rating */}
@@ -116,23 +156,14 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory }: SingleRev
             <div className="mb-2">
               <span className="font-medium text-gray-900 text-sm">{review.userName}</span>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center">
               <Badge 
                 variant="outline" 
-                className={`text-xs px-2 py-1 h-5 ${
-                  review.mainBadge === 'Verified User' 
-                    ? 'bg-green-50 text-green-700 border-green-200' 
-                    : 'bg-gray-50 text-gray-600 border-gray-200'
-                }`}
+                className={`text-xs px-2 py-1 h-5 ${badgeDisplay.className} flex items-center`}
               >
-                {review.mainBadge === 'Verified User' && <CheckCircle className="h-3 w-3 mr-1" />}
-                {review.mainBadge === 'Verified User' ? 'Verified' : 'Unverified'}
+                {badgeDisplay.icon}
+                {badgeDisplay.text}
               </Badge>
-              {review.reviewSpecificBadge && (
-                <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs px-2 py-1 h-5">
-                  {review.reviewSpecificBadge === 'Verified Employee' ? 'Employee' : 'Student'}
-                </Badge>
-              )}
             </div>
           </div>
         </div>
