@@ -142,17 +142,17 @@ const ProofVerificationManagement = () => {
       let filePath = proofUrl;
       
       // If it's a full URL, extract just the file path part
-      if (proofUrl.includes('/verification-docs/')) {
-        filePath = proofUrl.split('/verification-docs/')[1];
-      } else if (proofUrl.includes('verification-docs/')) {
-        filePath = proofUrl.split('verification-docs/')[1];
+      if (proofUrl.includes('/review-proofs/')) {
+        filePath = proofUrl.split('/review-proofs/')[1];
+      } else if (proofUrl.includes('review-proofs/')) {
+        filePath = proofUrl.split('review-proofs/')[1];
       }
       
       console.log('File path:', filePath);
       
-      // First try to get a signed URL for better security
+      // First try to get a signed URL for better security from the correct bucket
       const { data: signedData, error: signedError } = await supabase.storage
-        .from('verification-docs')
+        .from('review-proofs')
         .createSignedUrl(filePath, 3600); // 1 hour expiry
       
       let finalUrl = proofUrl; // fallback to original URL
@@ -162,9 +162,9 @@ const ProofVerificationManagement = () => {
         console.log('Using signed URL:', finalUrl);
       } else {
         console.log('Signed URL error:', signedError);
-        // Fallback to public URL
+        // Fallback to public URL from the correct bucket
         const { data: publicData } = supabase.storage
-          .from('verification-docs')
+          .from('review-proofs')
           .getPublicUrl(filePath);
         
         if (publicData?.publicUrl) {
