@@ -47,15 +47,31 @@ export const transformReviews = (allReviews: Review[]): TransformedReview[] => {
     const latestReview = sortedReviews[0];
     const profile = latestReview.profiles;
     
-    // Determine display name based on preference
+    // Determine display name based on preference - Fixed logic
     let displayName = 'Anonymous';
-    if (profile?.display_name_preference === 'pseudonym' && profile?.pseudonym) {
-      displayName = profile.pseudonym;
-    } else if (profile?.display_name_preference === 'full_name' && profile?.full_name) {
-      displayName = profile.full_name;
-    } else if (profile?.full_name) {
-      displayName = profile.full_name;
+    
+    console.log('Profile data for user:', latestReview.user_id, {
+      profile,
+      display_name_preference: profile?.display_name_preference,
+      pseudonym: profile?.pseudonym,
+      full_name: profile?.full_name
+    });
+    
+    if (profile) {
+      if (profile.display_name_preference === 'pseudonym' && profile.pseudonym) {
+        displayName = profile.pseudonym;
+      } else if (profile.display_name_preference === 'full_name' && profile.full_name) {
+        displayName = profile.full_name;
+      } else if (profile.full_name) {
+        // Fallback to full_name if available
+        displayName = profile.full_name;
+      } else if (profile.pseudonym) {
+        // Fallback to pseudonym if available
+        displayName = profile.pseudonym;
+      }
     }
+
+    console.log('Final display name for user:', latestReview.user_id, displayName);
 
     console.log('transformReviews - Processing review:', {
       reviewId: latestReview.id,
