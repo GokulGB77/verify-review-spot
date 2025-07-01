@@ -1,121 +1,82 @@
 import React, { useState, useRef } from 'react';
+import { useBusinesses } from "@/hooks/useBusinesses";
+import { useReviews } from "@/hooks/useReviews";
+import { getDisplayName } from "@/utils/reviewHelpers";
+import { Star } from "lucide-react";
 
-const testimonials1 = [
-  {
-    text: "We adopted DevTools conventions as our standard, and it saves lots of time from reinventing things ourselves.",
-    author: "Sarah Chen",
-    company: "TechCorp",
-    avatar: "SC"
-  },
-  {
-    text: "Thanks to DevTools, we can seamlessly scale our applications without concerns about performance issues.",
-    author: "Michael Rodriguez",
-    company: "ScaleUp Inc",
-    avatar: "MR"
-  },
-  {
-    text: "Underrated: DevTools 🚀",
-    author: "Alex Kim",
-    company: "StartupLab",
-    avatar: "AK"
-  },
-  {
-    text: "Entire SaaS businesses have been built on top of the DevTools ecosystem. Have been loving the recent performance improvements as well 🔥",
-    author: "Jessica Park",
-    company: "BuildFast",
-    avatar: "JP"
-  },
-  {
-    text: "With DevTools, we migrated our core production system with zero downtime. I can't imagine building systems without it.",
-    author: "David Thompson",
-    company: "Enterprise Solutions",
-    avatar: "DT"
-  },
-  {
-    text: "DevTools helps us unify data access from multiple systems into a single API. It means we can move very quickly whilst staying flexible.",
-    author: "Emma Wilson",
-    company: "DataFlow",
-    avatar: "EW"
-  }
-];
+// Function to get user initials for avatar
+const getUserInitials = (name: string) => {
+  return name
+    .split(" ")
+    .map((n) => n.charAt(0))
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+};
 
-const testimonials2 = [
-  {
-    text: "DevTools has a low learning curve. Productivity becomes higher because it gets combined with end-to-end type-safety.",
-    author: "Ryan Martinez",
-    company: "TypeSafe Co",
-    avatar: "RM"
-  },
-  {
-    text: "It's the kind of DX that lets me get stuff done in between my daughter's naps.",
-    author: "Lisa Johnson",
-    company: "Freelancer",
-    avatar: "LJ"
-  },
-  {
-    text: "I have been using DevTools since day one, and it has become my number one choice. The DX is just unbeaten.",
-    author: "Tom Anderson",
-    company: "DevFirst",
-    avatar: "TA"
-  },
-  {
-    text: "DevTools handled 670,000+ requests during peak traffic with zero downtime. Not bad for accidentally being load tested!",
-    author: "Nina Patel",
-    company: "HighLoad Systems",
-    avatar: "NP"
-  },
-  {
-    text: "DevTools spares me the hassle of keeping systems in sync, allowing me to develop with complete confidence.",
-    author: "Chris Brown",
-    company: "SyncTech",
-    avatar: "CB"
-  },
-  {
-    text: "I like how the DevTools docs made it easy to jump straight into using it without needing to do a huge amount of reading.",
-    author: "Amanda Green",
-    company: "QuickStart",
-    avatar: "AG"
+// Function to transform review data to testimonial format
+const transformReviewsToTestimonials = (reviews, businesses) => {
+  if (!reviews || !businesses || reviews.length === 0) {
+    return [];
   }
-];
 
-const testimonials3 = [
-  {
-    text: "Huge fan of DevTools! The Schema file is great for AI tools. You literally never have to write boilerplate code again.",
-    author: "Marcus Lee",
-    company: "AI First",
-    avatar: "ML"
-  },
-  {
-    text: "I've been building backends with DevTools since the beginning, and I've got to say, it has worked like a charm.",
-    author: "Sophie Turner",
-    company: "Backend Pro",
-    avatar: "ST"
-  },
-  {
-    text: "I keep switching from DevTools to whatever the latest flavor is, but always end up coming back to DevTools.",
-    author: "Jake Miller",
-    company: "Tech Wanderer",
-    avatar: "JM"
-  },
-  {
-    text: "DevTools is a perfect fit for landing pages. We take advantage of caching to speed up queries and reduce latency.",
-    author: "Priya Sharma",
-    company: "FastPages",
-    avatar: "PS"
-  },
-  {
-    text: "I love how DevTools makes my life as a developer so easy. The TypeScript autocompletion is the best I've used.",
-    author: "Oliver Davis",
-    company: "TypeScript Pro",
-    avatar: "OD"
-  },
-  {
-    text: "I love the DevTools typing system! Our authentication service relies heavily on it.",
-    author: "Rachel Adams",
-    company: "AuthFlow",
-    avatar: "RA"
+  // First, let's be less strict about filtering - include all reviews initially
+  let activeEntityReviews = reviews;
+  
+  // Only filter by active status if businesses have a status field
+  if (businesses.some(b => b.status !== undefined)) {
+    activeEntityReviews = reviews.filter((review) => {
+      const business = businesses.find((b) => b.entity_id === review.business_id);
+      return business && (business.status === 'active' || !business.status);
+    });
   }
-];
+
+  // Group reviews by user and business, showing only the latest review/update
+  const reviewGroups = new Map();
+
+  activeEntityReviews.forEach((review) => {
+    const key = `${review.user_id}-${review.business_id}`;
+    
+    if (!reviewGroups.has(key)) {
+      reviewGroups.set(key, []);
+    }
+    
+    reviewGroups.get(key).push(review);
+  });
+
+  // For each group, get the latest review and transform to testimonial format
+  const testimonials = [];
+  
+  reviewGroups.forEach((reviewsInGroup, groupKey) => {
+    // Sort by created_at to get the latest (same logic as Homepage)
+    const sortedReviews = reviewsInGroup.sort((a, b) => 
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+    
+    const latestReview = sortedReviews[0];
+    const business = businesses.find((b) => b.entity_id === latestReview.business_id);
+    
+    // Use the same logic as Homepage - more lenient content check
+    if (latestReview.content && latestReview.content.trim() && business) {
+      const userName = getDisplayName(latestReview);
+      const testimonial = {
+        text: latestReview.content,
+        author: userName,
+        company: business.name,
+        avatar: getUserInitials(userName),
+        rating: latestReview.rating || 0,
+        created_at: latestReview.created_at,
+      };
+      
+      testimonials.push(testimonial);
+    }
+  });
+
+  // Sort by creation date and return
+  return testimonials.sort((a, b) => 
+    new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
+};
 
 const TestimonialCard = ({ testimonial, onHover, onLeave }) => {
   return (
@@ -131,6 +92,21 @@ const TestimonialCard = ({ testimonial, onHover, onLeave }) => {
           </div>
         </div>
         <div className="flex-1 min-w-0">
+          {/* Rating stars */}
+          {testimonial.rating && (
+            <div className="flex items-center mb-2">
+              {[...Array(5)].map((_, i) => (
+                <Star
+                  key={i}
+                  className={`h-4 w-4 ${
+                    i < Math.floor(testimonial.rating)
+                      ? "text-yellow-400 fill-current"
+                      : "text-gray-300"
+                  }`}
+                />
+              ))}
+            </div>
+          )}
           <p className="text-gray-900 text-sm leading-relaxed mb-3">
             "{testimonial.text}"
           </p>
@@ -204,6 +180,79 @@ const ReviewScrollSection = ({ testimonials, direction, speed, title }) => {
 };
 
 const AnimatedTestimonials = () => {
+  // Fetch real data
+  const { data: businesses = [] } = useBusinesses();
+  const { data: allReviews = [] } = useReviews();
+
+  // Transform reviews to testimonials format
+  const allTestimonials = transformReviewsToTestimonials(allReviews, businesses);
+  
+  // If no real testimonials, show "No reviews yet" message
+  if (allTestimonials.length === 0) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white py-16">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Main Header */}
+          <div className="text-center mb-20">
+            <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+              BUILDING THE INTERNET'S TRUST LAYER 
+            </h1>
+            <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+              ONE VERIFIED REVIEW AT A TIME
+            </h1>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              A new way to review — proof-backed, people-powered, and impossible to fake.
+            </p>
+          </div>
+
+          {/* No Reviews Message */}
+          <div className="text-center py-16">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-12 max-w-md mx-auto">
+              <div className="text-6xl mb-4">💭</div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">No Reviews Yet</h3>
+              <p className="text-gray-600">
+                Be the first to share your experience and help build trust in our community.
+              </p>
+            </div>
+          </div>
+
+          {/* Stats Section */}
+          <div className="mt-24 grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+            <div className="p-8 bg-white rounded-2xl shadow-sm border border-gray-200">
+              <div className="text-4xl font-bold text-blue-600 mb-2">{allReviews.length}</div>
+              <div className="text-gray-600 font-medium">Reviews Submitted</div>
+            </div>
+            <div className="p-8 bg-white rounded-2xl shadow-sm border border-gray-200">
+              <div className="text-4xl font-bold text-purple-600 mb-2">{businesses.filter(b => b.status === 'active').length}</div>
+              <div className="text-gray-600 font-medium">Businesses Listed</div>
+            </div>
+            <div className="p-8 bg-white rounded-2xl shadow-sm border border-gray-200">
+              <div className="text-4xl font-bold text-green-600 mb-2">{Math.max(0, Math.floor(allReviews.length * 0.1))}</div>
+              <div className="text-gray-600 font-medium">Daily Active Readers</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  // Distribute testimonials across three columns using round-robin to ensure all columns have content
+  const testimonials1 = [];
+  const testimonials2 = [];
+  const testimonials3 = [];
+  
+  // Round-robin distribution - cycles through columns to ensure even spread
+  allTestimonials.forEach((testimonial, index) => {
+    const columnIndex = index % 3;
+    if (columnIndex === 0) {
+      testimonials1.push(testimonial);
+    } else if (columnIndex === 1) {
+      testimonials2.push(testimonial);
+    } else {
+      testimonials3.push(testimonial);
+    }
+  });
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white py-16">
       <style>{`
@@ -255,7 +304,7 @@ const AnimatedTestimonials = () => {
             testimonials={testimonials1}
             direction="up"
             speed={90}
-            title="Enterprise & Scale"
+            title="Recent Reviews"
           />
           
           {/* Middle Section - Scrolling Up */}
@@ -263,7 +312,7 @@ const AnimatedTestimonials = () => {
             testimonials={testimonials2}
             direction="down"
             speed={80}
-            title="Developer Experience"
+            title="User Experiences"
           />
           
           {/* Right Section - Scrolling Down (Fast) */}
@@ -271,22 +320,22 @@ const AnimatedTestimonials = () => {
             testimonials={testimonials3}
             direction="up"
             speed={30}
-            title="Modern Tooling"
+            title="Business Feedback"
           />
         </div>
 
         {/* Stats Section */}
         <div className="mt-24 grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
           <div className="p-8 bg-white rounded-2xl shadow-sm border border-gray-200">
-            <div className="text-4xl font-bold text-blue-600 mb-2">500K+</div>
+            <div className="text-4xl font-bold text-blue-600 mb-2">{allReviews.length}+</div>
             <div className="text-gray-600 font-medium">Verified Reviews Submitted</div>
           </div>
           <div className="p-8 bg-white rounded-2xl shadow-sm border border-gray-200">
-            <div className="text-4xl font-bold text-purple-600 mb-2">15K+</div>
+            <div className="text-4xl font-bold text-purple-600 mb-2">{businesses.filter(b => b.status === 'active').length}+</div>
             <div className="text-gray-600 font-medium">Businesses Listed</div>
           </div>
           <div className="p-8 bg-white rounded-2xl shadow-sm border border-gray-200">
-            <div className="text-4xl font-bold text-green-600 mb-2">600+</div>
+            <div className="text-4xl font-bold text-green-600 mb-2">{Math.max(1, Math.floor(allReviews.length * 0.1))}+</div>
             <div className="text-gray-600 font-medium">Daily Active Review Readers</div>
           </div>
         </div>

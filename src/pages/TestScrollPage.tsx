@@ -28,7 +28,7 @@ const TestScrollPage = () => {
               <CardTitle>Component Information</CardTitle>
               <CardDescription>
                 This page displays the ScrollingReviews component which shows a
-                continuous scroll of reviews from the platform.
+                continuous scroll of real reviews from the platform database.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -46,7 +46,7 @@ const TestScrollPage = () => {
                 </p>
                 <p>
                   <strong>Features:</strong> Auto-scrolling, responsive design,
-                  review cards with ratings and badges
+                  review cards with ratings and badges, real database integration
                 </p>
               </div>
             </CardContent>
