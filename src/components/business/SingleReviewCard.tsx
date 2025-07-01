@@ -45,13 +45,13 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory }: SingleRev
   const hasBeenEdited = review.updated_at && review.created_at && 
     new Date(review.updated_at).getTime() !== new Date(review.created_at).getTime();
 
-  console.log('SingleReviewCard - Edit check:', {
+  console.log('SingleReviewCard - Badge debug:', {
     reviewId: review.id,
-    created_at: review.created_at,
-    updated_at: review.updated_at,
-    hasBeenEdited: hasBeenEdited,
-    userId: review.userId,
-    currentUserId: user?.id
+    proofProvided: review.proofProvided,
+    proofVerified: review.proofVerified,
+    reviewSpecificBadge: review.reviewSpecificBadge,
+    mainBadge: review.mainBadge,
+    userName: review.userName
   });
 
   // Calculate if this review is editable (posted by current user, within 1 minute, and not edited)
@@ -107,8 +107,16 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory }: SingleRev
 
   // Badge display logic - show only one badge per review
   const getBadgeDisplay = () => {
+    console.log('getBadgeDisplay called with:', {
+      proofProvided: review.proofProvided,
+      proofVerified: review.proofVerified,
+      reviewSpecificBadge: review.reviewSpecificBadge,
+      mainBadge: review.mainBadge
+    });
+
     // Priority 1: If proof is uploaded and verified, show review-specific verification badge
     if (review.proofProvided && review.proofVerified === true && review.reviewSpecificBadge) {
+      console.log('Using review-specific badge:', review.reviewSpecificBadge);
       return {
         text: review.reviewSpecificBadge === 'Verified Employee' ? 'Verified Employee' : 'Verified Student',
         className: 'bg-blue-50 text-blue-700 border-blue-200',
@@ -118,6 +126,7 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory }: SingleRev
     
     // Priority 2: If proof is uploaded but not yet verified, show pending verification
     if (review.proofProvided && review.proofVerified === false) {
+      console.log('Using pending verification badge');
       return {
         text: 'Pending Verification',
         className: 'bg-yellow-50 text-yellow-700 border-yellow-200',
@@ -127,6 +136,7 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory }: SingleRev
     
     // Priority 3: Fall back to profile-based verification status
     if (review.mainBadge === 'Verified User') {
+      console.log('Using verified user badge');
       return {
         text: 'Verified',
         className: 'bg-green-50 text-green-700 border-green-200',
@@ -135,6 +145,7 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory }: SingleRev
     }
     
     // Default: Unverified
+    console.log('Using unverified badge');
     return {
       text: 'Unverified',
       className: 'bg-gray-50 text-gray-600 border-gray-200',
