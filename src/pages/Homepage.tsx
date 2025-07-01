@@ -23,9 +23,10 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import Header from "@/components/common/Header";
-import Footer from "@/components/common/Footer";
+
 import CTASection from "@/components/CtaSection";
+import ScrollingReviews from "@/components/ScrollingReviews";
+
 import { useBusinesses } from "@/hooks/useBusinesses";
 import { useReviews } from "@/hooks/useReviews";
 import { getDisplayName } from "@/utils/reviewHelpers";
@@ -76,21 +77,24 @@ const Index = () => {
   // Close suggestions when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (searchInputRef.current && !searchInputRef.current.contains(event.target)) {
+      if (
+        searchInputRef.current &&
+        !searchInputRef.current.contains(event.target)
+      ) {
         setShowSuggestions(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
   // Filter reviews to only include those from active entities
   const activeEntityReviews = allReviews.filter((review) => {
     const business = businesses.find((b) => b.entity_id === review.business_id);
-    return business && business.status === 'active';
+    return business && business.status === "active";
   });
 
   // Group reviews by user and business, showing only the latest review/update
@@ -99,26 +103,29 @@ const Index = () => {
 
     activeEntityReviews.forEach((review) => {
       const key = `${review.user_id}-${review.business_id}`;
-      
+
       if (!reviewGroups.has(key)) {
         reviewGroups.set(key, []);
       }
-      
+
       reviewGroups.get(key).push(review);
     });
 
     // For each group, get the latest review (original + all updates sorted by date)
     const latestReviews = [];
-    
+
     reviewGroups.forEach((reviews) => {
       // Sort by created_at to get the latest
-      const sortedReviews = reviews.sort((a, b) => 
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      const sortedReviews = reviews.sort(
+        (a, b) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );
-      
+
       const latestReview = sortedReviews[0];
-      const business = businesses.find((b) => b.entity_id === latestReview.business_id);
-      
+      const business = businesses.find(
+        (b) => b.entity_id === latestReview.business_id
+      );
+
       latestReviews.push({
         id: latestReview.id,
         userName: getDisplayName(latestReview),
@@ -130,14 +137,17 @@ const Index = () => {
         date: new Date(latestReview.created_at).toLocaleDateString(),
         businessCategory: business?.industry || "Business",
         isUpdate: latestReview.is_update || false,
-        updateCount: reviews.filter(r => r.is_update).length,
+        updateCount: reviews.filter((r) => r.is_update).length,
         created_at: latestReview.created_at,
       });
     });
 
     // Sort by creation date and return first 8
     return latestReviews
-      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .sort(
+        (a, b) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      )
       .slice(0, 8);
   };
 
@@ -146,20 +156,20 @@ const Index = () => {
 
   // Get best entities (highest rated with minimum review count)
   const featuredReviews = businesses
-    .filter((business) => business.average_rating && business.average_rating >= 4)
+    .filter(
+      (business) => business.average_rating && business.average_rating >= 4
+    )
     .slice(0, 3)
     .map((business) => ({
       id: business.entity_id,
       businessName: business.name,
       rating: business.average_rating || 0,
       reviewCount: business.review_count || 0,
-      verificationLevel:
-        business.is_verified
-          ? "Verified Business"
-          : "Claimed Business",
+      verificationLevel: business.is_verified
+        ? "Verified Business"
+        : "Claimed Business",
       category: business.industry,
-      badge:
-        business.is_verified ? "verified" : "claimed",
+      badge: business.is_verified ? "verified" : "claimed",
     }));
 
   // Get best entities (highest rated with minimum review count)
@@ -241,12 +251,15 @@ const Index = () => {
                   className="pl-10 h-12 text-lg"
                   onKeyPress={(e) => e.key === "Enter" && handleSearch()}
                   onFocus={() => {
-                    if (searchQuery.trim().length > 0 && suggestions.length > 0) {
+                    if (
+                      searchQuery.trim().length > 0 &&
+                      suggestions.length > 0
+                    ) {
                       setShowSuggestions(true);
                     }
                   }}
                 />
-                
+
                 {/* Suggestions Dropdown */}
                 {showSuggestions && suggestions.length > 0 && (
                   <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-md shadow-lg z-50 mt-1">
@@ -342,7 +355,7 @@ const Index = () => {
                 <span className="text-gray-700 text-sm font-medium mr-2">
                   Tried something new — maybe a course or a product?
                 </span>
-                <Link 
+                <Link
                   to="/write-review"
                   className="inline-flex items-center text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors duration-200"
                 >
@@ -371,122 +384,12 @@ const Index = () => {
       </section>
 
       {/* Recent Reviews Section */}
-      <section className="py-12 px-4 sm:px-6 lg:px-8 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex justify-between items-center mb-4">
-            <div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                Recent reviews
-              </h2>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Button variant="ghost" size="icon" className="rounded-full">
-                <ChevronLeft className="h-5 w-5" />
-              </Button>
-              <Button variant="ghost" size="icon" className="rounded-full">
-                <ChevronRight className="h-5 w-5" />
-              </Button>
-            </div>
-          </div>
-
-          {recentReviews.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {recentReviews.map((review) => (
-                <Card
-                  key={review.id}
-                  className="hover:shadow-lg transition-shadow"
-                >
-                  <CardContent className="p-6">
-                    <div className="space-y-4">
-                      {/* User Info */}
-                      <div className="flex items-center space-x-3">
-                        <div
-                          className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold ${getAvatarColor(
-                            review.userName
-                          )}`}
-                        >
-                          {getUserInitials(review.userName)}
-                        </div>
-                        <div>
-                          <div className="flex items-center space-x-2">
-                            <h3 className="font-semibold text-gray-900">
-                              {review.userName}
-                            </h3>
-                          </div>
-                          <div className="flex items-center">
-                            {[...Array(5)].map((_, i) => (
-                              <Star
-                                key={i}
-                                className={`h-4 w-4 ${
-                                  i < Math.floor(review.rating)
-                                    ? "text-yellow-400 fill-current"
-                                    : "text-gray-300"
-                                }`}
-                              />
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Review Content */}
-                      <p className="text-gray-700 text-sm leading-relaxed line-clamp-4">
-                        {review.content}
-                      </p>
-
-                      {/* Business Info */}
-                      <div className="pt-4 border-t border-gray-100">
-                        <div className="flex items-center space-x-2">
-                          <div className="w-6 h-6 bg-gray-200 rounded flex items-center justify-center">
-                            <span className="text-xs font-bold text-gray-600">
-                              {review.businessName.charAt(0)}
-                            </span>
-                          </div>
-                          <div>
-                            <div className="font-semibold text-sm text-gray-900">
-                              {review.businessName}
-                            </div>
-                            {review.businessWebsite && (
-                              <div className="text-xs text-gray-500">
-                                {review.businessWebsite
-                                  .replace(/^https?:\/\//, "")
-                                  .replace(/^www\./, "")}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        
-                        {/* Update indicator */}
-                        {review.updateCount > 0 && (
-                          <div className="mt-2 flex items-center space-x-2">
-                            <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700">
-                              Updated
-                            </Badge>
-                            <div className="text-xs text-gray-500">
-                              {review.updateCount} update{review.updateCount > 1 ? 's' : ''} available
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <p className="text-gray-500">No recent reviews available yet.</p>
-            </div>
-          )}
-
-          <div className="text-center mt-8">
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button variant="outline" size="lg" asChild>
-                <Link to="/reviews">View All Reviews</Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
+        <Card>
+          
+          <CardContent className="p-0">
+            <ScrollingReviews />
+          </CardContent>
+        </Card>
 
       {/* Best Entities Section */}
       <section className="py-16 px-4 sm:px-6 lg:px-8">
