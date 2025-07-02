@@ -335,13 +335,13 @@ const AnimatedTestimonials = () => {
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
           {/* Main Header */}
           <div className="text-center mb-12 sm:mb-16 lg:mb-20">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6 px-4">
+            <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6 px-4">
               BUILDING THE INTERNET'S TRUST LAYER
             </h1>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6 px-4">
+            <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6 px-4">
               ONE VERIFIED REVIEW AT A TIME
             </h1>
-            <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto px-4">
+            <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto px-4">
               A new way to review — proof-backed, people-powered, and impossible
               to fake.
             </p>
@@ -351,7 +351,7 @@ const AnimatedTestimonials = () => {
           <div className="text-center py-12 sm:py-16 px-4">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 sm:p-12 max-w-md mx-auto">
               <div className="text-4xl sm:text-6xl mb-4">💭</div>
-              <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
+              <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-2">
                 No Reviews Yet
               </h3>
               <p className="text-sm sm:text-base text-gray-600">
@@ -406,6 +406,9 @@ const AnimatedTestimonials = () => {
     }
   });
 
+  // For mobile view, combine all testimonials into one column
+  const mobileTestimonials = allTestimonials;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white py-16">
       <style>{`
@@ -438,23 +441,33 @@ const AnimatedTestimonials = () => {
 
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
         {/* Main Header */}
-        <div className="text-center mb-20">
-          <h1 className="text-5xl md:text-5xl font-bold text-gray-900 mb-6">
-            BUILDING THE INTERNET’S <span className="text-blue-600">TRUST</span>{" "}
-            LAYER
-          </h1>
-          <h1 className="text-5xl md:text-5xl font-bold text-gray-900 mb-6">
-            ONE VERIFIED REVIEW AT A TIME
-          </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            A new way to review — proof-backed, people-powered, and impossible
-            to fake.
-          </p>
-        </div>
+        <div className="text-center mb-12 sm:mb-16 lg:mb-20">
+            <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6 px-4">
+              BUILDING THE INTERNET'S <span className="text-blue-600">TRUST</span> LAYER
+            </h1>
+            <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6 px-4">
+              ONE VERIFIED REVIEW AT A TIME
+            </h1>
+            <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto px-4">
+              A new way to review — proof-backed, people-powered, and impossible
+              to fake.
+            </p>
+          </div>
 
         {/* Three Review Scroll Sections */}
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-          {/* Left Section - Scrolling Down (Slow) - Hidden on mobile */}
+          {/* Mobile Single Column - Contains all reviews, scrolls up */}
+          <div className="block sm:hidden flex-1">
+            <ReviewScrollSection
+              testimonials={mobileTestimonials}
+              direction="up"
+              speed={60}
+              title="All Reviews"
+              onReadMore={handleReadMore}
+            />
+          </div>
+
+          {/* Left Section - Scrolling Up (Slow) - Hidden on mobile */}
           <div className="hidden sm:block flex-1">
             <ReviewScrollSection
               testimonials={testimonials1}
@@ -465,8 +478,8 @@ const AnimatedTestimonials = () => {
             />
           </div>
 
-          {/* Middle Section - Scrolling Up - Always visible */}
-          <div className="flex-1">
+          {/* Middle Section - Scrolling Down - Hidden on mobile */}
+          <div className="hidden sm:block flex-1">
             <ReviewScrollSection
               testimonials={testimonials2}
               direction="down"
@@ -476,7 +489,7 @@ const AnimatedTestimonials = () => {
             />
           </div>
 
-          {/* Right Section - Scrolling Down (Fast) - Hidden on mobile, visible on md+ */}
+          {/* Right Section - Scrolling Up (Fast) - Hidden on mobile, visible on md+ */}
           <div className="hidden md:block flex-1">
             <ReviewScrollSection
               testimonials={testimonials3}
