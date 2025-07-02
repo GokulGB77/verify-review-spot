@@ -66,7 +66,7 @@ const HeroSection = () => {
   }, []);
 
   return (
-    <section className="py-20 px-4 sm:px-6 lg:px-8">
+    <section className="pt-20 pb-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto text-center">
         <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
           AUTHENTIC REVIEWS YOU CAN
@@ -80,7 +80,7 @@ const HeroSection = () => {
         <TypingAnimation />
 
         {/* Search Bar */}
-        <div className="max-w-2xl mx-auto mb-12" ref={searchInputRef}>
+        <div className="max-w-2xl mx-auto " ref={searchInputRef}>
           <div className="flex gap-2 relative">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
@@ -125,7 +125,6 @@ const HeroSection = () => {
                             </div>
                           )}
                         </div>
-                        {/* Removed Star rating from suggestions as it wasn't in the original snippet for suggestions */}
                       </div>
                     </div>
                   ))}
@@ -138,8 +137,6 @@ const HeroSection = () => {
           </div>
         </div>
 
-        {/* Trust Indicators - Moving this to its own component later */}
-        {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16 mb-8"> ... </div> */}
       </div>
     </section>
   );

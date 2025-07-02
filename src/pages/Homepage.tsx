@@ -66,7 +66,6 @@ const Index = () => {
 
       {/* Recent Reviews Section */}
         <Card>
-          
           <CardContent className="p-0">
             <ScrollingReviews />
           </CardContent>
