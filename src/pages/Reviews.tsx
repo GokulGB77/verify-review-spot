@@ -53,13 +53,13 @@ const Homepage = () => {
     return acc;
   }, {} as Record<string, any>);
 
-  // Group reviews by business and user, then transform (only for active entities)
+  // Group reviews by business and user, then transform
   const groupedReviews = allReviews.reduce((acc, review) => {
     const businessId = review.business_id;
     const entity = entityMap[businessId];
     
-    // Only include reviews for active entities
-    if (!entity || entity.status !== 'active') {
+    // Include reviews for all entities that exist (active or inactive)
+    if (!entity) {
       return acc;
     }
     
