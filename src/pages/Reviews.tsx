@@ -53,6 +53,12 @@ const Homepage = () => {
     return acc;
   }, {} as Record<string, any>);
 
+  // Debug logging
+  console.log('Entities:', entities.length);
+  console.log('Reviews:', allReviews.length);
+  console.log('Entity IDs:', entities.map(e => e.entity_id));
+  console.log('Review Business IDs:', allReviews.map(r => r.business_id));
+
   // Group reviews by business and user, then transform
   const groupedReviews = allReviews.reduce((acc, review) => {
     const businessId = review.business_id;
