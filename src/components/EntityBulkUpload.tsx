@@ -16,17 +16,32 @@ interface CSVRow {
   legal_name?: string;
   entity_type: string;
   industry?: string;
+  sub_industry?: string;
   description?: string;
+  tagline?: string;
+  founded_year?: number;
+  number_of_employees?: string;
+  revenue_range?: string;
+  // Contact info
   website?: string;
   email?: string;
   phone?: string;
+  // Location info
   address?: string;
   city?: string;
   state?: string;
   country?: string;
   pincode?: string;
-  founded_year?: number;
-  number_of_employees?: string;
+  // Media & Additional info
+  logo_url?: string;
+  cover_image_url?: string;
+  founders?: string;
+  category_tags?: string;
+  keywords?: string;
+  // Status & Verification
+  is_verified?: boolean;
+  trust_level?: string;
+  status?: string;
 }
 
 interface ValidationError {
@@ -44,6 +59,7 @@ const EntityBulkUpload = () => {
   const queryClient = useQueryClient();
 
   const entityTypes = ['business', 'service', 'movie_theatre', 'institution', 'learning_platform', 'ecommerce', 'product', 'other'];
+  const trustLevels = ['basic', 'verified', 'trusted_partner'];
 
   const validateCSVData = (data: CSVRow[]): ValidationError[] => {
     const errors: ValidationError[] = [];
@@ -72,6 +88,22 @@ const EntityBulkUpload = () => {
       if (row.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(row.email)) {
         errors.push({ row: index + 1, field: 'email', message: 'Invalid email format' });
       }
+
+      if (row.trust_level && !trustLevels.includes(row.trust_level.toLowerCase())) {
+        errors.push({ 
+          row: index + 1, 
+          field: 'trust_level', 
+          message: `Invalid trust level. Must be one of: ${trustLevels.join(', ')}` 
+        });
+      }
+
+      if (row.status && !['active', 'inactive'].includes(row.status.toLowerCase())) {
+        errors.push({ 
+          row: index + 1, 
+          field: 'status', 
+          message: 'Status must be either "active" or "inactive"' 
+        });
+      }
     });
 
     return errors;
@@ -94,6 +126,9 @@ const EntityBulkUpload = () => {
         switch (header) {
           case 'founded_year':
             row[header] = value ? parseInt(value) : undefined;
+            break;
+          case 'is_verified':
+            row[header] = value.toLowerCase() === 'true' || value.toLowerCase() === 'yes' || value === '1';
             break;
           default:
             row[header] = value || undefined;
@@ -138,28 +173,45 @@ const EntityBulkUpload = () => {
 
   const bulkUploadMutation = useMutation({
     mutationFn: async (data: CSVRow[]) => {
-      const entitiesToInsert = data.map(row => ({
-        name: row.name,
-        legal_name: row.legal_name || row.name,
-        entity_type: row.entity_type.toLowerCase() as 'business' | 'service' | 'movie_theatre' | 'institution' | 'learning_platform' | 'ecommerce' | 'product' | 'other',
-        industry: row.industry,
-        description: row.description,
-        founded_year: row.founded_year,
-        number_of_employees: row.number_of_employees,
-        contact: {
-          website: row.website || '',
-          email: row.email || '',
-          phone: row.phone || ''
-        },
-        location: {
-          address: row.address || '',
-          city: row.city || '',
-          state: row.state || '',
-          country: row.country || '',
-          pincode: row.pincode || ''
-        },
-        status: 'active'
-      }));
+      const entitiesToInsert = data.map(row => {
+        // Parse comma-separated arrays
+        const foundersArray = row.founders ? row.founders.split(',').map(f => f.trim()).filter(f => f) : [];
+        const categoryTagsArray = row.category_tags ? row.category_tags.split(',').map(t => t.trim()).filter(t => t) : [];
+        const keywordsArray = row.keywords ? row.keywords.split(',').map(k => k.trim()).filter(k => k) : [];
+
+        return {
+          name: row.name,
+          legal_name: row.legal_name || row.name,
+          entity_type: row.entity_type.toLowerCase() as 'business' | 'service' | 'movie_theatre' | 'institution' | 'learning_platform' | 'ecommerce' | 'product' | 'other',
+          industry: row.industry || null,
+          sub_industry: row.sub_industry || null,
+          description: row.description || null,
+          tagline: row.tagline || null,
+          founded_year: row.founded_year || null,
+          number_of_employees: row.number_of_employees || null,
+          revenue_range: row.revenue_range || null,
+          logo_url: row.logo_url || null,
+          cover_image_url: row.cover_image_url || null,
+          founders: foundersArray.length > 0 ? foundersArray : null,
+          category_tags: categoryTagsArray.length > 0 ? categoryTagsArray : null,
+          keywords: keywordsArray.length > 0 ? keywordsArray : null,
+          is_verified: row.is_verified || false,
+          trust_level: (row.trust_level?.toLowerCase() || 'basic') as 'basic' | 'verified' | 'trusted_partner',
+          status: row.status?.toLowerCase() || 'active',
+          contact: {
+            website: row.website || '',
+            email: row.email || '',
+            phone: row.phone || ''
+          },
+          location: {
+            address: row.address || '',
+            city: row.city || '',
+            state: row.state || '',
+            country: row.country || '',
+            pincode: row.pincode || ''
+          }
+        };
+      });
 
       const { data: result, error } = await supabase
         .from('entities')
@@ -206,9 +258,9 @@ const EntityBulkUpload = () => {
 
   const downloadSampleCSV = () => {
     const sampleData = [
-      'name,legal_name,entity_type,industry,description,website,email,phone,address,city,state,country,pincode,founded_year,number_of_employees',
-      'TechCorp Ltd,TechCorp Limited,business,Technology,Software development company,https://techcorp.com,contact@techcorp.com,+1234567890,123 Tech Street,San Francisco,CA,USA,94105,2020,50-100',
-      'Local Restaurant,Local Restaurant LLC,business,Food & Beverage,Family-owned restaurant,https://localrest.com,info@localrest.com,+9876543210,456 Food Ave,New York,NY,USA,10001,2015,10-25'
+      'name,legal_name,entity_type,industry,sub_industry,description,tagline,founded_year,number_of_employees,revenue_range,website,email,phone,address,city,state,country,pincode,logo_url,cover_image_url,founders,category_tags,keywords,is_verified,trust_level,status',
+      'TechCorp Ltd,TechCorp Limited,business,Technology,Software Development,Software development company,Innovation at its finest,2020,50-100,$1M-$5M,https://techcorp.com,contact@techcorp.com,+1234567890,123 Tech Street,San Francisco,CA,USA,94105,https://techcorp.com/logo.png,https://techcorp.com/cover.jpg,"John Doe,Jane Smith","technology,software,web development","software,development,consulting",true,verified,active',
+      'Local Restaurant,Local Restaurant LLC,business,Food & Beverage,Restaurant,Family-owned restaurant,Great food great service,2015,10-25,$500K-$1M,https://localrest.com,info@localrest.com,+9876543210,456 Food Ave,New York,NY,USA,10001,,,Mike Johnson,"food,restaurant,dining","restaurant,food,local",false,basic,active'
     ].join('\n');
 
     const blob = new Blob([sampleData], { type: 'text/csv' });
@@ -229,7 +281,8 @@ const EntityBulkUpload = () => {
             Bulk Entity Upload
           </CardTitle>
           <CardDescription>
-            Upload multiple entities at once using a CSV file. Make sure your CSV includes required fields: name, entity_type.
+            Upload multiple entities at once using a CSV file. Required fields: name, entity_type. 
+            Download the sample file to see all available fields including contact info, location, media URLs, and verification status.
           </CardDescription>
         </CardHeader>
         
@@ -307,8 +360,10 @@ const EntityBulkUpload = () => {
                       <TableHead>Name</TableHead>
                       <TableHead>Type</TableHead>
                       <TableHead>Industry</TableHead>
-                      <TableHead>Website</TableHead>
+                      <TableHead>Location</TableHead>
+                      <TableHead>Trust Level</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead>Validation</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -319,7 +374,13 @@ const EntityBulkUpload = () => {
                           <TableCell className="font-medium">{row.name}</TableCell>
                           <TableCell className="capitalize">{row.entity_type?.replace('_', ' ')}</TableCell>
                           <TableCell>{row.industry || 'N/A'}</TableCell>
-                          <TableCell>{row.website || 'N/A'}</TableCell>
+                          <TableCell>{row.city && row.country ? `${row.city}, ${row.country}` : row.city || row.country || 'N/A'}</TableCell>
+                          <TableCell className="capitalize">{row.trust_level || 'basic'}</TableCell>
+                          <TableCell>
+                            <Badge variant={(row.status || 'active') === 'active' ? 'default' : 'secondary'}>
+                              {(row.status || 'active') === 'active' ? 'Active' : 'Inactive'}
+                            </Badge>
+                          </TableCell>
                           <TableCell>
                             {rowErrors.length > 0 ? (
                               <Badge variant="destructive">Error</Badge>
