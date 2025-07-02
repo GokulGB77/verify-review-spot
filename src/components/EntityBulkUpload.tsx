@@ -113,11 +113,34 @@ const EntityBulkUpload = () => {
     const lines = text.split('\n').filter(line => line.trim());
     if (lines.length < 2) return [];
 
-    const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+    // Simple CSV parser that handles quoted fields
+    const parseCSVLine = (line: string): string[] => {
+      const result: string[] = [];
+      let current = '';
+      let inQuotes = false;
+      
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        
+        if (char === '"') {
+          inQuotes = !inQuotes;
+        } else if (char === ',' && !inQuotes) {
+          result.push(current.trim());
+          current = '';
+        } else {
+          current += char;
+        }
+      }
+      
+      result.push(current.trim());
+      return result;
+    };
+
+    const headers = parseCSVLine(lines[0]).map(h => h.toLowerCase());
     const data: CSVRow[] = [];
 
     for (let i = 1; i < lines.length; i++) {
-      const values = lines[i].split(',').map(v => v.trim().replace(/^"|"$/g, ''));
+      const values = parseCSVLine(lines[i]);
       const row: any = {};
 
       headers.forEach((header, index) => {
@@ -162,6 +185,13 @@ const EntityBulkUpload = () => {
     reader.onload = (e) => {
       const text = e.target?.result as string;
       const parsed = parseCSV(text);
+      
+      // Debug: Log the parsed data to see what we're getting
+      console.log('Parsed CSV data:', parsed);
+      parsed.forEach((row, index) => {
+        console.log(`Row ${index + 1} - trust_level: "${row.trust_level}", status: "${row.status}"`);
+      });
+      
       const errors = validateCSVData(parsed);
       
       setCsvData(parsed);
@@ -267,7 +297,7 @@ const EntityBulkUpload = () => {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'entity_upload_sample.csv';
+    a.download = `entity_upload_sample_${Date.now()}.csv`;
     a.click();
     window.URL.revokeObjectURL(url);
   };
