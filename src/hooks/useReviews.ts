@@ -13,11 +13,62 @@ export type Review = Tables<'reviews'> & {
   } | null;
 };
 
-export const useReviews = (businessId?: string) => {
+export const useReviews = (businessId?: string, includeEntity?: boolean) => {
   return useQuery({
-    queryKey: ['reviews', businessId],
+    queryKey: ['reviews', businessId, includeEntity],
     queryFn: async () => {
-      // First get the reviews - make sure to select updated_at
+      // If we need entity data and not filtering by business, use a join
+      if (includeEntity && !businessId) {
+        const { data: reviews, error } = await supabase
+          .from('reviews')
+          .select(`
+            *, 
+            updated_at, 
+            created_at,
+            entities!inner (
+              entity_id,
+              name,
+              industry,
+              location
+            )
+          `)
+          .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        if (!reviews) return [];
+        
+        // Transform the data to flatten entity info
+        const reviewsWithEntities = reviews.map(review => ({
+          ...review,
+          entity: review.entities
+        }));
+        
+        // Get profile information for each review
+        const reviewsWithProfiles = await Promise.all(
+          reviewsWithEntities.map(async (review) => {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('full_name, pseudonym, display_name_preference, main_badge')
+              .eq('id', review.user_id)
+              .maybeSingle();
+            
+            return {
+              ...review,
+              profiles: profile ? {
+                username: null,
+                full_name: profile.full_name,
+                pseudonym: profile.pseudonym,
+                display_name_preference: profile.display_name_preference,
+                main_badge: profile.main_badge,
+              } : null
+            };
+          })
+        );
+        
+        return reviewsWithProfiles as (Review & { entity: any })[];
+      }
+      
+      // Original logic for other cases
       let query = supabase
         .from('reviews')
         .select('*, updated_at, created_at')
