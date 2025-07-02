@@ -12,7 +12,6 @@ export const useEntities = () => {
       const { data, error } = await supabase
         .from('entities')
         .select('*')
-        .eq('status', 'active')
         .order('created_at', { ascending: false });
       
       if (error) throw error;
