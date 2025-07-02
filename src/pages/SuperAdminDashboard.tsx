@@ -183,7 +183,7 @@ const SuperAdminDashboard = () => {
 
   const stats = {
     totalBusinesses: entities?.length || 0,
-    totalReviews: reviews?.length || 0,
+    totalReviews: reviews?.filter(r => !r.is_update).length || 0,
     verifiedBusinesses: entities?.filter(e => e.is_verified).length || 0,
     activeBusinesses: entities?.filter(e => (e.status || 'active') === 'active').length || 0,
     averageRating: entities?.reduce((acc, e) => acc + (e.average_rating || 0), 0) / (entities?.length || 1) || 0
