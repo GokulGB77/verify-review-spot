@@ -53,16 +53,9 @@ const Homepage = () => {
     return acc;
   }, {} as Record<string, any>);
 
-  // Group reviews by business and user, then transform (only for active entities)
+  // Group reviews by business and user, then transform
   const groupedReviews = allReviews.reduce((acc, review) => {
     const businessId = review.business_id;
-    const entity = entityMap[businessId];
-    
-    // Only include reviews for active entities
-    if (!entity || entity.status !== 'active') {
-      return acc;
-    }
-    
     const userId = review.user_id;
     const groupKey = `${businessId}-${userId}`;
     
@@ -78,6 +71,11 @@ const Homepage = () => {
   const transformedReviews = Object.entries(groupedReviews).map(([groupKey, reviews]) => {
     const [businessId, userId] = groupKey.split('-');
     const entity = entityMap[businessId];
+    
+    // Only show reviews for active entities
+    if (!entity || entity.status !== 'active') {
+      return null;
+    }
     
     const transformedGroup = transformReviews(reviews);
     if (transformedGroup.length === 0) return null;
