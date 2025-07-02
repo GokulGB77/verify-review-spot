@@ -105,8 +105,8 @@ const transformReviewsToTestimonials = (reviews, businesses) => {
 };
 
 const TestimonialCard = ({ testimonial, onHover, onLeave, onReadMore }) => {
-  // Function to truncate text to 50 words
-  const truncateText = (text, wordLimit = 50) => {
+  // Function to truncate text - use shorter limit for better mobile experience  
+  const truncateText = (text, wordLimit = 35) => {
     const words = text.split(" ");
     if (words.length <= wordLimit) {
       return { truncated: text, needsTruncation: false };
@@ -167,7 +167,7 @@ const TestimonialCard = ({ testimonial, onHover, onLeave, onReadMore }) => {
 
   return (
     <div
-      className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow duration-300 mb-4 flex-shrink-0 w-[440px]"
+      className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow duration-300 mb-4 flex-shrink-0 w-[280px] sm:w-[320px] lg:w-[380px] xl:w-[440px]"
       onMouseEnter={onHover}
       onMouseLeave={onLeave}
     >
@@ -186,16 +186,20 @@ const TestimonialCard = ({ testimonial, onHover, onLeave, onReadMore }) => {
             Read more
           </button>
         )}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-xs">
               {testimonial.avatar}
             </div>
-            <p className="text-sm font-medium text-gray-900">
-              {testimonial.author}
-            </p>
-            <span className="text-gray-400">•</span>
-            <p className="text-sm text-gray-600">{testimonial.company}</p>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2 min-w-0">
+              <p className="text-sm font-medium text-gray-900 truncate">
+                {testimonial.author}
+              </p>
+              <span className="text-gray-400 hidden sm:inline">•</span>
+              <p className="text-xs sm:text-sm text-gray-600 truncate">
+                {testimonial.company}
+              </p>
+            </div>
           </div>
         </div>
         
@@ -284,7 +288,7 @@ const ReviewScrollSection = ({ testimonials, direction, speed, title, onReadMore
         <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-gray-50 to-transparent z-10 pointer-events-none"></div>
         <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-gray-50 to-transparent z-10 pointer-events-none"></div>
 
-        <div className="h-[500px] overflow-hidden flex justify-center">
+        <div className="h-[400px] sm:h-[500px] lg:h-[600px] overflow-hidden flex justify-center">
           <ScrollingColumn
             testimonials={testimonials}
             direction={direction}
@@ -327,30 +331,30 @@ const AnimatedTestimonials = () => {
   // If no real testimonials, show "No reviews yet" message
   if (allTestimonials.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white py-16">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white py-8 sm:py-12 lg:py-16">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
           {/* Main Header */}
-          <div className="text-center mb-20">
-            <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+          <div className="text-center mb-12 sm:mb-16 lg:mb-20">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6 px-4">
               BUILDING THE INTERNET'S TRUST LAYER
             </h1>
-            <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6 px-4">
               ONE VERIFIED REVIEW AT A TIME
             </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto px-4">
               A new way to review — proof-backed, people-powered, and impossible
               to fake.
             </p>
           </div>
 
           {/* No Reviews Message */}
-          <div className="text-center py-16">
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-12 max-w-md mx-auto">
-              <div className="text-6xl mb-4">💭</div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">
+          <div className="text-center py-12 sm:py-16 px-4">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 sm:p-12 max-w-md mx-auto">
+              <div className="text-4xl sm:text-6xl mb-4">💭</div>
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
                 No Reviews Yet
               </h3>
-              <p className="text-gray-600">
+              <p className="text-sm sm:text-base text-gray-600">
                 Be the first to share your experience and help build trust in
                 our community.
               </p>
@@ -358,24 +362,24 @@ const AnimatedTestimonials = () => {
           </div>
 
           {/* Stats Section */}
-          <div className="mt-24 grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-            <div className="p-8 bg-white rounded-2xl shadow-sm border border-gray-200">
-              <div className="text-4xl font-bold text-blue-600 mb-2">
+          <div className="mt-16 sm:mt-20 lg:mt-24 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 text-center px-4">
+            <div className="p-6 sm:p-8 bg-white rounded-2xl shadow-sm border border-gray-200">
+              <div className="text-3xl sm:text-4xl font-bold text-blue-600 mb-2">
                 {allReviews.length}
               </div>
-              <div className="text-gray-600 font-medium">Reviews Submitted</div>
+              <div className="text-sm sm:text-base text-gray-600 font-medium">Reviews Submitted</div>
             </div>
-            <div className="p-8 bg-white rounded-2xl shadow-sm border border-gray-200">
-              <div className="text-4xl font-bold text-purple-600 mb-2">
+            <div className="p-6 sm:p-8 bg-white rounded-2xl shadow-sm border border-gray-200">
+              <div className="text-3xl sm:text-4xl font-bold text-purple-600 mb-2">
                 {businesses.filter((b) => b.status === "active").length}
               </div>
-              <div className="text-gray-600 font-medium">Businesses Listed</div>
+              <div className="text-sm sm:text-base text-gray-600 font-medium">Businesses Listed</div>
             </div>
-            <div className="p-8 bg-white rounded-2xl shadow-sm border border-gray-200">
-              <div className="text-4xl font-bold text-green-600 mb-2">
+            <div className="p-6 sm:p-8 bg-white rounded-2xl shadow-sm border border-gray-200 sm:col-span-2 md:col-span-1">
+              <div className="text-3xl sm:text-4xl font-bold text-green-600 mb-2">
                 {Math.max(0, Math.floor(allReviews.length * 0.1))}
               </div>
-              <div className="text-gray-600 font-medium">
+              <div className="text-sm sm:text-base text-gray-600 font-medium">
                 Daily Active Readers
               </div>
             </div>
@@ -449,56 +453,64 @@ const AnimatedTestimonials = () => {
         </div>
 
         {/* Three Review Scroll Sections */}
-        <div className="flex flex-col lg:flex-row gap-2 lg:gap-3">
-          {/* Left Section - Scrolling Down (Slow) */}
-          <ReviewScrollSection
-            testimonials={testimonials1}
-            direction="up"
-            speed={90}
-            title="Recent Reviews"
-            onReadMore={handleReadMore}
-          />
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+          {/* Left Section - Scrolling Down (Slow) - Hidden on mobile */}
+          <div className="hidden sm:block flex-1">
+            <ReviewScrollSection
+              testimonials={testimonials1}
+              direction="up"
+              speed={90}
+              title="Recent Reviews"
+              onReadMore={handleReadMore}
+            />
+          </div>
 
-          {/* Middle Section - Scrolling Up */}
-          <ReviewScrollSection
-            testimonials={testimonials2}
-            direction="down"
-            speed={80}
-            title="User Experiences"
-            onReadMore={handleReadMore}
-          />
+          {/* Middle Section - Scrolling Up - Always visible */}
+          <div className="flex-1">
+            <ReviewScrollSection
+              testimonials={testimonials2}
+              direction="down"
+              speed={80}
+              title="User Experiences"
+              onReadMore={handleReadMore}
+            />
+          </div>
 
-          {/* Right Section - Scrolling Down (Fast) */}
-          <ReviewScrollSection
-            testimonials={testimonials3}
-            direction="up"
-            speed={30}
-            title="Business Feedback"
-            onReadMore={handleReadMore}
-          />
+          {/* Right Section - Scrolling Down (Fast) - Hidden on mobile, visible on md+ */}
+          <div className="hidden md:block flex-1">
+            <ReviewScrollSection
+              testimonials={testimonials3}
+              direction="up"
+              speed={30}
+              title="Business Feedback"
+              onReadMore={handleReadMore}
+            />
+          </div>
         </div>
 
         {/* Stats Section */}
-        <div className="mt-24 grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-          <div className="p-8 bg-white rounded-2xl shadow-sm border border-gray-200">
-            <div className="text-4xl font-bold text-blue-600 mb-2">
+        <div className="mt-16 sm:mt-20 lg:mt-24 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 text-center px-4">
+          <div className="p-6 sm:p-8 bg-white rounded-2xl shadow-sm border border-gray-200">
+            <div className="text-3xl sm:text-4xl font-bold text-blue-600 mb-2">
               {allReviews.length}+
             </div>
-            <div className="text-gray-600 font-medium">
+            <div className="text-sm sm:text-base text-gray-600 font-medium">
               Verified Reviews Submitted
             </div>
           </div>
-          <div className="p-8 bg-white rounded-2xl shadow-sm border border-gray-200">
-            <div className="text-4xl font-bold text-purple-600 mb-2">
+          <div className="p-6 sm:p-8 bg-white rounded-2xl shadow-sm border border-gray-200">
+            <div className="text-3xl sm:text-4xl font-bold text-purple-600 mb-2">
               {businesses.filter((b) => b.status === "active").length}+
             </div>
-            <div className="text-gray-600 font-medium">Businesses Listed</div>
+            <div className="text-sm sm:text-base text-gray-600 font-medium">
+              Businesses Listed
+            </div>
           </div>
-          <div className="p-8 bg-white rounded-2xl shadow-sm border border-gray-200">
-            <div className="text-4xl font-bold text-green-600 mb-2">
+          <div className="p-6 sm:p-8 bg-white rounded-2xl shadow-sm border border-gray-200 sm:col-span-2 md:col-span-1">
+            <div className="text-3xl sm:text-4xl font-bold text-green-600 mb-2">
               {Math.max(1, Math.floor(allReviews.length * 0.1))}+
             </div>
-            <div className="text-gray-600 font-medium">
+            <div className="text-sm sm:text-base text-gray-600 font-medium">
               Daily Active Review Readers
             </div>
           </div>
@@ -507,7 +519,7 @@ const AnimatedTestimonials = () => {
 
       {/* Review Detail Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto mx-4 sm:mx-auto">
           <DialogHeader>
             <DialogTitle className="text-xl font-semibold">Review Details</DialogTitle>
           </DialogHeader>

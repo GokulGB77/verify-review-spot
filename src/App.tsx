@@ -6,6 +6,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import Header from './components/common/Header';
 import Footer from './components/common/Footer';
 import Homepage from './pages/Homepage';
+import MyReviewsPage from './pages/MyReviews';
 import EntitiesDirectory from './pages/EntitiesDirectory';
 import EntityProfile from './pages/EntityProfile';
 import WriteReview from './pages/WriteReview';
@@ -17,6 +18,7 @@ import EntityRegistrationSuccess from './pages/EntityRegistrationSuccess';
 import SearchResults from './pages/SearchResults';
 import SuperAdminDashboard from './pages/SuperAdminDashboard';
 import TestScrollPage from './pages/TestScrollPage';
+import NotFound from './pages/NotFound';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserRoles } from '@/hooks/useUserRoles';
 import { Toaster } from "@/components/ui/sonner"
@@ -36,6 +38,7 @@ function App() {
                 <Route path="/entities" element={<EntitiesDirectory />} />
                 <Route path="/entities/:id" element={<EntityProfile />} />
                 <Route path="/write-review" element={<WriteReview />} />
+                <Route path="/my-reviews" element={<MyReviewsPage />} />
                 <Route path="/reviews" element={<Reviews />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/profile" element={<ProfileSettings />} />
@@ -54,6 +57,8 @@ function App() {
                     </AdminRoute>
                   }
                 />
+                {/* Catch-all route for 404 */}
+                <Route path="*" element={<NotFound />} />
               </Routes>
             </main>
             <Footer />

@@ -1,5 +1,5 @@
 import React from "react";
-import ScrollingReviews from "@/components/ScrollingReviews";
+import ScrollingReviews from "@/components/homepage/ScrollingReviews";
 import {
   Card,
   CardContent,

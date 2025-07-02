@@ -19,7 +19,7 @@ import { Card, CardContent } from "@/components/ui/card";
 // import { Link } from "react-router-dom";
 
 import CTASection from "@/components/CtaSection";
-import ScrollingReviews from "@/components/ScrollingReviews";
+import ScrollingReviews from "@/components/homepage/ScrollingReviews";
 
 // New component imports
 import HeroSection from "@/components/homepage/HeroSection";

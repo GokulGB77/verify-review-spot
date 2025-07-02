@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Star, Calendar, History } from 'lucide-react';
+import { Star, Calendar, History, ExternalLink, Plus } from 'lucide-react';
 import { useUserReviews } from '@/hooks/useReviews';
 import { useAuth } from '@/contexts/AuthContext';
 import { Link } from 'react-router-dom';
@@ -41,8 +41,8 @@ const MyReviews = () => {
     return (
       <div className="text-center py-8">
         <p className="text-gray-500">You haven't written any reviews yet.</p>
-        <Link to="/businesses" className="text-blue-600 hover:underline">
-          Browse businesses to write your first review
+        <Link to="/entities" className="text-blue-600 hover:underline">
+          Browse entities to write your first review
         </Link>
       </div>
     );
@@ -142,17 +142,40 @@ const MyReviews = () => {
             </CardHeader>
             <CardContent>
               <p className="text-gray-700 mb-3 leading-relaxed">{item.review.content}</p>
+              
+              {/* Action Buttons */}
+              <div className="flex items-center space-x-2 mb-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  asChild
+                  className="h-8"
+                >
+                  <Link to={`/entities/${item.businessId}`}>
+                    <ExternalLink className="h-3 w-3 mr-1" />
+                    View Entity Profile
+                  </Link>
+                </Button>
+                <Button
+  size="sm"
+  asChild
+  className="h-8 bg-blue-600 hover:bg-blue-700 text-white"
+>
+  <Link to={`/write-review?entityId=${item.businessId}`}>
+    <Plus className="h-3 w-3 mr-1" />
+    Add Update
+  </Link>
+</Button>
+
+              </div>
+              
               <div className="flex items-center justify-between text-sm text-gray-500">
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center space-x-2">
                     <Calendar className="h-4 w-4" />
                     <span>{new Date(item.review.created_at).toLocaleDateString()}</span>
                   </div>
-                  {item.review.user_badge && (
-                    <Badge variant="outline" className="text-xs">
-                      {item.review.user_badge}
-                    </Badge>
-                  )}
+                  
                 </div>
                 {item.hasUpdates && (
                   <Button
