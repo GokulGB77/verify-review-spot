@@ -13,6 +13,7 @@ import WriteReview from './pages/WriteReview';
 import Reviews from './pages/Reviews';
 import Auth from './pages/Auth';
 import ProfileSettings from './pages/ProfileSettings';
+import MyReviewsPage from './pages/MyReviews'; // Import MyReviewsPage
 import EntityRegistration from './pages/EntityRegistration';
 import EntityRegistrationSuccess from './pages/EntityRegistrationSuccess';
 import SearchResults from './pages/SearchResults';
