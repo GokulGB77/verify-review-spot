@@ -66,13 +66,13 @@ const HeroSection = () => {
   }, []);
 
   return (
-    <section className="pt-20 pb-8 px-4 sm:px-6 lg:px-8">
+    <section className="pt-12 sm:pt-16 md:pt-20 pb-6 sm:pb-8 px-4">
       <div className="max-w-4xl mx-auto text-center">
-        <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6">
           AUTHENTIC REVIEWS YOU CAN
           <span className="text-blue-600"> TRUST</span>
         </h1>
-        <p className="text-xl text-gray-600 mb-4 max-w-2xl mx-auto">
+        <p className="text-base sm:text-lg md:text-xl text-gray-600 mb-6 sm:mb-8 max-w-2xl mx-auto">
           Discover verified reviews from real users. No fake reviews, no
           manipulation. Just honest experiences backed by proof.
         </p>
@@ -80,15 +80,15 @@ const HeroSection = () => {
         <TypingAnimation />
 
         {/* Search Bar */}
-        <div className="max-w-2xl mx-auto " ref={searchInputRef}>
-          <div className="flex gap-2 relative">
+        <div className="max-w-2xl mx-auto mt-6 sm:mt-8" ref={searchInputRef}>
+          <div className="flex flex-col sm:flex-row gap-2 relative">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
               <Input
                 placeholder="Search for entities..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 h-12 text-lg"
+                className="pl-10 h-12 text-base sm:text-lg"
                 onKeyPress={(e) => e.key === "Enter" && handleSearch()}
                 onFocus={() => {
                   if (
@@ -131,7 +131,7 @@ const HeroSection = () => {
                 </div>
               )}
             </div>
-            <Button onClick={handleSearch} size="lg" className="h-12">
+             <Button onClick={handleSearch} size="lg" className="h-12 w-full sm:w-auto">
               Search
             </Button>
           </div>
