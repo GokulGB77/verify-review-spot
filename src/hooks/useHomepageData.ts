@@ -1,18 +1,6 @@
-import { useBusinesses } from "@/hooks/useBusinesses";
+import { useBusinesses, Business } from "@/hooks/useBusinesses";
 import { useReviews } from "@/hooks/useReviews";
 import { getDisplayName } from "@/utils/reviewHelpers";
-
-// Interface for Business, assuming structure from Homepage.tsx
-interface Business {
-  entity_id: string;
-  name: string;
-  industry?: string;
-  average_rating?: number;
-  review_count?: number;
-  is_verified?: boolean;
-  status?: string; // Added status for activeEntityReviews filter
-  contact?: { website?: string }; // Added for website access
-}
 
 // Interface for Review, assuming structure from Homepage.tsx
 interface Review {
@@ -64,6 +52,7 @@ export const useHomepageData = () => {
   const bestEntities: ProcessedEntity[] = businesses
     .filter(
       (business: Business) =>
+        (business.status || 'active') === 'active' &&
         business.average_rating &&
         business.average_rating >= 4.0 &&
         business.review_count &&
@@ -80,7 +69,7 @@ export const useHomepageData = () => {
       id: business.entity_id,
       name: business.name,
       category: business.industry,
-      website: business.contact?.website,
+      website: (business.contact as any)?.website,
       rating: business.average_rating || 0,
       reviewCount: business.review_count || 0,
       verificationStatus: business.is_verified ? "Verified" : "Unverified",
@@ -123,7 +112,7 @@ export const useHomepageData = () => {
         rating: latestReview.rating || 0,
         content: latestReview.content || "",
         businessName: business?.name || "Unknown Business",
-        businessWebsite: business?.contact?.website || "",
+        businessWebsite: (business?.contact as any)?.website || "",
         userBadge: latestReview.user_badge || "Unverified User",
         date: new Date(latestReview.created_at).toLocaleDateString(),
         businessCategory: business?.industry || "Business",
