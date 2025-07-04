@@ -19,8 +19,9 @@ const Homepage = () => {
   const [sortBy, setSortBy] = useState('recent');
   const [viewingHistory, setViewingHistory] = useState<Record<string, boolean>>({});
   
-  const { data: allReviews = [], isLoading: reviewsLoading } = useReviews();
-  const { data: entities = [] } = useEntities();
+  const { data: allReviews = [], isLoading: reviewsLoading } = useReviews(undefined, true);
+  // We no longer need to fetch entities separately since they're included in reviews
+  // const { data: entities = [], isLoading: entitiesLoading } = useEntities();
 
   const handleSearch = () => {
     console.log('Searching for:', searchQuery);
@@ -47,11 +48,11 @@ const Homepage = () => {
     }));
   };
 
-  // Create a map of entity_id to entity details for easy lookup
-  const entityMap = entities.reduce((acc, entity) => {
-    acc[entity.entity_id] = entity;
-    return acc;
-  }, {} as Record<string, any>);
+  // Create a map of entity_id to entity details for easy lookup (no longer needed with joined data)
+  // const entityMap = entities.reduce((acc, entity) => {
+  //   acc[entity.entity_id] = entity;
+  //   return acc;
+  // }, {} as Record<string, any>);
 
   // Debug logging
   console.log('Entities:', entities.length);
@@ -83,7 +84,7 @@ const Homepage = () => {
   // Transform each group using the helper function
   const transformedReviews = Object.entries(groupedReviews).map(([groupKey, reviews]) => {
     const [businessId, userId] = groupKey.split('-');
-    const entity = entityMap[businessId];
+    const entity = reviews[0]?.entity; // Get entity from the first review since they're all for the same business
     
     const transformedGroup = transformReviews(reviews);
     if (transformedGroup.length === 0) return null;
@@ -93,7 +94,7 @@ const Homepage = () => {
     return {
       ...latestReview,
       businessId: businessId,
-      businessName: entity?.name || 'Unknown Business',
+      businessName: entity?.name || `Unknown Business (ID: ${businessId})`,
       businessCategory: entity?.industry || 'Unknown Category',
       businessLocation: formatLocation(entity?.location),
       title: `Review for ${entity?.name || 'Business'}`,
@@ -300,12 +301,12 @@ const Homepage = () => {
         ) : (
           <div className="text-center py-12">
             <p className="text-gray-500">
-              {entities.length === 0 
+              {allReviews.length === 0 
                 ? "No reviews available. Add a business and write the first review!"
                 : "No reviews found matching your criteria."
               }
             </p>
-            {entities.length > 0 && (
+            {allReviews.length > 0 && (
               <Button className="mt-4" asChild>
                 <Link to="/write-review">Write the First Review</Link>
               </Button>

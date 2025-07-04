@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 const WriteReviewPrompt = () => {
   return (
-    <div className="flex items-center justify-center px-2 sm:px-4 pt-4">
+    <div className="flex items-center justify-center px-2 sm:px-4 pt-4 pb-10 sm:pb-12 md:pb-16">
       <div className="flex items-center w-full max-w-4xl sm:max-w-6xl lg:max-w-10xl">
         {/* Left extending line - hidden on mobile */}
         <div className="hidden sm:flex flex-1 h-px bg-gray-300"></div>

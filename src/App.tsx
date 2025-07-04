@@ -18,7 +18,7 @@ import EntityRegistration from './pages/EntityRegistration';
 import EntityRegistrationSuccess from './pages/EntityRegistrationSuccess';
 import SearchResults from './pages/SearchResults';
 import SuperAdminDashboard from './pages/SuperAdminDashboard';
-import TestScrollPage from './pages/TestScrollPage';
+import TestScrollPage from './pages/test/TestScrollPage';
 import NotFound from './pages/NotFound';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserRoles } from '@/hooks/useUserRoles';

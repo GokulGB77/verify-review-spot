@@ -20,11 +20,11 @@ interface BestEntitiesSectionProps {
 
 const BestEntitiesSection: React.FC<BestEntitiesSectionProps> = ({ bestEntities }) => {
   return (
-    <section className="py-16 px-4 sm:px-6 lg:px-8">
+    <section className="py-10 sm:py-12 md:py-16 px-4">
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-12">
-          <div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+        <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-8 sm:mb-10 md:mb-12">
+          <div className="mb-4 sm:mb-0">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 sm:mb-4">
               Best Entities
             </h2>
             <p className="text-lg text-gray-600">
@@ -41,11 +41,11 @@ const BestEntitiesSection: React.FC<BestEntitiesSectionProps> = ({ bestEntities 
             {bestEntities.map((entity) => (
               <Link key={entity.id} to={`/business/${entity.id}`}>
                 <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer border border-gray-200">
-                  <CardContent className="p-6">
-                    <div className="space-y-4">
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="space-y-3 sm:space-y-4">
                       {/* Entity Icon/Logo Placeholder */}
-                      <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center">
-                        <span className="text-2xl font-bold text-blue-600">
+                      <div className="w-12 h-12 sm:w-14 md:w-16 sm:h-14 md:h-16 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center">
+                        <span className="text-xl sm:text-2xl font-bold text-blue-600">
                           {entity.name.charAt(0).toUpperCase()}
                         </span>
                       </div>
@@ -106,13 +106,13 @@ const BestEntitiesSection: React.FC<BestEntitiesSectionProps> = ({ bestEntities 
             ))}
           </div>
         ) : (
-          <div className="text-center py-12">
-            <div className="bg-gray-50 rounded-lg p-8">
+          <div className="text-center py-8 sm:py-12">
+            <div className="bg-gray-50 rounded-lg p-6 sm:p-8">
               <TrendingUp className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">
                 No top-rated entities yet
               </h3>
-              <p className="text-gray-500 mb-4">
+              <p className="text-sm sm:text-base text-gray-500 mb-4">
                 Be the first to review and help others discover great
                 businesses!
               </p>
