@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
-import { Users, Building2, MessageSquare, TrendingUp, Search, Filter, Shield, FileCheck, UserCheck, BarChart3, ClipboardList, Eye, Ban, RefreshCcw, Edit } from 'lucide-react';
+import { Users, Building2, MessageSquare, TrendingUp, Search, Filter, Shield, FileCheck, UserCheck, BarChart3, ClipboardList, Eye, Ban, RefreshCcw, Edit, Upload } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -24,6 +24,8 @@ import EntityRegistrationManagement from '@/components/EntityRegistrationManagem
 import BusinessEditForm from '@/components/BusinessEditForm';
 import EntityEditForm from '@/components/EntityEditForm';
 import EntityCreateForm from '@/components/EntityCreateForm';
+import EntityBulkUpload from '@/components/EntityBulkUpload';
+import EntityAdditionRequestsManagement from '@/components/EntityAdditionRequestsManagement';
 
 const SuperAdminDashboard = () => {
   const { user } = useAuth();
@@ -202,6 +204,11 @@ const SuperAdminDashboard = () => {
       value: "create-entity"
     },
     {
+      title: "Bulk Upload",
+      icon: Upload,
+      value: "bulk-upload"
+    },
+    {
       title: "Reviews",
       icon: MessageSquare,
       value: "reviews"
@@ -210,6 +217,11 @@ const SuperAdminDashboard = () => {
       title: "Entity Registrations",
       icon: ClipboardList,
       value: "entity-registrations"
+    },
+    {
+      title: "Entity Addition Requests",
+      icon: Users,
+      value: "entity-addition-requests"
     },
     {
       title: "Proof Verification",
@@ -251,6 +263,9 @@ const SuperAdminDashboard = () => {
             onSuccess={() => setActiveSection('businesses')}
           />
         );
+
+      case 'bulk-upload':
+        return <EntityBulkUpload />;
 
       case 'businesses':
         return (
@@ -544,6 +559,9 @@ const SuperAdminDashboard = () => {
 
       case 'entity-registrations':
         return <EntityRegistrationManagement />;
+
+      case 'entity-addition-requests':
+        return <EntityAdditionRequestsManagement />;
 
       case 'proof-verification':
         return <ProofVerificationManagement />;
