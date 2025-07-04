@@ -331,7 +331,7 @@ const AnimatedTestimonials = () => {
   // If no real testimonials, show "No reviews yet" message
   if (allTestimonials.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white py-8 sm:py-12 lg:py-16">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white py-10 sm:py-12 md:py-16">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
           {/* Main Header */}
           <div className="text-center mb-12 sm:mb-16 lg:mb-20">
@@ -410,7 +410,7 @@ const AnimatedTestimonials = () => {
   const mobileTestimonials = allTestimonials;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white py-16">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white py-10 sm:py-12 md:py-16">
       <style>{`
         @keyframes scroll-up {
           0% {
