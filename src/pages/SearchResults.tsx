@@ -7,6 +7,7 @@ import { Star, CheckCircle } from "lucide-react";
 import { useEntities } from "@/hooks/useEntities";
 import Header from "@/components/common/Header";
 import Footer from "@/components/common/Footer";
+import EntityAdditionRequestDialog from "@/components/EntityAdditionRequestDialog";
 
 const SearchResults = () => {
   const [searchParams] = useSearchParams();
@@ -53,76 +54,84 @@ const SearchResults = () => {
         </div>
 
         {filteredEntities.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredEntities.map((entity) => (
-              <Link key={entity.entity_id} to={`/entities/${entity.entity_id}`}>
-                <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <CardTitle className="text-lg mb-2 line-clamp-2">
-                          {entity.name}
-                        </CardTitle>
-                        {entity.description && (
-                          <p className="text-sm text-gray-600 line-clamp-2">
-                            {entity.description}
-                          </p>
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+              {filteredEntities.map((entity) => (
+                <Link key={entity.entity_id} to={`/entities/${entity.entity_id}`}>
+                  <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <CardTitle className="text-lg mb-2 line-clamp-2">
+                            {entity.name}
+                          </CardTitle>
+                          {entity.description && (
+                            <p className="text-sm text-gray-600 line-clamp-2">
+                              {entity.description}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        {/* Rating */}
+                        {entity.average_rating && entity.average_rating > 0 && (
+                          <div className="flex items-center space-x-1">
+                            {[...Array(5)].map((_, i) => (
+                              <Star
+                                key={i}
+                                className={`h-4 w-4 ${
+                                  i < Math.floor(entity.average_rating)
+                                    ? "text-yellow-400 fill-current"
+                                    : "text-gray-300"
+                                }`}
+                              />
+                            ))}
+                            <span className="font-semibold text-sm ml-2">
+                              {entity.average_rating.toFixed(1)}
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              ({entity.review_count})
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Category */}
+                        {entity.industry && (
+                          <Badge variant="secondary" className="text-xs">
+                            {entity.industry}
+                          </Badge>
+                        )}
+
+                        {/* Verification Status */}
+                        {entity.is_verified && (
+                          <div className="flex items-center space-x-1">
+                            <CheckCircle className="h-4 w-4 text-green-500" />
+                            <span className="text-xs text-green-700">Verified</span>
+                          </div>
                         )}
                       </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      {/* Rating */}
-                      {entity.average_rating && entity.average_rating > 0 && (
-                        <div className="flex items-center space-x-1">
-                          {[...Array(5)].map((_, i) => (
-                            <Star
-                              key={i}
-                              className={`h-4 w-4 ${
-                                i < Math.floor(entity.average_rating)
-                                  ? "text-yellow-400 fill-current"
-                                  : "text-gray-300"
-                              }`}
-                            />
-                          ))}
-                          <span className="font-semibold text-sm ml-2">
-                            {entity.average_rating.toFixed(1)}
-                          </span>
-                          <span className="text-xs text-gray-500">
-                            ({entity.review_count})
-                          </span>
-                        </div>
-                      )}
-
-                      {/* Category */}
-                      {entity.industry && (
-                        <Badge variant="secondary" className="text-xs">
-                          {entity.industry}
-                        </Badge>
-                      )}
-
-                      {/* Verification Status */}
-                      {entity.is_verified && (
-                        <div className="flex items-center space-x-1">
-                          <CheckCircle className="h-4 w-4 text-green-500" />
-                          <span className="text-xs text-green-700">Verified</span>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+            
+            <div className="flex justify-center">
+              <EntityAdditionRequestDialog searchQuery={query} />
+            </div>
+          </>
         ) : (
           <div className="text-center py-12">
             <h3 className="text-lg font-medium text-gray-900 mb-2">
               No results found
             </h3>
-            <p className="text-gray-600">
+            <p className="text-gray-600 mb-6">
               Try searching with different keywords or browse all entities.
             </p>
+            
+            <EntityAdditionRequestDialog searchQuery={query} />
           </div>
         )}
       </div>

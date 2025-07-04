@@ -126,6 +126,39 @@ export type Database = {
         }
         Relationships: []
       }
+      entity_addition_requests: {
+        Row: {
+          created_at: string
+          entity_name: string
+          id: string
+          requested_by: string | null
+          sector: string
+          status: string
+          updated_at: string
+          website_link: string | null
+        }
+        Insert: {
+          created_at?: string
+          entity_name: string
+          id?: string
+          requested_by?: string | null
+          sector: string
+          status?: string
+          updated_at?: string
+          website_link?: string | null
+        }
+        Update: {
+          created_at?: string
+          entity_name?: string
+          id?: string
+          requested_by?: string | null
+          sector?: string
+          status?: string
+          updated_at?: string
+          website_link?: string | null
+        }
+        Relationships: []
+      }
       entity_registrations: {
         Row: {
           address: string | null
