@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
 interface EntityAdditionRequestFormProps {
@@ -19,17 +19,12 @@ const EntityAdditionRequestForm = ({ onSuccess }: EntityAdditionRequestFormProps
     website_link: ""
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.entity_name.trim() || !formData.sector.trim()) {
-      toast({
-        title: "Error",
-        description: "Please fill in all required fields.",
-        variant: "destructive",
-      });
+      toast.error("Please fill in all required fields.");
       return;
     }
 
@@ -49,10 +44,7 @@ const EntityAdditionRequestForm = ({ onSuccess }: EntityAdditionRequestFormProps
 
       if (error) throw error;
 
-      toast({
-        title: "Success",
-        description: "Your entity addition request has been submitted successfully!",
-      });
+      toast.success("Your entity addition request has been submitted successfully!");
 
       setFormData({
         entity_name: "",
@@ -63,11 +55,7 @@ const EntityAdditionRequestForm = ({ onSuccess }: EntityAdditionRequestFormProps
       onSuccess?.();
     } catch (error) {
       console.error("Error submitting request:", error);
-      toast({
-        title: "Error",
-        description: "Failed to submit your request. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to submit your request. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
