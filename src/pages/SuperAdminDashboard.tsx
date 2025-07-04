@@ -25,6 +25,7 @@ import BusinessEditForm from '@/components/BusinessEditForm';
 import EntityEditForm from '@/components/EntityEditForm';
 import EntityCreateForm from '@/components/EntityCreateForm';
 import EntityBulkUpload from '@/components/EntityBulkUpload';
+import EntityAdditionRequestsManagement from '@/components/EntityAdditionRequestsManagement';
 
 const SuperAdminDashboard = () => {
   const { user } = useAuth();
@@ -216,6 +217,11 @@ const SuperAdminDashboard = () => {
       title: "Entity Registrations",
       icon: ClipboardList,
       value: "entity-registrations"
+    },
+    {
+      title: "Entity Addition Requests",
+      icon: Users,
+      value: "entity-addition-requests"
     },
     {
       title: "Proof Verification",
@@ -553,6 +559,9 @@ const SuperAdminDashboard = () => {
 
       case 'entity-registrations':
         return <EntityRegistrationManagement />;
+
+      case 'entity-addition-requests':
+        return <EntityAdditionRequestsManagement />;
 
       case 'proof-verification':
         return <ProofVerificationManagement />;
