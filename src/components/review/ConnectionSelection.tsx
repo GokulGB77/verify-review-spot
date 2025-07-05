@@ -27,12 +27,8 @@ const ConnectionSelection = ({ selectedConnection, onConnectionChange }: Connect
             <Label htmlFor="none">No specific connection</Label>
           </div>
           <div className="flex items-center space-x-2">
-            <RadioGroupItem value="Verified Employee" id="employee" />
-            <Label htmlFor="employee">I work/worked here</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="Verified Student" id="student" />
-            <Label htmlFor="student">I'm a student/alumni</Label>
+            <RadioGroupItem value="proof_connection" id="proof" />
+            <Label htmlFor="proof">I can provide proof of connection</Label>
           </div>
         </RadioGroup>
       </CardContent>

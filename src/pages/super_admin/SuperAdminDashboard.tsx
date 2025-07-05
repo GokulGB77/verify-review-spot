@@ -26,6 +26,7 @@ import EntityEditForm from '@/components/EntityEditForm';
 import EntityCreateForm from '@/components/EntityCreateForm';
 import EntityBulkUpload from '@/components/EntityBulkUpload';
 import EntityAdditionRequestsManagement from '@/components/EntityAdditionRequestsManagement';
+import ReviewVerificationManagement from '@/components/admin/ReviewVerificationManagement';
 
 const SuperAdminDashboard = () => {
   const { user } = useAuth();
@@ -224,9 +225,9 @@ const SuperAdminDashboard = () => {
       value: "entity-addition-requests"
     },
     {
-      title: "Proof Verification",
-      icon: FileCheck,
-      value: "proof-verification"
+      title: "Review Verification",
+      icon: FileCheck,  
+      value: "review-verification"
     },
     {
       title: "Verification",
@@ -562,6 +563,9 @@ const SuperAdminDashboard = () => {
 
       case 'entity-addition-requests':
         return <EntityAdditionRequestsManagement />;
+
+      case 'review-verification':
+        return <ReviewVerificationManagement />;
 
       case 'proof-verification':
         return <ProofVerificationManagement />;

@@ -20,8 +20,8 @@ const Homepage = () => {
   const [viewingHistory, setViewingHistory] = useState<Record<string, boolean>>({});
   
   const { data: allReviews = [], isLoading: reviewsLoading } = useReviews(undefined, true);
-  // We no longer need to fetch entities separately since they're included in reviews
-  // const { data: entities = [], isLoading: entitiesLoading } = useEntities();
+  // Get entities data for display
+  const { data: entities = [], isLoading: entitiesLoading } = useEntities();
 
   const handleSearch = () => {
     console.log('Searching for:', searchQuery);
@@ -48,11 +48,11 @@ const Homepage = () => {
     }));
   };
 
-  // Create a map of entity_id to entity details for easy lookup (no longer needed with joined data)
-  // const entityMap = entities.reduce((acc, entity) => {
-  //   acc[entity.entity_id] = entity;
-  //   return acc;
-  // }, {} as Record<string, any>);
+  // Create a map of entity_id to entity details for easy lookup
+  const entityMap = entities.reduce((acc, entity) => {
+    acc[entity.entity_id] = entity;
+    return acc;
+  }, {} as Record<string, any>);
 
   // Debug logging
   console.log('Entities:', entities.length);
