@@ -12,16 +12,16 @@ import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query'; // Removed useMutation as it's moved
 // import { supabase } from '@/integrations/supabase/client'; // supabase client also moved or not directly used here
 import { useToast } from '@/hooks/use-toast';
-import RoleManagement from '@/components/RoleManagement';
-import VerificationManagement from '@/components/VerificationManagement';
+import RoleManagement from '@/components/super_admin/RoleManagement';
+import VerificationManagement from '@/components/super_admin/VerificationManagement';
 // import ProofVerificationManagement from '@/components/ProofVerificationManagement'; // This component might be part of VerificationManagement or a typo
-import EntityRegistrationManagement from '@/components/EntityRegistrationManagement';
+import EntityRegistrationManagement from '@/components/super_admin/EntityRegistrationManagement';
 // import BusinessEditForm from '@/components/BusinessEditForm'; // Moved to EntityManagementSection
 // import EntityEditForm from '@/components/EntityEditForm'; // Moved to EntityManagementSection
-import EntityCreateForm from '@/components/EntityCreateForm';
-import EntityBulkUpload from '@/components/EntityBulkUpload';
-import EntityAdditionRequestsManagement from '@/components/EntityAdditionRequestsManagement';
-import ReviewVerificationManagement from '@/components/admin/ReviewVerificationManagement';
+import EntityCreateForm from '@/components/super_admin/EntityCreateForm';
+import EntityBulkUpload from '@/components/super_admin/EntityBulkUpload';
+import EntityAdditionRequestsManagement from '@/components/super_admin/EntityAdditionRequestsManagement';
+import ReviewVerificationManagement from '@/components/super_admin/ReviewVerificationManagement';
 import EntityManagementSection from '@/components/super_admin/EntityManagementSection';
 import AnalyticsSection from '@/components/super_admin/AnalyticsSection';
 import ReviewManagementSection from '@/components/super_admin/ReviewManagementSection'; // Import new reviews component
