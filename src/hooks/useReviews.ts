@@ -226,6 +226,9 @@ export const useCreateReview = () => {
       review_specific_badge?: string;
       proof_url?: string;
       is_update?: boolean;
+      is_proof_submitted?: boolean;
+      is_verified?: boolean;
+      custom_verification_tag?: string;
     }) => {
       if (!user?.id) throw new Error('User must be authenticated');
       
@@ -271,7 +274,10 @@ export const useCreateReview = () => {
             update_number: nextUpdateNumber,
             user_badge: reviewData.user_badge || 'Unverified User',
             review_specific_badge: reviewData.review_specific_badge || null,
-            proof_url: reviewData.proof_url || null
+            proof_url: reviewData.proof_url || null,
+            is_proof_submitted: reviewData.is_proof_submitted || false,
+            is_verified: reviewData.is_verified || false,
+            custom_verification_tag: reviewData.custom_verification_tag || null
           }])
           .select()
           .single();
@@ -292,7 +298,10 @@ export const useCreateReview = () => {
             update_number: 0,
             user_badge: reviewData.user_badge || 'Unverified User',
             review_specific_badge: reviewData.review_specific_badge || null,
-            proof_url: reviewData.proof_url || null
+            proof_url: reviewData.proof_url || null,
+            is_proof_submitted: reviewData.is_proof_submitted || false,
+            is_verified: reviewData.is_verified || false,
+            custom_verification_tag: reviewData.custom_verification_tag || null
           }])
           .select()
           .single();

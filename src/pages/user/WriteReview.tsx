@@ -201,7 +201,7 @@ const WriteReview = () => {
     const effectiveConnection = existingConnection?.connection_type || formData.reviewSpecificBadge;
     
     // Check if proof is required but missing (only if no existing connection)
-    const needsProof = !existingConnection && (formData.reviewSpecificBadge === 'Verified Employee' || formData.reviewSpecificBadge === 'Verified Student');
+    const needsProof = !existingConnection && formData.reviewSpecificBadge === 'proof_connection';
     
     console.log('Proof validation:', {
       needsProof,
@@ -238,9 +238,12 @@ const WriteReview = () => {
           updated_at: new Date().toISOString(),
         };
 
-        // Add proof-related fields if file was uploaded
+        // Add new proof system fields if file was uploaded
         if (proofUrl) {
           updateData.proof_url = proofUrl;
+          updateData.is_proof_submitted = true;
+          updateData.is_verified = false;
+          updateData.custom_verification_tag = null;
           updateData.proof_verified = null; // Reset verification status for new proof
           updateData.proof_verified_by = null;
           updateData.proof_verified_at = null;
@@ -248,6 +251,9 @@ const WriteReview = () => {
         } else if (!effectiveConnection) {
           // Clear proof fields if no connection selected and no existing connection
           updateData.proof_url = null;
+          updateData.is_proof_submitted = false;
+          updateData.is_verified = false;
+          updateData.custom_verification_tag = null;
           updateData.proof_verified = null;
           updateData.proof_verified_by = null;
           updateData.proof_verified_at = null;
@@ -273,16 +279,19 @@ const WriteReview = () => {
           description: "Your review has been updated successfully!",
         });
       } else {
-        // Submit review using the mutation (for new reviews or updates)
-        const reviewData: any = {
-          business_id: formData.businessId,
-          rating: formData.rating,
-          content: formData.content.trim(),
-          proof_url: proofUrl,
-          user_badge: profile.main_badge || 'Unverified User',
-          review_specific_badge: effectiveConnection || undefined,
-          is_update: isUpdate,
-        };
+          // Update review data to use new proof system
+          const reviewData: any = {
+            business_id: formData.businessId,
+            rating: formData.rating,
+            content: formData.content.trim(),
+            proof_url: proofUrl,
+            user_badge: profile.main_badge || 'Unverified User',
+            review_specific_badge: effectiveConnection || undefined,
+            is_update: isUpdate,
+            is_proof_submitted: !!proofUrl,
+            is_verified: false,
+            custom_verification_tag: null
+          };
 
         console.log('Submitting review with data:', reviewData);
         await createReviewMutation.mutateAsync(reviewData);
@@ -331,10 +340,13 @@ const WriteReview = () => {
   }
 
   // Check if proof upload should be shown
-  const shouldShowProofUpload = formData.reviewSpecificBadge === 'Verified Employee' || formData.reviewSpecificBadge === 'Verified Student';
+  const shouldShowProofUpload = formData.reviewSpecificBadge === 'proof_connection';
 
-  // Form validation logic
-  const validation = validateForm(formData, selectedBusiness);
+  // Update validation function to check for proof_connection
+  const validation = {
+    ...validateForm(formData, selectedBusiness),
+    needsProof: !existingConnection && formData.reviewSpecificBadge === 'proof_connection'
+  };
   const canSubmit = validation.canSubmit && !createReviewMutation.isPending;
 
   console.log('Form validation state:', {

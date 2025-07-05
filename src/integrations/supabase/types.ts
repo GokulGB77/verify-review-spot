@@ -304,9 +304,12 @@ export type Database = {
           business_response_date: string | null
           content: string
           created_at: string
+          custom_verification_tag: string | null
           downvotes: number | null
           id: string
+          is_proof_submitted: boolean | null
           is_update: boolean | null
+          is_verified: boolean | null
           parent_review_id: string | null
           proof_rejection_reason: string | null
           proof_url: string | null
@@ -327,9 +330,12 @@ export type Database = {
           business_response_date?: string | null
           content: string
           created_at?: string
+          custom_verification_tag?: string | null
           downvotes?: number | null
           id?: string
+          is_proof_submitted?: boolean | null
           is_update?: boolean | null
+          is_verified?: boolean | null
           parent_review_id?: string | null
           proof_rejection_reason?: string | null
           proof_url?: string | null
@@ -350,9 +356,12 @@ export type Database = {
           business_response_date?: string | null
           content?: string
           created_at?: string
+          custom_verification_tag?: string | null
           downvotes?: number | null
           id?: string
+          is_proof_submitted?: boolean | null
           is_update?: boolean | null
+          is_verified?: boolean | null
           parent_review_id?: string | null
           proof_rejection_reason?: string | null
           proof_url?: string | null

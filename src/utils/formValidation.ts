@@ -3,7 +3,7 @@ import { ReviewFormData } from '@/types/reviewForm';
 
 export const validateForm = (formData: ReviewFormData, selectedBusiness: any) => {
   const isBasicFormValid = selectedBusiness && formData.rating > 0 && formData.content.length >= 50;
-  const needsProof = formData.reviewSpecificBadge === 'Verified Employee' || formData.reviewSpecificBadge === 'Verified Student';
+  const needsProof = formData.reviewSpecificBadge === 'proof_connection';
   const hasRequiredProof = !needsProof || (needsProof && formData.proofFile);
   
   console.log('Form validation debug:', {
