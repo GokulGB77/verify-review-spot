@@ -86,7 +86,7 @@ const WriteReview = () => {
         ...prev,
         rating: editingReview.rating,
         content: editingReview.content,
-        reviewSpecificBadge: editingReview.review_specific_badge || '',
+        customVerificationTag: editingReview.custom_verification_tag || '',
       }));
     }
   }, [isEdit, editingReview, user]);

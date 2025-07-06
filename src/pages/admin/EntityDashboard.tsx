@@ -337,7 +337,9 @@ const EntityDashboard = () => {
                               {new Date(review.created_at).toLocaleDateString()}
                             </span>
                           </div>
-                          <Badge variant="outline">{review.user_badge}</Badge>
+                          <Badge variant="outline">
+                            {review.custom_verification_tag || 'Unverified User'}
+                          </Badge>
                         </div>
                         <p className="text-gray-700 mb-3">{review.content}</p>
                         {!review.business_response && (
