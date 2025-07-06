@@ -1,5 +1,5 @@
-
 import type { Review } from '@/hooks/useReviews';
+import { formatDistanceToNow } from 'date-fns';
 
 export interface TransformedReview {
   id: string;
@@ -8,9 +8,9 @@ export interface TransformedReview {
   rating: number;
   content: string;
   mainBadge: 'Verified User' | 'Unverified User';
-  reviewSpecificBadge?: 'Verified Employee' | 'Verified Student' | null;
-  proofProvided: boolean;
-  proofVerified?: boolean | null;
+  customVerificationTag?: string | null;
+  isProofSubmitted: boolean;
+  isVerified?: boolean | null;
   upvotes: number;
   downvotes: number;
   date: string;
@@ -35,7 +35,7 @@ export const transformReviews = (allReviews: Review[]): TransformedReview[] => {
     return acc;
   }, {} as Record<string, Review[]>);
 
-  const transformedReviews: TransformedReview[] = [];
+  const result: TransformedReview[] = [];
 
   // For each user, get their latest review and all their reviews for history
   Object.values(reviewsByUser).forEach(userReviews => {
@@ -44,108 +44,38 @@ export const transformReviews = (allReviews: Review[]): TransformedReview[] => {
       new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
     
-    const latestReview = sortedReviews[0];
-    const profile = latestReview.profiles;
+    const latest = sortedReviews[0];
     
-    // Determine display name based on preference - Fixed logic
-    let displayName = 'Anonymous';
-    
-    console.log('Profile data for user:', latestReview.user_id, {
-      profile,
-      display_name_preference: profile?.display_name_preference,
-      pseudonym: profile?.pseudonym,
-      full_name: profile?.full_name
-    });
-    
-    if (profile) {
-      if (profile.display_name_preference === 'pseudonym' && profile.pseudonym) {
-        displayName = profile.pseudonym;
-      } else if (profile.display_name_preference === 'full_name' && profile.full_name) {
-        displayName = profile.full_name;
-      } else if (profile.full_name) {
-        // Fallback to full_name if available
-        displayName = profile.full_name;
-      } else if (profile.pseudonym) {
-        // Fallback to pseudonym if available
-        displayName = profile.pseudonym;
-      }
-    }
-
-    console.log('Final display name for user:', latestReview.user_id, displayName);
-
-    console.log('transformReviews - Processing review:', {
-      reviewId: latestReview.id,
-      userId: latestReview.user_id,
-      proof_url: latestReview.proof_url,
-      proof_verified: latestReview.proof_verified,
-      review_specific_badge: latestReview.review_specific_badge,
-      user_badge: latestReview.user_badge,
-      main_badge: profile?.main_badge
-    });
-
-    // Determine if proof was provided and verified
-    const proofProvided = !!latestReview.proof_url;
-    const proofVerified = latestReview.proof_verified;
-
-    console.log('transformReviews - Debug badge logic:', {
-      proofProvided,
-      proofVerified,
-      reviewSpecificBadge: latestReview.review_specific_badge,
-      mainBadge: (profile?.main_badge === 'Verified User') ? 'Verified User' : 'Unverified User'
-    });
-
-    const transformedReview: TransformedReview = {
-      id: latestReview.id,
-      userId: latestReview.user_id,
-      userName: displayName,
-      rating: latestReview.rating,
-      content: latestReview.content,
-      mainBadge: (profile?.main_badge === 'Verified User') ? 'Verified User' : 'Unverified User',
-      reviewSpecificBadge: latestReview.review_specific_badge as 'Verified Employee' | 'Verified Student' | null,
-      proofProvided,
-      proofVerified,
-      upvotes: latestReview.upvotes || 0,
-      downvotes: latestReview.downvotes || 0,
-      date: new Date(latestReview.created_at).toLocaleDateString(),
-      businessResponse: latestReview.business_response || undefined,
-      businessResponseDate: latestReview.business_response_date 
-        ? new Date(latestReview.business_response_date).toLocaleDateString() 
+    // Create the main review object
+    const mainReview = {
+      id: latest.id,
+      userId: latest.user_id,
+      userName: getDisplayName(latest.profiles),
+      rating: latest.rating,
+      content: latest.content,
+      mainBadge: getMainBadge(latest.profiles),
+      customVerificationTag: getReviewSpecificBadge(latest),
+      isProofSubmitted: latest.is_proof_submitted || false,
+      isVerified: latest.is_verified,
+      upvotes: latest.upvotes || 0,
+      downvotes: latest.downvotes || 0,
+      date: formatDistanceToNow(new Date(latest.created_at), { addSuffix: true }),
+      businessResponse: latest.business_response,
+      businessResponseDate: latest.business_response_date 
+        ? formatDistanceToNow(new Date(latest.business_response_date), { addSuffix: true })
         : undefined,
-      hasUpdates: sortedReviews.length > 1,
-      totalUpdates: sortedReviews.length - 1,
-      updateNumber: latestReview.update_number || 0,
-      allReviews: sortedReviews,
-      created_at: latestReview.created_at,
-      updated_at: latestReview.updated_at,
-      business_id: latestReview.business_id
+      hasUpdates: allReviews.length > 1,
+      totalUpdates: allReviews.length - 1,
+      updateNumber: allReviews.length,
+      allReviews: allReviews,
+      created_at: latest.created_at,
+      updated_at: latest.updated_at
     };
 
-    transformedReviews.push(transformedReview);
+    result.push(mainReview);
   });
 
-  // Sort by date descending
-  return transformedReviews.sort((a, b) => 
-    new Date(b.date).getTime() - new Date(a.date).getTime()
-  );
-};
-
-export const calculateRatingDistribution = (reviews: TransformedReview[]) => {
-  const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-  
-  reviews.forEach(review => {
-    if (review.rating >= 1 && review.rating <= 5) {
-      distribution[review.rating as keyof typeof distribution]++;
-    }
-  });
-  
-  const total = reviews.length;
-  
-  // Convert to the format expected by RatingBreakdown component
-  return [5, 4, 3, 2, 1].map(stars => ({
-    stars,
-    count: distribution[stars as keyof typeof distribution],
-    percentage: total > 0 ? Math.round((distribution[stars as keyof typeof distribution] / total) * 100) : 0
-  }));
+  return result;
 };
 
 // Helper functions for backward compatibility
@@ -160,10 +90,34 @@ export const getDisplayName = (profile: any) => {
   return 'Anonymous';
 };
 
-export const getMainBadge = (profile: any) => {
+export const getMainBadge = (profile: any): 'Verified User' | 'Unverified User' => {
   return (profile?.main_badge === 'Verified User') ? 'Verified User' : 'Unverified User';
 };
 
-export const getReviewSpecificBadge = (review: any) => {
-  return review?.review_specific_badge as 'Verified Employee' | 'Verified Student' | null;
+export const getReviewSpecificBadge = (review: any): string | null => {
+  if (!review.is_proof_submitted || !review.is_verified) {
+    return null;
+  }
+  
+  // Return custom verification tag if available
+  return review.custom_verification_tag || null;
+};
+
+export const calculateRatingDistribution = (reviews: any[]) => {
+  const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+  
+  reviews.forEach(review => {
+    if (review.rating >= 1 && review.rating <= 5) {
+      distribution[review.rating as keyof typeof distribution]++;
+    }
+  });
+  
+  const total = reviews.length;
+  
+  // Convert to the format expected by RatingBreakdown component  
+  return [5, 4, 3, 2, 1].map(stars => ({
+    stars,
+    count: distribution[stars as keyof typeof distribution],
+    percentage: total > 0 ? Math.round((distribution[stars as keyof typeof distribution] / total) * 100) : 0
+  }));
 };

@@ -152,12 +152,10 @@ const SuperAdminDashboard = () => {
 
       case 'businesses':
         return (
-          <EntityManagementSection
-            entities={entities}
-            entitiesLoading={entitiesLoading}
-            queryClient={queryClient}
-            toast={toast}
-          />
+            <EntityManagementSection 
+              entities={entities} 
+              entitiesLoading={entitiesLoading}
+            />
         );
 
       case 'reviews':
@@ -178,7 +176,7 @@ const SuperAdminDashboard = () => {
         return <ReviewVerificationManagement />;
 
       case 'proof-verification':
-        return <ProofVerificationManagement />;
+        return <ReviewVerificationManagement />;
 
       case 'verification':
         return <VerificationManagement />;

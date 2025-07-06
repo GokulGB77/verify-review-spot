@@ -16,9 +16,9 @@ interface SingleReviewCardProps {
     rating: number;
     content: string;
     mainBadge: 'Verified User' | 'Unverified User';
-    reviewSpecificBadge?: 'Verified Employee' | 'Verified Student' | null;
-    proofProvided: boolean;
-    proofVerified?: boolean | null;
+    customVerificationTag?: string | null;
+    isProofSubmitted: boolean;
+    isVerified?: boolean | null;
     upvotes: number;
     downvotes: number;
     date: string;
@@ -47,9 +47,9 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory }: SingleRev
 
   console.log('SingleReviewCard - Badge debug:', {
     reviewId: review.id,
-    proofProvided: review.proofProvided,
-    proofVerified: review.proofVerified,
-    reviewSpecificBadge: review.reviewSpecificBadge,
+    isProofSubmitted: review.isProofSubmitted,
+    isVerified: review.isVerified,
+    customVerificationTag: review.customVerificationTag,
     mainBadge: review.mainBadge,
     userName: review.userName
   });
@@ -108,24 +108,24 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory }: SingleRev
   // Badge display logic - show only one badge per review
   const getBadgeDisplay = () => {
     console.log('getBadgeDisplay called with:', {
-      proofProvided: review.proofProvided,
-      proofVerified: review.proofVerified,
-      reviewSpecificBadge: review.reviewSpecificBadge,
+      isProofSubmitted: review.isProofSubmitted,
+      isVerified: review.isVerified,
+      customVerificationTag: review.customVerificationTag,
       mainBadge: review.mainBadge
     });
 
-    // Priority 1: If proof is uploaded and verified, show review-specific verification badge
-    if (review.proofProvided && review.proofVerified === true && review.reviewSpecificBadge) {
-      console.log('Using review-specific badge:', review.reviewSpecificBadge);
+    // Priority 1: If proof is uploaded and verified, show custom verification tag
+    if (review.isProofSubmitted && review.isVerified === true && review.customVerificationTag) {
+      console.log('Using custom verification tag:', review.customVerificationTag);
       return {
-        text: review.reviewSpecificBadge === 'Verified Employee' ? 'Verified Employee' : 'Verified Student',
+        text: review.customVerificationTag,
         className: 'bg-blue-50 text-blue-700 border-blue-200',
         icon: <Shield className="h-3 w-3 mr-1" />
       };
     }
     
     // Priority 2: If proof is uploaded but not yet verified, show pending verification
-    if (review.proofProvided && review.proofVerified === false) {
+    if (review.isProofSubmitted && review.isVerified !== true) {
       console.log('Using pending verification badge');
       return {
         text: 'Pending Verification',

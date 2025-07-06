@@ -9,44 +9,34 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { Search, Eye, Edit, Ban, RefreshCcw } from 'lucide-react';
-import { QueryClient, useQueryClient } from '@tanstack/react-query'; // useMutation removed, useQueryClient added for hook
-// import { supabase } from '@/integrations/supabase/client'; // No longer directly used
-import { toast as shadcnToast, useToast } from '@/hooks/use-toast'; // Renaming to avoid conflict with prop
+import { useQueryClient } from '@tanstack/react-query';
+import { useToast } from '@/hooks/use-toast';
 import EntityEditForm from '@/components/EntityEditForm';
-import { Database } from '@/integrations/supabase/types'; // Assuming this type exists
-import { useEntityMutations } from '@/hooks/useEntityMutations'; // Import the new hook
-
-type Entity = Database['public']['Tables']['entities']['Row']; // Adjust if your types are different
+import { useEntityMutations } from '@/hooks/useEntityMutations';
 
 interface EntityManagementSectionProps {
-  entities: Entity[] | undefined;
+  entities: any[];
   entitiesLoading: boolean;
-  // queryClient and toast props are no longer needed if the hook handles them
-  // queryClient: QueryClient; // Kept if other direct queries are made, but mutations hook handles its own.
-  // toast: typeof shadcnToast; // No longer needed as hook uses its own toast.
 }
 
 const EntityManagementSection: React.FC<EntityManagementSectionProps> = ({
   entities,
   entitiesLoading,
-  // queryClient, // Not directly used if only for mutations
-  // toast, // Not directly used
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [verificationFilter, setVerificationFilter] = useState('all');
-  const [selectedEntity, setSelectedEntity] = useState<Entity | null>(null);
+  const [selectedEntity, setSelectedEntity] = useState<any | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
 
-  const actualQueryClient = useQueryClient(); // Get queryClient from context
-  const { toast } = useToast(); // Get toast from context for general use if needed, mutations use their own.
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const {
     toggleBusinessClaimed,
     deactivateEntity,
     reactivateEntity,
-    // deleteEntity // Available if needed
-  } = useEntityMutations(actualQueryClient);
+  } = useEntityMutations(queryClient);
 
   const filteredEntities = entities?.filter(entity => {
     const nameMatch = entity.name?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -54,7 +44,7 @@ const EntityManagementSection: React.FC<EntityManagementSectionProps> = ({
     const matchesSearch = nameMatch || industryMatch;
     const matchesStatus = statusFilter === 'all' || (entity.status || 'active') === statusFilter;
     const matchesVerification = verificationFilter === 'all' ||
-                               (entity.is_verified ? 'Verified' : 'Unverified') === verificationFilter; // Assuming is_verified is boolean
+                               (entity.is_verified ? 'Verified' : 'Unverified') === verificationFilter;
     return matchesSearch && matchesStatus && matchesVerification;
   });
 
@@ -65,9 +55,7 @@ const EntityManagementSection: React.FC<EntityManagementSectionProps> = ({
 
   const handleEditSuccess = () => {
     setIsEditMode(false);
-    // Optionally, keep the dialog open: setSelectedEntity(updatedEntity) if backend returns it
-    // For now, closing dialog by resetting selectedEntity via onOpenChange in Dialog
-    queryClient.invalidateQueries({ queryKey: ['entities'] }); // Ensure data is fresh
+    queryClient.invalidateQueries({ queryKey: ['entities'] });
     toast({
       title: 'Entity Updated',
       description: 'The entity details have been successfully updated.',
@@ -119,7 +107,6 @@ const EntityManagementSection: React.FC<EntityManagementSectionProps> = ({
                 <SelectItem value="all">All Verification</SelectItem>
                 <SelectItem value="Verified">Verified</SelectItem>
                 <SelectItem value="Unverified">Unverified</SelectItem>
-                {/* <SelectItem value="Pending">Pending</SelectItem> */} {/* Assuming no 'Pending' status in current data model */}
               </SelectContent>
             </Select>
           </div>
@@ -195,7 +182,7 @@ const EntityManagementSection: React.FC<EntityManagementSectionProps> = ({
                           <DialogHeader>
                             <DialogTitle className="flex items-center gap-2">
                               Entity Details
-                              {!isEditMode && selectedEntity && ( // Ensure selectedEntity is not null
+                              {!isEditMode && selectedEntity && (
                                 <Button
                                   variant="outline"
                                   size="sm"
@@ -207,7 +194,7 @@ const EntityManagementSection: React.FC<EntityManagementSectionProps> = ({
                               )}
                             </DialogTitle>
                           </DialogHeader>
-                          {selectedEntity && ( // Ensure selectedEntity is not null before rendering
+                          {selectedEntity && (
                             <div className="space-y-4">
                               {isEditMode ? (
                                 <EntityEditForm
@@ -238,7 +225,6 @@ const EntityManagementSection: React.FC<EntityManagementSectionProps> = ({
                                       <Label className="font-semibold">Rating</Label>
                                       <p className="text-sm">{selectedEntity.average_rating || 0}/5 ({selectedEntity.review_count || 0} reviews)</p>
                                     </div>
-                                     {/* Assuming contact is a JSONB field, access its properties carefully */}
                                     <div>
                                       <Label className="font-semibold">Website</Label>
                                       <p className="text-sm">{(selectedEntity.contact as any)?.website || 'Not provided'}</p>
@@ -312,7 +298,6 @@ const EntityManagementSection: React.FC<EntityManagementSectionProps> = ({
                           {deactivateEntity.isPending ? 'Deactivating...' : 'Deactivate'}
                         </Button>
                       )}
-                      {/* Delete button can be added here if needed, with a confirmation dialog */}
                     </div>
                   </TableCell>
                 </TableRow>

@@ -52,7 +52,7 @@ const EntityProfile = () => {
 
   // Calculate verified reviews count
   const verifiedReviewsCount = transformedReviews.filter(review => 
-    review.mainBadge === 'Verified User' || review.reviewSpecificBadge
+    review.mainBadge === 'Verified User' || review.customVerificationTag
   ).length;
 
   // Create an updated entity object with the correct average rating
