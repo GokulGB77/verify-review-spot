@@ -84,13 +84,11 @@ const transformReviewsToTestimonials = (reviews, businesses) => {
         avatar: getUserInitials(userName),
         rating: latestReview.rating || 0,
         created_at: latestReview.created_at,
-        // Badge information
+        // Badge information (new fields)
         mainBadge,
-        reviewSpecificBadge,
-        proofProvided,
-        proofVerified,
-        // User information for badge logic
-        profiles: latestReview.profiles || latestReview,
+        customVerificationTag: latestReview.custom_verification_tag,
+        isProofSubmitted: latestReview.is_proof_submitted,
+        isVerified: latestReview.is_verified,
       };
 
       testimonials.push(testimonial);
@@ -121,24 +119,21 @@ const TestimonialCard = ({ testimonial, onHover, onLeave, onReadMore }) => {
 
   // Badge display logic - show only one badge per review (same as SingleReviewCard)
   const getBadgeDisplay = () => {
-    // Priority 1: If proof is uploaded and verified, show review-specific verification badge
+    // Priority 1: If proof is uploaded and verified, show custom verification tag
     if (
-      testimonial.proofProvided &&
-      testimonial.proofVerified === true &&
-      testimonial.reviewSpecificBadge
+      testimonial.isProofSubmitted &&
+      testimonial.isVerified === true &&
+      testimonial.customVerificationTag
     ) {
       return {
-        text:
-          testimonial.reviewSpecificBadge === "Verified Employee"
-            ? "Verified Employee"
-            : "Verified Student",
+        text: testimonial.customVerificationTag,
         className: "bg-blue-50 text-blue-700 border-blue-200",
         icon: <Shield className="h-3 w-3 mr-1" />,
       };
     }
 
-    // Priority 2: If proof is uploaded but pending/rejected verification
-    if (testimonial.proofProvided && testimonial.proofVerified === false) {
+    // Priority 2: If proof is uploaded but not yet verified, show pending verification
+    if (testimonial.isProofSubmitted && testimonial.isVerified !== true) {
       return {
         text: "Pending Verification",
         className: "bg-yellow-50 text-yellow-700 border-yellow-200",
@@ -223,15 +218,13 @@ const TestimonialCard = ({ testimonial, onHover, onLeave, onReadMore }) => {
         )}
         
         {/* Badge display */}
-        <div>
-          <Badge
-            variant="outline"
-            className={`text-xs px-2 py-1 h-5 ${badgeDisplay.className} flex items-center w-fit`}
-          >
-            {badgeDisplay.icon}
-            {badgeDisplay.text}
-          </Badge>
-        </div>
+        <Badge
+          variant="outline"
+          className={`text-xs px-2 py-1 h-5 ${badgeDisplay.className} flex items-center w-fit`}
+        >
+          {badgeDisplay.icon}
+          {badgeDisplay.text}
+        </Badge>
       </div>
     </div>
   );
