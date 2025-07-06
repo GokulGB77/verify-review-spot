@@ -1,7 +1,7 @@
 
 import Header from "@/components/common/Header";
 import Footer from "@/components/common/Footer";
-import MyReviews from "@/components/MyReviews";
+import MyReviews from "@/components/profile/MyReviews";
 
 const MyReviewsPage = () => {
   return (
