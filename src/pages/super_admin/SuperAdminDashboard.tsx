@@ -1,30 +1,52 @@
-import React, { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { useUserRoles } from '@/hooks/useUserRoles';
-import { useEntities } from '@/hooks/useEntities';
-import { useReviews } from '@/hooks/useReviews';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Users, Building2, MessageSquare, TrendingUp, Shield, FileCheck, UserCheck, BarChart3, ClipboardList, Upload } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { useQueryClient } from '@tanstack/react-query'; // Removed useMutation as it's moved
-// import { supabase } from '@/integrations/supabase/client'; // supabase client also moved or not directly used here
-import { useToast } from '@/hooks/use-toast';
-import RoleManagement from '@/components/super_admin/RoleManagement';
-import VerificationManagement from '@/components/super_admin/VerificationManagement';
-// import ProofVerificationManagement from '@/components/ProofVerificationManagement'; // This component might be part of VerificationManagement or a typo
-import EntityRegistrationManagement from '@/components/super_admin/EntityRegistrationManagement';
-// import BusinessEditForm from '@/components/BusinessEditForm'; // Moved to EntityManagementSection
-// import EntityEditForm from '@/components/EntityEditForm'; // Moved to EntityManagementSection
-import EntityCreateForm from '@/components/super_admin/EntityCreateForm';
-import EntityBulkUpload from '@/components/super_admin/EntityBulkUpload';
-import EntityAdditionRequestsManagement from '@/components/super_admin/EntityAdditionRequestsManagement';
-import ReviewVerificationManagement from '@/components/super_admin/ReviewVerificationManagement';
-import EntityManagementSection from '@/components/super_admin/EntityManagementSection';
-import AnalyticsSection from '@/components/super_admin/AnalyticsSection';
-import ReviewManagementSection from '@/components/super_admin/ReviewManagementSection'; // Import new reviews component
+import React, { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useUserRoles } from "@/hooks/useUserRoles";
+import { useEntities } from "@/hooks/useEntities";
+import { useReviews } from "@/hooks/useReviews";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Users,
+  Building2,
+  MessageSquare,
+  TrendingUp,
+  Shield,
+  FileCheck,
+  UserCheck,
+  BarChart3,
+  ClipboardList,
+  Upload,
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
+
+import { useToast } from "@/hooks/use-toast";
+import EntityManagementSection from "@/components/super_admin/EntityManagementSection";
+import UserManagementSection from "@/components/super_admin/UserManagementSection";
+import RoleManagement from "@/components/super_admin/RoleManagement";
+import VerificationManagement from "@/components/super_admin/VerificationManagement";
+import EntityRegistrationManagement from "@/components/super_admin/EntityRegistrationManagement";
+import EntityCreateForm from "@/components/super_admin/EntityCreateForm";
+import EntityBulkUpload from "@/components/super_admin/EntityBulkUpload";
+import EntityAdditionRequestsManagement from "@/components/super_admin/EntityAdditionRequestsManagement";
+import ReviewVerificationManagement from "@/components/super_admin/ReviewVerificationManagement";
+import AnalyticsSection from "@/components/super_admin/AnalyticsSection";
+import ReviewManagementSection from "@/components/super_admin/ReviewManagementSection"; 
 
 const SuperAdminDashboard = () => {
   const { user } = useAuth();
@@ -34,15 +56,8 @@ const SuperAdminDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
-  const [activeSection, setActiveSection] = useState('businesses');
-  // Removed states that were moved to EntityManagementSection:
-  // searchTerm, statusFilter, verificationFilter, selectedEntity, isEditMode
-  // const [showCreateForm, setShowCreateForm] = useState(false); // This state seems unused, consider removing if confirmed
 
-  // Mutations (toggleBusinessClaimed, deleteEntity, deactivateEntity, reactivateEntity)
-  // have been moved to EntityManagementSection.
-  // If any global mutations are needed, they would remain here.
+  const [activeSection, setActiveSection] = useState("businesses");
 
   if (rolesLoading) {
     return (
@@ -58,10 +73,12 @@ const SuperAdminDashboard = () => {
         <Card className="w-96">
           <CardHeader>
             <CardTitle>Access Denied</CardTitle>
-            <CardDescription>You don't have permission to access this dashboard.</CardDescription>
+            <CardDescription>
+              You don't have permission to access this dashboard.
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={() => navigate('/')} className="w-full">
+            <Button onClick={() => navigate("/")} className="w-full">
               Go to Homepage
             </Button>
           </CardContent>
@@ -75,90 +92,102 @@ const SuperAdminDashboard = () => {
 
   const stats = {
     totalBusinesses: entities?.length || 0,
-    totalReviews: reviews?.filter(r => !r.is_update).length || 0,
-    verifiedBusinesses: entities?.filter(e => e.is_verified).length || 0,
-    activeBusinesses: entities?.filter(e => (e.status || 'active') === 'active').length || 0,
-    averageRating: entities?.reduce((acc, e) => acc + (e.average_rating || 0), 0) / (entities?.length || 1) || 0
+    totalReviews: reviews?.filter((r) => !r.is_update).length || 0,
+    verifiedBusinesses: entities?.filter((e) => e.is_verified).length || 0,
+    activeBusinesses:
+      entities?.filter((e) => (e.status || "active") === "active").length || 0,
+    averageRating:
+      entities?.reduce((acc, e) => acc + (e.average_rating || 0), 0) /
+        (entities?.length || 1) || 0,
   };
 
   // Menu items for the sidebar
   const menuItems = [
     {
-      title: "Businesses",
+      title: "Users",
+      icon: Users,
+      value: "users",
+    },
+    {
+      title: "Entities",
       icon: Building2,
-      value: "businesses"
+      value: "businesses",
     },
     {
       title: "Create Entity",
-      icon: Users,
-      value: "create-entity"
+      icon: Building2,
+      value: "create-entity",
     },
     {
       title: "Bulk Upload",
       icon: Upload,
-      value: "bulk-upload"
+      value: "bulk-upload",
     },
     {
       title: "Reviews",
       icon: MessageSquare,
-      value: "reviews"
+      value: "reviews",
     },
     {
       title: "Entity Registrations",
       icon: ClipboardList,
-      value: "entity-registrations"
+      value: "entity-registrations",
     },
     {
       title: "Entity Addition Requests",
       icon: Users,
-      value: "entity-addition-requests"
+      value: "entity-addition-requests",
     },
     {
       title: "Review Verification",
-      icon: FileCheck,  
-      value: "review-verification"
+      icon: FileCheck,
+      value: "review-verification",
     },
     {
       title: "Verification",
       icon: UserCheck,
-      value: "verification"
+      value: "verification",
     },
     {
       title: "Role Management",
       icon: Shield,
-      value: "roles"
+      value: "roles",
     },
     {
       title: "Analytics",
       icon: BarChart3,
-      value: "analytics"
-    }
+      value: "analytics",
+    },
   ];
 
   // handleViewDialogClose and handleEditSuccess have been moved to EntityManagementSection
 
   const renderContent = () => {
     switch (activeSection) {
-      case 'create-entity':
+      case "create-entity":
         return (
           <EntityCreateForm
-            onCancel={() => setActiveSection('businesses')}
-            onSuccess={() => setActiveSection('businesses')}
+            onCancel={() => setActiveSection("businesses")}
+            onSuccess={() => setActiveSection("businesses")}
           />
         );
 
-      case 'bulk-upload':
+      case "bulk-upload":
         return <EntityBulkUpload />;
 
-      case 'businesses':
+      case "businesses":
         return (
-            <EntityManagementSection 
-              entities={entities} 
-              entitiesLoading={entitiesLoading}
-            />
+          <EntityManagementSection
+            entities={entities}
+            entitiesLoading={entitiesLoading}
+          />
+        );
+      case "users":
+        return (
+          <UserManagementSection/>
         );
 
-      case 'reviews':
+      case "reviews":
         return (
           <ReviewManagementSection
             reviews={reviews}
@@ -166,25 +195,25 @@ const SuperAdminDashboard = () => {
           />
         );
 
-      case 'entity-registrations':
+      case "entity-registrations":
         return <EntityRegistrationManagement />;
 
-      case 'entity-addition-requests':
+      case "entity-addition-requests":
         return <EntityAdditionRequestsManagement />;
 
-      case 'review-verification':
+      case "review-verification":
         return <ReviewVerificationManagement />;
 
-      case 'proof-verification':
+      case "proof-verification":
         return <ReviewVerificationManagement />;
 
-      case 'verification':
+      case "verification":
         return <VerificationManagement />;
 
-      case 'roles':
+      case "roles":
         return <RoleManagement />;
 
-      case 'analytics':
+      case "analytics":
         return (
           <AnalyticsSection
             stats={stats}
@@ -212,8 +241,8 @@ const SuperAdminDashboard = () => {
               onClick={() => setActiveSection(item.value)}
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 activeSection === item.value
-                  ? 'bg-blue-100 text-blue-700'
-                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                  ? "bg-blue-100 text-blue-700"
+                  : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
               }`}
             >
               <item.icon className="h-4 w-4" />
@@ -227,14 +256,16 @@ const SuperAdminDashboard = () => {
       <div className="flex-1 overflow-auto">
         <div className="p-6">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">Super Admin Dashboard</h1>
-            <p className="text-gray-600 mt-2">Manage businesses, reviews, and platform analytics</p>
+            <h1 className="text-3xl font-bold text-gray-900">
+              Super Admin Dashboard
+            </h1>
+            <p className="text-gray-600 mt-2">
+              Manage businesses, reviews, and platform analytics
+            </p>
           </div>
 
           {/* Dynamic Content */}
-          <div className="space-y-6">
-            {renderContent()}
-          </div>
+          <div className="space-y-6">{renderContent()}</div>
         </div>
       </div>
     </div>
