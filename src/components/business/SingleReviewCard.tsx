@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -159,44 +158,44 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory }: SingleRev
     <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 min-h-fit">
       {/* User Info and Rating */}
       <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+        <div className="flex items-start space-x-3 flex-1 min-w-0">
+          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
             {review.userName.charAt(0).toUpperCase()}
           </div>
-          <div>
-            <div className="mb-2">
-              <span className="font-medium text-gray-900 text-sm">{review.userName}</span>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between mb-1">
+              <span className="font-medium text-gray-900 text-sm truncate">{review.userName}</span>
+              <div className="flex items-center space-x-1 ml-2">
+                {[...Array(5)].map((_, i) => (
+                  <Star
+                    key={i}
+                    className={`h-4 w-4 ${
+                      i < review.rating
+                        ? 'text-green-500 fill-current'
+                        : 'text-gray-300'
+                    }`}
+                  />
+                ))}
+              </div>
             </div>
-            <div className="flex items-center">
-              <Badge 
-                variant="outline" 
-                className={`text-xs px-2 py-1 h-5 ${badgeDisplay.className} flex items-center`}
-              >
-                {badgeDisplay.icon}
-                {badgeDisplay.text}
-              </Badge>
+            <div className="flex items-center justify-end">
+              <span className="text-xs text-gray-500 whitespace-nowrap flex-shrink-0">{review.date}</span>
             </div>
           </div>
-        </div>
-        <div className="text-right">
-          <div className="flex items-center space-x-1 mb-2">
-            {[...Array(5)].map((_, i) => (
-              <Star
-                key={i}
-                className={`h-4 w-4 ${
-                  i < review.rating
-                    ? 'text-green-500 fill-current'
-                    : 'text-gray-300'
-                }`}
-              />
-            ))}
-          </div>
-          <span className="text-xs text-gray-500">{review.date}</span>
         </div>
       </div>
 
       {/* Review Content */}
       <div className="mb-4">
+        <div className="mb-2">
+          <Badge 
+            variant="outline" 
+            className={`text-xs px-2 py-1 h-5 ${badgeDisplay.className} flex items-center whitespace-nowrap flex-shrink-0 w-fit`}
+          >
+            {badgeDisplay.icon}
+            {badgeDisplay.text}
+          </Badge>
+        </div>
         <ReviewContent content={review.content} maxLength={150} />
       </div>
 
