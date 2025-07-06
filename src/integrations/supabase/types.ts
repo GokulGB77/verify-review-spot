@@ -317,11 +317,9 @@ export type Database = {
           proof_verified_at: string | null
           proof_verified_by: string | null
           rating: number
-          review_specific_badge: string | null
           update_number: number | null
           updated_at: string
           upvotes: number | null
-          user_badge: string | null
           user_id: string
         }
         Insert: {
@@ -343,11 +341,9 @@ export type Database = {
           proof_verified_at?: string | null
           proof_verified_by?: string | null
           rating: number
-          review_specific_badge?: string | null
           update_number?: number | null
           updated_at?: string
           upvotes?: number | null
-          user_badge?: string | null
           user_id: string
         }
         Update: {
@@ -369,11 +365,9 @@ export type Database = {
           proof_verified_at?: string | null
           proof_verified_by?: string | null
           rating?: number
-          review_specific_badge?: string | null
           update_number?: number | null
           updated_at?: string
           upvotes?: number | null
-          user_badge?: string | null
           user_id?: string
         }
         Relationships: [

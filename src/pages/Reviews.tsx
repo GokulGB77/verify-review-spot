@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,7 +19,6 @@ const Homepage = () => {
   const [viewingHistory, setViewingHistory] = useState<Record<string, boolean>>({});
   
   const { data: allReviews = [], isLoading: reviewsLoading } = useReviews(undefined, true);
-  // Get entities data for display
   const { data: entities = [], isLoading: entitiesLoading } = useEntities();
 
   const handleSearch = () => {
@@ -54,12 +52,6 @@ const Homepage = () => {
     return acc;
   }, {} as Record<string, any>);
 
-  // Debug logging
-  console.log('Entities:', entities.length);
-  console.log('Reviews:', allReviews.length);
-  console.log('Entity IDs:', entities.map(e => e.entity_id));
-  console.log('Review Business IDs:', allReviews.map(r => r.business_id));
-
   // Group reviews by business and user, then transform
   const groupedReviews = allReviews.reduce((acc, review) => {
     const businessId = review.business_id;
@@ -84,7 +76,7 @@ const Homepage = () => {
   // Transform each group using the helper function
   const transformedReviews = Object.entries(groupedReviews).map(([groupKey, reviews]) => {
     const [businessId, userId] = groupKey.split('-');
-    const entity = reviews[0]?.entity; // Get entity from the first review since they're all for the same business
+    const entity = entityMap[businessId];
     
     const transformedGroup = transformReviews(reviews);
     if (transformedGroup.length === 0) return null;
@@ -280,9 +272,9 @@ const Homepage = () => {
                       >
                         {review.mainBadge}
                       </Badge>
-                      {review.reviewSpecificBadge && (
+                      {review.customVerificationTag && (
                         <Badge variant="outline" className="bg-blue-100 text-blue-800">
-                          {review.reviewSpecificBadge}
+                          {review.customVerificationTag}
                         </Badge>
                       )}
                     </div>
@@ -321,7 +313,7 @@ const Homepage = () => {
               Load More Reviews
             </Button>
           </div>
-          )}
+        )}
       </div>
     </div>
   );
