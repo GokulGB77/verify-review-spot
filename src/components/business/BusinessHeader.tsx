@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Star, MapPin, Globe, Phone, CheckCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import ShareButton from '@/components/ui/share-button';
 import type { Entity } from '@/hooks/useEntities';
 
 interface BusinessHeaderProps {
@@ -137,6 +138,12 @@ const BusinessHeader = ({ business, totalReviews }: BusinessHeaderProps) => {
             <Button variant="outline" size="lg">
               Contact Business
             </Button>
+            <ShareButton 
+              entityName={business.name}
+              entityId={business.entity_id}
+              rating={displayRating}
+              description={business.description}
+            />
           </div>
         </div>
       </CardContent>
