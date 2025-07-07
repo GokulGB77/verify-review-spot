@@ -135,9 +135,9 @@ const BusinessHeader = ({ business, totalReviews }: BusinessHeaderProps) => {
                 Write a Review
               </Link>
             </Button>
-            <Button variant="outline" size="lg">
+            {/* <Button variant="outline" size="lg">
               Contact Business
-            </Button>
+            </Button> */}
             <ShareButton 
               entityName={business.name}
               entityId={business.entity_id}
