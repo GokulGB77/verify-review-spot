@@ -8,179 +8,9 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
-import { Search, Eye, Edit, Ban, RefreshCcw, RefreshCw, Mail, Phone, Calendar, MapPin, User, Hash, Star, Award } from 'lucide-react';
-
-// Updated dummy data to match the database schema
-const dummyUsers = [
-  {
-    id: 1,
-    full_name: 'John Doe',
-    avatar_url: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face',
-    created_at: '2023-01-15T10:30:00Z',
-    updated_at: '2024-01-05T14:22:00Z',
-    email: 'john.doe@example.com',
-    aadhaar_number: '1234-5678-9012',
-    aadhaar_mobile: '+91-9876543210',
-    is_verified: true,
-    pan_number: 'ABCDE1234F',
-    mobile: '+91-9876543210',
-    full_name_pan: 'JOHN DOE',
-    pan_image_url: 'https://example.com/pan/john.jpg',
-    phone: '+91-9876543210',
-    pseudonym: 'FoodieJohn',
-    pseudonym_set: true,
-    display_name_preference: 'pseudonym',
-    main_badge: 'Verified Reviewer',
-    rejection_reason: null
-  },
-  {
-    id: 2,
-    full_name: 'Sarah Johnson',
-    avatar_url: 'https://images.unsplash.com/photo-1494790108755-2616b612b1e1?w=100&h=100&fit=crop&crop=face',
-    created_at: '2023-03-20T09:15:00Z',
-    updated_at: '2024-01-06T11:45:00Z',
-    email: 'sarah.johnson@example.com',
-    aadhaar_number: '2345-6789-0123',
-    aadhaar_mobile: '+91-9876543211',
-    is_verified: true,
-    pan_number: 'BCDEF2345G',
-    mobile: '+91-9876543211',
-    full_name_pan: 'SARAH JOHNSON',
-    pan_image_url: 'https://example.com/pan/sarah.jpg',
-    phone: '+91-9876543211',
-    pseudonym: 'CafeSarah',
-    pseudonym_set: true,
-    display_name_preference: 'full_name',
-    main_badge: 'Business Owner',
-    rejection_reason: null
-  },
-  {
-    id: 3,
-    full_name: 'Mike Chen',
-    avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face',
-    created_at: '2023-02-10T16:20:00Z',
-    updated_at: '2024-01-06T09:30:00Z',
-    email: 'mike.chen@example.com',
-    aadhaar_number: '3456-7890-1234',
-    aadhaar_mobile: '+91-9876543212',
-    is_verified: true,
-    pan_number: 'CDEFG3456H',
-    mobile: '+91-9876543212',
-    full_name_pan: 'MIKE CHEN',
-    pan_image_url: 'https://example.com/pan/mike.jpg',
-    phone: '+91-9876543212',
-    pseudonym: 'ModeratorMike',
-    pseudonym_set: true,
-    display_name_preference: 'pseudonym',
-    main_badge: 'Community Moderator',
-    rejection_reason: null
-  },
-  {
-    id: 4,
-    full_name: 'Emily Rodriguez',
-    avatar_url: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face',
-    created_at: '2023-11-05T13:45:00Z',
-    updated_at: '2023-12-20T18:15:00Z',
-    email: 'emily.rodriguez@example.com',
-    aadhaar_number: null,
-    aadhaar_mobile: null,
-    is_verified: false,
-    pan_number: null,
-    mobile: '+91-9876543213',
-    full_name_pan: null,
-    pan_image_url: null,
-    phone: '+91-9876543213',
-    pseudonym: null,
-    pseudonym_set: false,
-    display_name_preference: 'full_name',
-    main_badge: null,
-    rejection_reason: 'Incomplete documentation'
-  },
-  {
-    id: 5,
-    full_name: 'David Kim',
-    avatar_url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face',
-    created_at: '2022-08-12T08:00:00Z',
-    updated_at: '2024-01-06T15:00:00Z',
-    email: 'david.kim@example.com',
-    aadhaar_number: '4567-8901-2345',
-    aadhaar_mobile: '+91-9876543214',
-    is_verified: true,
-    pan_number: 'DEFGH4567I',
-    mobile: '+91-9876543214',
-    full_name_pan: 'DAVID KIM',
-    pan_image_url: 'https://example.com/pan/david.jpg',
-    phone: '+91-9876543214',
-    pseudonym: 'AdminDave',
-    pseudonym_set: true,
-    display_name_preference: 'pseudonym',
-    main_badge: 'Platform Admin',
-    rejection_reason: null
-  },
-  {
-    id: 6,
-    full_name: 'Lisa Wang',
-    avatar_url: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&h=100&fit=crop&crop=face',
-    created_at: '2023-06-18T12:30:00Z',
-    updated_at: '2024-01-05T20:45:00Z',
-    email: 'lisa.wang@example.com',
-    aadhaar_number: '5678-9012-3456',
-    aadhaar_mobile: '+91-9876543215',
-    is_verified: true,
-    pan_number: 'EFGHI5678J',
-    mobile: '+91-9876543215',
-    full_name_pan: 'LISA WANG',
-    pan_image_url: 'https://example.com/pan/lisa.jpg',
-    phone: '+91-9876543215',
-    pseudonym: 'TechLisa',
-    pseudonym_set: true,
-    display_name_preference: 'full_name',
-    main_badge: 'Tech Entrepreneur',
-    rejection_reason: null
-  },
-  {
-    id: 7,
-    full_name: 'Raj Patel',
-    avatar_url: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=100&h=100&fit=crop&crop=face',
-    created_at: '2023-09-14T14:20:00Z',
-    updated_at: '2023-10-20T16:30:00Z',
-    email: 'raj.patel@example.com',
-    aadhaar_number: '6789-0123-4567',
-    aadhaar_mobile: '+91-9876543216',
-    is_verified: false,
-    pan_number: null,
-    mobile: '+91-9876543216',
-    full_name_pan: null,
-    pan_image_url: null,
-    phone: '+91-9876543216',
-    pseudonym: 'RajReviews',
-    pseudonym_set: true,
-    display_name_preference: 'pseudonym',
-    main_badge: null,
-    rejection_reason: 'PAN verification pending'
-  },
-  {
-    id: 8,
-    full_name: 'Priya Sharma',
-    avatar_url: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop&crop=face',
-    created_at: '2023-04-10T11:45:00Z',
-    updated_at: '2024-01-04T18:20:00Z',
-    email: 'priya.sharma@example.com',
-    aadhaar_number: '7890-1234-5678',
-    aadhaar_mobile: '+91-9876543217',
-    is_verified: true,
-    pan_number: 'FGHIJ6789K',
-    mobile: '+91-9876543217',
-    full_name_pan: 'PRIYA SHARMA',
-    pan_image_url: 'https://example.com/pan/priya.jpg',
-    phone: '+91-9876543217',
-    pseudonym: 'PriyaEats',
-    pseudonym_set: true,
-    display_name_preference: 'full_name',
-    main_badge: 'Top Reviewer',
-    rejection_reason: null
-  }
-];
+import { Search, Eye, Edit, Ban, RefreshCcw, RefreshCw, Mail, Phone, Calendar, MapPin, User, Hash, Star, Award, Shield, ShieldOff } from 'lucide-react';
+import { useProfiles, useUpdateProfile, useBlockUser } from '@/hooks/useProfiles';
+import { useToast } from '@/hooks/use-toast';
 
 const UserManagementSection: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -188,14 +18,31 @@ const UserManagementSection: React.FC = () => {
   const [pseudonymFilter, setPseudonymFilter] = useState('all');
   const [selectedUser, setSelectedUser] = useState<any | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [users, setUsers] = useState(dummyUsers);
-  const [usersLoading] = useState(false);
+  
+  const { data: users, isLoading: usersLoading } = useProfiles();
+  const updateProfileMutation = useUpdateProfile();
+  const blockUserMutation = useBlockUser();
 
-  // Mock functions for user actions
-  const toggleUserVerification = (userId: number) => {
-    setUsers(prev => prev.map(user => 
-      user.id === userId ? { ...user, is_verified: !user.is_verified } : user
-    ));
+  // User action functions
+  const toggleUserVerification = (userId: string) => {
+    const user = users?.find(u => u.id === userId);
+    if (!user) return;
+    
+    updateProfileMutation.mutate({
+      id: userId,
+      updates: { is_verified: !user.is_verified }
+    });
+  };
+
+  const handleBlockUser = (userId: string) => {
+    const user = users?.find(u => u.id === userId);
+    if (!user) return;
+    
+    const isCurrentlyBlocked = user.rejection_reason === 'Account blocked by admin';
+    blockUserMutation.mutate({
+      id: userId,
+      blocked: !isCurrentlyBlocked
+    });
   };
 
   const filteredUsers = users?.filter(user => {
@@ -203,8 +50,7 @@ const UserManagementSection: React.FC = () => {
     const emailMatch = user.email?.toLowerCase().includes(searchTerm.toLowerCase());
     const pseudonymMatch = user.pseudonym?.toLowerCase().includes(searchTerm.toLowerCase());
     const phoneMatch = user.phone?.includes(searchTerm);
-    const panMatch = user.pan_number?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesSearch = nameMatch || emailMatch || pseudonymMatch || phoneMatch || panMatch;
+    const matchesSearch = nameMatch || emailMatch || pseudonymMatch || phoneMatch;
     
     const matchesVerification = verificationFilter === 'all' ||
                                (verificationFilter === 'verified' && user.is_verified) ||
@@ -222,9 +68,14 @@ const UserManagementSection: React.FC = () => {
     setIsEditMode(false);
   };
 
-  const handleEditSuccess = () => {
+  const handleEditSuccess = (updates: any) => {
+    if (selectedUser) {
+      updateProfileMutation.mutate({
+        id: selectedUser.id,
+        updates
+      });
+    }
     setIsEditMode(false);
-    console.log('User updated successfully');
   };
 
   const formatDate = (dateString: string) => {
@@ -248,9 +99,8 @@ const UserManagementSection: React.FC = () => {
     return aadhaar.replace(/\d(?=\d{4})/g, '*');
   };
 
-  const maskPAN = (pan: string) => {
-    if (!pan) return 'N/A';
-    return pan.substring(0, 3) + '***' + pan.substring(6);
+  const isUserBlocked = (user: any) => {
+    return user.rejection_reason === 'Account blocked by admin';
   };
 
   return (
@@ -314,7 +164,7 @@ const UserManagementSection: React.FC = () => {
                 <TableHead>User</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Phone</TableHead>
-                <TableHead>PAN</TableHead>
+                <TableHead>Status</TableHead>
                 <TableHead>Pseudonym</TableHead>
                 <TableHead>Verification</TableHead>
                 <TableHead>Badge</TableHead>
@@ -345,7 +195,13 @@ const UserManagementSection: React.FC = () => {
                   <TableCell>{user.email}</TableCell>
                   <TableCell>{user.phone || 'N/A'}</TableCell>
                   <TableCell>
-                    <span className="text-xs">{maskPAN(user.pan_number)}</span>
+                    {isUserBlocked(user) ? (
+                      <Badge variant="destructive" className="text-xs">Blocked</Badge>
+                    ) : user.is_verified ? (
+                      <Badge variant="default" className="text-xs">Active</Badge>
+                    ) : (
+                      <Badge variant="secondary" className="text-xs">Unverified</Badge>
+                    )}
                   </TableCell>
                   <TableCell>
                     {user.pseudonym ? (
@@ -389,6 +245,25 @@ const UserManagementSection: React.FC = () => {
                             View
                           </Button>
                         </DialogTrigger>
+                        
+                      <Button
+                        variant={isUserBlocked(user) ? "default" : "destructive"}
+                        size="sm"
+                        onClick={() => handleBlockUser(user.id)}
+                        disabled={blockUserMutation.isPending}
+                      >
+                        {isUserBlocked(user) ? (
+                          <>
+                            <Shield className="h-4 w-4 mr-1" />
+                            Unblock
+                          </>
+                        ) : (
+                          <>
+                            <ShieldOff className="h-4 w-4 mr-1" />
+                            Block
+                          </>
+                        )}
+                      </Button>
                         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                           <DialogHeader>
                             <DialogTitle className="flex items-center gap-2">
@@ -413,14 +288,23 @@ const UserManagementSection: React.FC = () => {
                                     Edit form would go here. In a real application, this would be a comprehensive form 
                                     for editing user details like name, email, phone, verification status, etc.
                                   </p>
-                                  <div className="flex gap-2 mt-4">
-                                    <Button size="sm" onClick={handleEditSuccess}>
-                                      Save Changes
-                                    </Button>
-                                    <Button variant="outline" size="sm" onClick={() => setIsEditMode(false)}>
-                                      Cancel
-                                    </Button>
-                                  </div>
+                                   <div className="flex gap-2 mt-4">
+                                     <Button 
+                                       size="sm" 
+                                       onClick={() => handleEditSuccess({
+                                         full_name: selectedUser.full_name,
+                                         email: selectedUser.email,
+                                         phone: selectedUser.phone,
+                                         pseudonym: selectedUser.pseudonym
+                                       })}
+                                       disabled={updateProfileMutation.isPending}
+                                     >
+                                       Save Changes
+                                     </Button>
+                                     <Button variant="outline" size="sm" onClick={() => setIsEditMode(false)}>
+                                       Cancel
+                                     </Button>
+                                   </div>
                                 </div>
                               ) : (
                                 <>
@@ -482,22 +366,22 @@ const UserManagementSection: React.FC = () => {
                                       </Label>
                                       <p className="text-sm">{selectedUser.mobile || 'Not provided'}</p>
                                     </div>
-                                    <div>
-                                      <Label className="font-semibold">PAN Number</Label>
-                                      <p className="text-sm">{maskPAN(selectedUser.pan_number)}</p>
-                                    </div>
-                                    <div>
-                                      <Label className="font-semibold">PAN Name</Label>
-                                      <p className="text-sm">{selectedUser.full_name_pan || 'Not provided'}</p>
-                                    </div>
-                                    <div>
-                                      <Label className="font-semibold">Aadhaar Number</Label>
-                                      <p className="text-sm">{maskAadhaar(selectedUser.aadhaar_number)}</p>
-                                    </div>
-                                    <div>
-                                      <Label className="font-semibold">Aadhaar Mobile</Label>
-                                      <p className="text-sm">{selectedUser.aadhaar_mobile || 'Not provided'}</p>
-                                    </div>
+                                     <div>
+                                       <Label className="font-semibold">User ID</Label>
+                                       <p className="text-sm font-mono">{selectedUser.id}</p>
+                                     </div>
+                                     <div>
+                                       <Label className="font-semibold">Account Status</Label>
+                                       <div className="mt-1">
+                                         {isUserBlocked(selectedUser) ? (
+                                           <Badge variant="destructive">Blocked</Badge>
+                                         ) : selectedUser.is_verified ? (
+                                           <Badge variant="default">Active</Badge>
+                                         ) : (
+                                           <Badge variant="secondary">Unverified</Badge>
+                                         )}
+                                       </div>
+                                     </div>
                                     <div>
                                       <Label className="font-semibold">Pseudonym</Label>
                                       <p className="text-sm">{selectedUser.pseudonym || 'Not set'}</p>
@@ -555,16 +439,26 @@ const UserManagementSection: React.FC = () => {
                                     </div>
                                   </div>
 
-                                  {selectedUser.pan_image_url && (
-                                    <div>
-                                      <Label className="font-semibold">PAN Document</Label>
-                                      <p className="text-sm text-blue-600 mt-1">
-                                        <a href={selectedUser.pan_image_url} target="_blank" rel="noopener noreferrer">
-                                          View PAN Image
-                                        </a>
-                                      </p>
-                                    </div>
-                                  )}
+                                   <div className="flex gap-2 mt-4">
+                                     <Button
+                                       variant={isUserBlocked(selectedUser) ? "default" : "destructive"}
+                                       size="sm"
+                                       onClick={() => handleBlockUser(selectedUser.id)}
+                                       disabled={blockUserMutation.isPending}
+                                     >
+                                       {isUserBlocked(selectedUser) ? (
+                                         <>
+                                           <Shield className="h-4 w-4 mr-1" />
+                                           Unblock User
+                                         </>
+                                       ) : (
+                                         <>
+                                           <ShieldOff className="h-4 w-4 mr-1" />
+                                           Block User
+                                         </>
+                                       )}
+                                     </Button>
+                                   </div>
                                 </>
                               )}
                             </div>
