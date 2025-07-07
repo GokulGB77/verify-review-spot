@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Star, MapPin, Globe, Phone, CheckCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { Business } from '@/hooks/useBusinesses';
+import ShareIconButton from '@/components/ui/share-icon-button';
 
 interface BusinessCardProps {
   entity_id: string;
@@ -56,11 +57,21 @@ const BusinessCard = ({
             <CardTitle className="text-xl font-semibold text-gray-900 line-clamp-1">
               {name}
             </CardTitle>
-            {claimed_by_business && (
-              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs">
-                Trusted
-              </Badge>
-            )}
+            <div className="flex items-center gap-2">
+              {claimed_by_business && (
+                <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs">
+                  Trusted
+                </Badge>
+              )}
+              <div className="p-2 rounded-full hover:bg-gray-100 transition-colors">
+                <ShareIconButton
+                  entityName={name}
+                  entityId={entity_id}
+                  rating={displayRating}
+                  description={description}
+                />
+              </div>
+            </div>
           </div>
           
           <div className="flex items-center gap-2 flex-wrap">

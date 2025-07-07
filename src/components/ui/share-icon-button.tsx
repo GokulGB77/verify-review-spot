@@ -7,14 +7,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Share } from 'lucide-react';
 
-interface ShareButtonProps {
+interface ShareIconButtonProps {
   entityName: string;
   entityId: string;
   rating?: number;
   description?: string;
 }
 
-const ShareButton = ({ entityName, entityId, rating, description }: ShareButtonProps) => {
+const ShareIconButton = ({ entityName, entityId, rating, description }: ShareIconButtonProps) => {
   const currentUrl = window.location.origin;
   const profileUrl = `${currentUrl}/entities/${entityId}`;
   
@@ -31,7 +31,6 @@ const ShareButton = ({ entityName, entityId, rating, description }: ShareButtonP
   };
 
   const shareToInstagram = () => {
-    // Instagram doesn't have direct URL sharing, so we copy to clipboard
     navigator.clipboard.writeText(`${shareText}\n\n${profileUrl}`)
       .then(() => {
         alert('Link copied to clipboard! You can now paste it in your Instagram story or post.');
@@ -54,9 +53,8 @@ const ShareButton = ({ entityName, entityId, rating, description }: ShareButtonP
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="lg">
-          <Share className="h-4 w-4 mr-2" />
-          Share
+        <Button variant="ghost" size="icon" aria-label="Share">
+          <Share className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
@@ -81,4 +79,4 @@ const ShareButton = ({ entityName, entityId, rating, description }: ShareButtonP
   );
 };
 
-export default ShareButton;
+export default ShareIconButton;
