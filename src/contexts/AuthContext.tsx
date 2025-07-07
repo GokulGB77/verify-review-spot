@@ -40,22 +40,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session?.user ?? null);
         setLoading(false);
 
-        // Handle Google sign-in pseudonym requirement
+        // Check if user is blocked and handle accordingly
         if (event === 'SIGNED_IN' && session?.user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('pseudonym, pseudonym_set, rejection_reason')
+            .eq('id', session.user.id)
+            .single();
+
+          // Check if user is blocked
+          if (profile?.rejection_reason === "Account blocked by admin") {
+            console.log('User is blocked, signing out...');
+            await supabase.auth.signOut();
+            return;
+          }
+
+          // Handle Google sign-in pseudonym requirement
           const isGoogleProvider = session.user.app_metadata?.provider === 'google';
           
-          if (isGoogleProvider) {
-            // Check if user already has a pseudonym
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('pseudonym, pseudonym_set')
-              .eq('id', session.user.id)
-              .single();
-
-            if (!profile?.pseudonym_set) {
-              setPendingGoogleUser(session.user);
-              setShowPseudonymModal(true);
-            }
+          if (isGoogleProvider && !profile?.pseudonym_set) {
+            setPendingGoogleUser(session.user);
+            setShowPseudonymModal(true);
           }
         }
 
@@ -94,10 +99,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
+
+    // If sign-in was successful, check if user is blocked
+    if (data.user && !error) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('rejection_reason')
+        .eq('id', data.user.id)
+        .single();
+
+      if (profile?.rejection_reason === "Account blocked by admin") {
+        // Sign out immediately if user is blocked
+        await supabase.auth.signOut();
+        return { error: { message: "Your account has been blocked. Please contact support." } };
+      }
+    }
+
     return { error };
   };
 
