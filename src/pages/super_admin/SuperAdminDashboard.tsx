@@ -57,7 +57,7 @@ const SuperAdminDashboard = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const [activeSection, setActiveSection] = useState("businesses");
+  const [activeSection, setActiveSection] = useState("users");
 
   if (rolesLoading) {
     return (
