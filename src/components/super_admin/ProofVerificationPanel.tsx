@@ -62,7 +62,7 @@ const ProofVerificationPanel = ({
       
       toast({
         title: "Review Verified",
-        description: `Review has been verified with tag: "${verificationTag.trim()}"`,
+        description: `Review has been verified with tag: "${verificationTag.trim()}" - User earned 1 token!`,
       });
       
       onClose();

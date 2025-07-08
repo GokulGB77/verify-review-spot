@@ -27,7 +27,7 @@ export const useUpdateProfile = () => {
       updates 
     }: { 
       id: string; 
-      updates: Partial<{
+        updates: Partial<{
         is_verified: boolean;
         main_badge: string;
         rejection_reason: string;
@@ -37,7 +37,8 @@ export const useUpdateProfile = () => {
         mobile: string;
         pseudonym: string;
         display_name_preference: string;
-      }> 
+        tokens: number;
+      }>
     }) => {
       const { data, error } = await supabase
         .from('profiles')

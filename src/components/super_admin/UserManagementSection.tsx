@@ -439,15 +439,24 @@ const UserManagementSection: React.FC = () => {
                                         {selectedUser.phone || "Not provided"}
                                       </p>
                                     </div>
-                                    <div>
-                                      <Label className="font-semibold flex items-center gap-1">
-                                        <Phone className="h-4 w-4" />
-                                        Mobile
-                                      </Label>
-                                      <p className="text-sm">
-                                        {selectedUser.mobile || "Not provided"}
-                                      </p>
-                                    </div>
+                                     <div>
+                                       <Label className="font-semibold flex items-center gap-1">
+                                         <Phone className="h-4 w-4" />
+                                         Mobile
+                                       </Label>
+                                       <p className="text-sm">
+                                         {selectedUser.mobile || "Not provided"}
+                                       </p>
+                                     </div>
+                                     <div>
+                                       <Label className="font-semibold flex items-center gap-1">
+                                         <Star className="h-4 w-4" />
+                                         Tokens
+                                       </Label>
+                                       <p className="text-sm">
+                                         {selectedUser.tokens || 0} tokens
+                                       </p>
+                                     </div>
                                     <div>
                                       <Label className="font-semibold">
                                         User ID

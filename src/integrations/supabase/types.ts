@@ -256,6 +256,7 @@ export type Database = {
           pseudonym: string | null
           pseudonym_set: boolean | null
           rejection_reason: string | null
+          tokens: number
           updated_at: string
         }
         Insert: {
@@ -277,6 +278,7 @@ export type Database = {
           pseudonym?: string | null
           pseudonym_set?: boolean | null
           rejection_reason?: string | null
+          tokens?: number
           updated_at?: string
         }
         Update: {
@@ -298,6 +300,7 @@ export type Database = {
           pseudonym?: string | null
           pseudonym_set?: boolean | null
           rejection_reason?: string | null
+          tokens?: number
           updated_at?: string
         }
         Relationships: []
