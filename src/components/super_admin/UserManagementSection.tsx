@@ -228,6 +228,7 @@ const UserManagementSection: React.FC = () => {
                 <TableHead>Email</TableHead>
                 <TableHead>Phone</TableHead>
                 <TableHead>Pseudonym</TableHead>
+                <TableHead>Tokens</TableHead>
                 <TableHead>Verification</TableHead>
                 <TableHead>Joined</TableHead>
                 <TableHead>Actions</TableHead>
@@ -264,6 +265,13 @@ const UserManagementSection: React.FC = () => {
                     ) : (
                       <span className="text-xs text-gray-500">Not set</span>
                     )}
+                  </TableCell>
+
+                  <TableCell>
+                    <div className="flex items-center gap-1">
+                      <Star className="h-3 w-3 text-yellow-500" />
+                      <span className="text-sm font-medium">{user.tokens || 0}</span>
+                    </div>
                   </TableCell>
 
                   <TableCell>

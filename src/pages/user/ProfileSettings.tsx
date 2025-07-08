@@ -26,6 +26,7 @@ interface Profile {
   rejection_reason: string | null;
   aadhaar_number?: string | null;
   aadhaar_mobile?: string | null;
+  tokens?: number;
 }
 
 const ProfileSettings = () => {
