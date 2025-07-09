@@ -74,8 +74,24 @@ serve(async (req) => {
       );
     }
 
+    if (action === 'reviews') {
+      const page = parseInt(url.searchParams.get('page') || '1');
+      const limit = Math.min(parseInt(url.searchParams.get('limit') || '10'), 50); // Max 50 per page
+      const sort = url.searchParams.get('sort') || 'recent';
+      const verified = url.searchParams.get('verified') || 'all';
+      const minRating = url.searchParams.get('min_rating');
+      
+      const reviews = await getEntityReviews(supabase, entityId, { page, limit, sort, verified, minRating });
+      return new Response(
+        JSON.stringify(reviews), 
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
     return new Response(
-      JSON.stringify({ error: 'Invalid action. Use /stats or /badge' }), 
+      JSON.stringify({ error: 'Invalid action. Use /stats, /badge, or /reviews' }), 
       { 
         status: 400, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -129,6 +145,126 @@ async function getEntityStats(supabase: any, entityId: string): Promise<ReviewSt
     verified_reviews: verifiedReviews,
     average_rating: averageRating,
     total_stars: totalStars
+  };
+}
+
+async function getEntityReviews(supabase: any, entityId: string, options: {
+  page: number;
+  limit: number;
+  sort: string;
+  verified: string;
+  minRating?: string;
+}) {
+  const { page, limit, sort, verified, minRating } = options;
+  const offset = (page - 1) * limit;
+
+  // Verify entity exists
+  const { data: entity, error: entityError } = await supabase
+    .from('entities')
+    .select('entity_id, name')
+    .eq('entity_id', entityId)
+    .eq('status', 'active')
+    .single();
+
+  if (entityError || !entity) {
+    throw new Error(`Entity not found: ${entityId}`);
+  }
+
+  // Build query
+  let query = supabase
+    .from('reviews')
+    .select(`
+      id,
+      rating,
+      content,
+      created_at,
+      is_verified,
+      is_proof_submitted,
+      custom_verification_tag,
+      upvotes,
+      downvotes,
+      business_response,
+      business_response_date
+    `)
+    .eq('business_id', entityId);
+
+  // Apply filters
+  if (verified === 'true') {
+    query = query.eq('is_verified', true);
+  } else if (verified === 'false') {
+    query = query.eq('is_verified', false);
+  }
+
+  if (minRating) {
+    const rating = parseInt(minRating);
+    if (!isNaN(rating) && rating >= 1 && rating <= 5) {
+      query = query.gte('rating', rating);
+    }
+  }
+
+  // Apply sorting
+  if (sort === 'top') {
+    query = query.order('rating', { ascending: false });
+  } else if (sort === 'verified') {
+    query = query.order('is_verified', { ascending: false });
+  } else { // default: recent
+    query = query.order('created_at', { ascending: false });
+  }
+
+  // Apply pagination
+  query = query.range(offset, offset + limit - 1);
+
+  const { data: reviews, error: reviewsError } = await query;
+
+  if (reviewsError) {
+    throw new Error('Failed to fetch reviews');
+  }
+
+  // Get total count for pagination
+  let countQuery = supabase
+    .from('reviews')
+    .select('*', { count: 'exact', head: true })
+    .eq('business_id', entityId);
+
+  if (verified === 'true') {
+    countQuery = countQuery.eq('is_verified', true);
+  } else if (verified === 'false') {
+    countQuery = countQuery.eq('is_verified', false);
+  }
+
+  if (minRating) {
+    const rating = parseInt(minRating);
+    if (!isNaN(rating) && rating >= 1 && rating <= 5) {
+      countQuery = countQuery.gte('rating', rating);
+    }
+  }
+
+  const { count, error: countError } = await countQuery;
+
+  if (countError) {
+    throw new Error('Failed to count reviews');
+  }
+
+  const totalReviews = count || 0;
+  const totalPages = Math.ceil(totalReviews / limit);
+
+  return {
+    entity_id: entityId,
+    entity_name: entity.name,
+    reviews: reviews || [],
+    pagination: {
+      current_page: page,
+      total_pages: totalPages,
+      total_reviews: totalReviews,
+      per_page: limit,
+      has_next: page < totalPages,
+      has_prev: page > 1
+    },
+    filters: {
+      sort,
+      verified,
+      min_rating: minRating
+    }
   };
 }
 
