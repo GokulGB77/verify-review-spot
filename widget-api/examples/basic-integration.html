@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Widget API Integration Examples</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .example-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        .badge-container {
+            margin: 15px 0;
+        }
+        .stats-display {
+            padding: 15px;
+            background: white;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        .loading {
+            color: #666;
+            font-style: italic;
+        }
+        .error {
+            color: #d32f2f;
+            background: #ffebee;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        pre {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Widget API Integration Examples</h1>
+    
+    <div class="example-section">
+        <h2>1. Statistics API</h2>
+        <p>Fetch and display review statistics for an entity:</p>
+        
+        <div id="stats-container" class="stats-display">
+            <div class="loading">Loading statistics...</div>
+        </div>
+        
+        <h3>Code:</h3>
+        <pre><code>// Replace ENTITY_ID with actual entity ID
+// Replace YOUR_PROJECT_URL with your Supabase project URL
+const entityId = 'your-entity-id-here';
+const apiUrl = 'https://your-project.supabase.co/functions/v1/widget-api';
+
+fetch(`${apiUrl}/stats/${entityId}`)
+  .then(response => response.json())
+  .then(data => {
+    document.getElementById('stats-display').innerHTML = `
+      &lt;h3&gt;${data.entity_name}&lt;/h3&gt;
+      &lt;p&gt;⭐ Average Rating: ${data.average_rating}/5&lt;/p&gt;
+      &lt;p&gt;📊 Total Reviews: ${data.total_reviews}&lt;/p&gt;
+      &lt;p&gt;✅ Verified Reviews: ${data.verified_reviews}&lt;/p&gt;
+    `;
+  })
+  .catch(error => console.error('Error:', error));</code></pre>
+    </div>
+
+    <div class="example-section">
+        <h2>2. Badge Integration</h2>
+        <p>Embed review badges directly in your website:</p>
+        
+        <div class="badge-container">
+            <h3>Default Badge:</h3>
+            <img id="default-badge" src="" alt="Default Reviews Badge" style="border: 1px solid #ddd;" />
+        </div>
+        
+        <div class="badge-container">
+            <h3>Compact Badge:</h3>
+            <img id="compact-badge" src="" alt="Compact Reviews Badge" style="border: 1px solid #ddd;" />
+        </div>
+        
+        <div class="badge-container">
+            <h3>Detailed Badge:</h3>
+            <img id="detailed-badge" src="" alt="Detailed Reviews Badge" style="border: 1px solid #ddd;" />
+        </div>
+        
+        <h3>Code:</h3>
+        <pre><code>&lt;!-- Default Badge --&gt;
+&lt;img src="https://your-project.supabase.co/functions/v1/widget-api/badge/ENTITY_ID" 
+     alt="Reviews Badge" /&gt;
+
+&lt;!-- Compact Badge with custom colors --&gt;
+&lt;img src="https://your-project.supabase.co/functions/v1/widget-api/badge/ENTITY_ID?style=compact&amp;color=28a745&amp;background=ffffff" 
+     alt="Compact Reviews Badge" /&gt;
+
+&lt;!-- Detailed Badge --&gt;
+&lt;img src="https://your-project.supabase.co/functions/v1/widget-api/badge/ENTITY_ID?style=detailed&amp;color=007bff" 
+     alt="Detailed Reviews Badge" /&gt;</code></pre>
+    </div>
+
+    <div class="example-section">
+        <h2>3. Dynamic Widget</h2>
+        <p>Create a dynamic widget that updates automatically:</p>
+        
+        <div id="dynamic-widget" class="stats-display">
+            <div class="loading">Loading dynamic widget...</div>
+        </div>
+        
+        <h3>Code:</h3>
+        <pre><code>function createReviewWidget(entityId, containerId) {
+  const container = document.getElementById(containerId);
+  const apiUrl = 'https://your-project.supabase.co/functions/v1/widget-api';
+  
+  // Create widget HTML structure
+  container.innerHTML = `
+    &lt;div style="border: 1px solid #ddd; border-radius: 8px; padding: 15px; max-width: 300px;"&gt;
+      &lt;div id="${containerId}-content"&gt;Loading...&lt;/div&gt;
+    &lt;/div&gt;
+  `;
+  
+  // Fetch and display data
+  fetch(`${apiUrl}/stats/${entityId}`)
+    .then(response => response.json())
+    .then(data => {
+      document.getElementById(`${containerId}-content`).innerHTML = `
+        &lt;h3 style="margin: 0 0 10px 0; color: #333;"&gt;${data.entity_name}&lt;/h3&gt;
+        &lt;div style="display: flex; align-items: center; margin-bottom: 8px;"&gt;
+          &lt;span style="font-size: 18px; color: #ffa500;"&gt;⭐&lt;/span&gt;
+          &lt;span style="margin-left: 5px; font-weight: bold;"&gt;${data.average_rating}/5&lt;/span&gt;
+        &lt;/div&gt;
+        &lt;p style="margin: 5px 0; color: #666;"&gt;${data.total_reviews} total reviews&lt;/p&gt;
+        &lt;p style="margin: 5px 0; color: #28a745;"&gt;✓ ${data.verified_reviews} verified&lt;/p&gt;
+        &lt;img src="${apiUrl}/badge/${entityId}?style=compact" 
+             alt="Reviews Badge" style="margin-top: 10px;" /&gt;
+      `;
+    })
+    .catch(error => {
+      document.getElementById(`${containerId}-content`).innerHTML = 
+        '&lt;p style="color: #d32f2f;"&gt;Error loading reviews&lt;/p&gt;';
+    });
+}
+
+// Usage
+createReviewWidget('your-entity-id', 'dynamic-widget');</code></pre>
+    </div>
+
+    <div class="example-section">
+        <h2>Setup Instructions</h2>
+        <ol>
+            <li>Replace <code>your-project.supabase.co</code> with your actual Supabase project URL</li>
+            <li>Replace <code>ENTITY_ID</code> with the actual entity ID you want to display</li>
+            <li>Customize colors using hex codes (without the # symbol)</li>
+            <li>Choose badge styles: <code>default</code>, <code>compact</code>, or <code>detailed</code></li>
+        </ol>
+        
+        <h3>Available Badge Parameters:</h3>
+        <ul>
+            <li><code>style</code>: default, compact, detailed</li>
+            <li><code>color</code>: Primary color (hex without #)</li>
+            <li><code>background</code>: Background color (hex without #)</li>
+        </ul>
+    </div>
+
+    <script>
+        // Demo functionality (replace with your actual API URL and entity ID)
+        const DEMO_API_URL = 'https://your-project.supabase.co/functions/v1/widget-api';
+        const DEMO_ENTITY_ID = 'demo-entity-id';
+        
+        // Load demo statistics
+        function loadDemoStats() {
+            // This is a demo - replace with actual API call
+            const demoStats = {
+                entity_name: "Demo Company",
+                total_reviews: 42,
+                verified_reviews: 38,
+                average_rating: 4.7
+            };
+            
+            document.getElementById('stats-container').innerHTML = `
+                <h3>${demoStats.entity_name}</h3>
+                <p>⭐ Average Rating: ${demoStats.average_rating}/5</p>
+                <p>📊 Total Reviews: ${demoStats.total_reviews}</p>
+                <p>✅ Verified Reviews: ${demoStats.verified_reviews}</p>
+            `;
+        }
+        
+        // Load demo badges
+        function loadDemoBadges() {
+            // These would be actual API calls in production
+            document.getElementById('default-badge').src = `${DEMO_API_URL}/badge/${DEMO_ENTITY_ID}`;
+            document.getElementById('compact-badge').src = `${DEMO_API_URL}/badge/${DEMO_ENTITY_ID}?style=compact&color=28a745`;
+            document.getElementById('detailed-badge').src = `${DEMO_API_URL}/badge/${DEMO_ENTITY_ID}?style=detailed&color=007bff`;
+        }
+        
+        // Create demo dynamic widget
+        function createDemoWidget() {
+            const container = document.getElementById('dynamic-widget');
+            const demoData = {
+                entity_name: "Demo Company",
+                total_reviews: 42,
+                verified_reviews: 38,
+                average_rating: 4.7
+            };
+            
+            container.innerHTML = `
+                <div style="border: 1px solid #ddd; border-radius: 8px; padding: 15px; max-width: 300px;">
+                    <h3 style="margin: 0 0 10px 0; color: #333;">${demoData.entity_name}</h3>
+                    <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                        <span style="font-size: 18px; color: #ffa500;">⭐</span>
+                        <span style="margin-left: 5px; font-weight: bold;">${demoData.average_rating}/5</span>
+                    </div>
+                    <p style="margin: 5px 0; color: #666;">${demoData.total_reviews} total reviews</p>
+                    <p style="margin: 5px 0; color: #28a745;">✓ ${demoData.verified_reviews} verified</p>
+                    <div style="margin-top: 10px; padding: 8px; background: #f8f9fa; border-radius: 4px; text-align: center;">
+                        [Badge would appear here]
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Initialize demos
+        loadDemoStats();
+        createDemoWidget();
+        // loadDemoBadges(); // Uncomment when you have actual API endpoint
+    </script>
+</body>
+</html>
