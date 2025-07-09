@@ -36,7 +36,7 @@ function App() {
             <Header />
             <main>
               <Routes>
-                <Route path="/" element={<Homepage />} />
+                <Route path="/" element={<Homepage1 />} />
                 <Route path="/1" element={<Homepage1 />} />
                 <Route path="/minimal" element={<HomepageMinimal />} />
                 <Route path="/entities" element={<EntitiesDirectory />} />
