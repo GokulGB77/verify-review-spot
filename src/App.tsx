@@ -6,6 +6,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import Header from './components/common/Header';
 import Footer from './components/common/Footer';
 import Homepage from './pages/Homepage';
+import Homepage1 from './pages/Homepage1';
 import HomepageMinimal from './components/homepage/minimal/HomepageMinimal';
 import MyReviewsPage from './pages/user/MyReviews';
 import EntitiesDirectory from './pages/EntitiesDirectory';
@@ -36,6 +37,7 @@ function App() {
             <main>
               <Routes>
                 <Route path="/" element={<Homepage />} />
+                <Route path="/1" element={<Homepage1 />} />
                 <Route path="/minimal" element={<HomepageMinimal />} />
                 <Route path="/entities" element={<EntitiesDirectory />} />
                 <Route path="/entities/:id" element={<EntityProfile />} />
