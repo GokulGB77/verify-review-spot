@@ -90,8 +90,18 @@ serve(async (req) => {
       );
     }
 
+    if (action === 'ratings-breakdown') {
+      const breakdown = await getRatingsBreakdown(supabase, entityId);
+      return new Response(
+        JSON.stringify(breakdown), 
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
     return new Response(
-      JSON.stringify({ error: 'Invalid action. Use /stats, /badge, or /reviews' }), 
+      JSON.stringify({ error: 'Invalid action. Use /stats, /badge, /reviews, or /ratings-breakdown' }),
       { 
         status: 400, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -265,6 +275,61 @@ async function getEntityReviews(supabase: any, entityId: string, options: {
       verified,
       min_rating: minRating
     }
+  };
+}
+
+async function getRatingsBreakdown(supabase: any, entityId: string) {
+  // Verify entity exists
+  const { data: entity, error: entityError } = await supabase
+    .from('entities')
+    .select('entity_id, name')
+    .eq('entity_id', entityId)
+    .eq('status', 'active')
+    .single();
+
+  if (entityError || !entity) {
+    throw new Error(`Entity not found: ${entityId}`);
+  }
+
+  // Get all reviews for the entity
+  const { data: reviews, error: reviewsError } = await supabase
+    .from('reviews')
+    .select('rating, is_verified')
+    .eq('business_id', entityId);
+
+  if (reviewsError) {
+    throw new Error('Failed to fetch reviews');
+  }
+
+  // Count ratings by star
+  const ratingCounts = {
+    '5_star': 0,
+    '4_star': 0,
+    '3_star': 0,
+    '2_star': 0,
+    '1_star': 0
+  };
+
+  // Count verified vs unverified
+  let verifiedCount = 0;
+  let unverifiedCount = 0;
+
+  reviews?.forEach(review => {
+    // Count by star rating
+    ratingCounts[`${review.rating}_star`]++;
+    
+    // Count verified status
+    if (review.is_verified) {
+      verifiedCount++;
+    } else {
+      unverifiedCount++;
+    }
+  });
+
+  return {
+    ...ratingCounts,
+    verified_reviews: verifiedCount,
+    unverified_reviews: unverifiedCount
   };
 }
 
