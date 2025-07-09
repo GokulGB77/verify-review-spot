@@ -134,7 +134,14 @@ const EntityManagementSection: React.FC<EntityManagementSectionProps> = ({
             <TableBody>
               {filteredEntities?.map((entity) => (
                 <TableRow key={entity.entity_id}>
-                  <TableCell className="font-medium">{entity.name}</TableCell>
+                  <TableCell className="font-medium">
+                    <div>
+                      <div className="font-medium">{entity.name}</div>
+                      <div className="text-xs text-gray-500 font-mono">
+                        ID: {entity.entity_id}
+                      </div>
+                    </div>
+                  </TableCell>
                   <TableCell className="capitalize">{entity.entity_type?.replace('_', ' ') || 'N/A'}</TableCell>
                   <TableCell>{entity.industry || 'N/A'}</TableCell>
                   <TableCell>{entity.average_rating || 0}/5</TableCell>
