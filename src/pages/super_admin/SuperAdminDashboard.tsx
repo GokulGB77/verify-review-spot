@@ -31,6 +31,7 @@ import {
   BarChart3,
   ClipboardList,
   Upload,
+  AlertTriangle,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
@@ -46,7 +47,8 @@ import EntityBulkUpload from "@/components/super_admin/EntityBulkUpload";
 import EntityAdditionRequestsManagement from "@/components/super_admin/EntityAdditionRequestsManagement";
 import ReviewVerificationManagement from "@/components/super_admin/ReviewVerificationManagement";
 import AnalyticsSection from "@/components/super_admin/AnalyticsSection";
-import ReviewManagementSection from "@/components/super_admin/ReviewManagementSection"; 
+import ReviewManagementSection from "@/components/super_admin/ReviewManagementSection";
+import ProblemReportsManagement from "@/components/super_admin/ProblemReportsManagement";
 
 const SuperAdminDashboard = () => {
   const { user } = useAuth();
@@ -158,6 +160,11 @@ const SuperAdminDashboard = () => {
       icon: BarChart3,
       value: "analytics",
     },
+    {
+      title: "Problem Reports",
+      icon: AlertTriangle,
+      value: "problem-reports",
+    },
   ];
 
   // handleViewDialogClose and handleEditSuccess have been moved to EntityManagementSection
@@ -221,6 +228,9 @@ const SuperAdminDashboard = () => {
             reviews={reviews}
           />
         );
+
+      case "problem-reports":
+        return <ProblemReportsManagement />;
 
       default:
         return null;

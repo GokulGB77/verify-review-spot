@@ -236,6 +236,54 @@ export type Database = {
         }
         Relationships: []
       }
+      problem_reports: {
+        Row: {
+          admin_notes: string | null
+          category: string
+          contact_email: string | null
+          created_at: string
+          description: string
+          id: string
+          priority: string
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+          title: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          category: string
+          contact_email?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          priority?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          category?: string
+          contact_email?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          priority?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           aadhaar_mobile: string | null
