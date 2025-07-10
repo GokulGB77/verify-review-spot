@@ -19,17 +19,35 @@ const BusinessDirectory = () => {
   const { data: businesses = [], isLoading, error } = useBusinesses();
   const { data: allReviews = [] } = useReviews();
 
-  // Dynamically extract categories from actual business data
-  const getCategories = () => {
+  // Get available categories based on current filtered results (excluding category filter)
+  const getAvailableCategories = () => {
+    let businessesToCheck = businessesWithCorrectStats;
+    
+    // Apply search filter
+    if (searchQuery.trim()) {
+      businessesToCheck = businessesToCheck.filter(business => 
+        business.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        business.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        business.industry?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (business.location as any)?.address?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    // Apply verification filter
+    if (verificationFilter !== 'all') {
+      const isVerified = verificationFilter === 'Verified';
+      businessesToCheck = businessesToCheck.filter(business => business.is_verified === isVerified);
+    }
+
     const uniqueCategories = new Set(
-      businesses
+      businessesToCheck
         .map(business => business.industry)
         .filter(industry => industry && industry.trim() !== '')
     );
     return ['all', ...Array.from(uniqueCategories).sort()];
   };
   
-  const categories = getCategories();
+  const availableCategories = getAvailableCategories();
   const verificationStatuses = ['all', 'Verified', 'Unverified'];
 
   const handleSearch = () => {
@@ -187,7 +205,7 @@ const BusinessDirectory = () => {
             <div className="flex items-center space-x-2">
               <span className="text-sm text-gray-600">Category:</span>
               <div className="flex gap-2">
-                {categories.map((category) => (
+                {availableCategories.map((category) => (
                   <Button
                     key={category}
                     variant={categoryFilter === category ? 'default' : 'outline'}
