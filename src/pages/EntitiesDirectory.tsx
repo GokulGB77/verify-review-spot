@@ -86,6 +86,9 @@ const BusinessDirectory = () => {
       filtered = filtered.filter(business => business.is_verified === isVerified);
     }
 
+    // Sort alphabetically by entity name
+    filtered.sort((a, b) => a.name.localeCompare(b.name));
+
     return filtered;
   };
 
