@@ -57,7 +57,6 @@ const ReportProblem = () => {
   if (isSubmitted) {
     return (
       <div className="min-h-screen bg-background">
-        <Header />
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <Card className="max-w-2xl mx-auto">
             <CardContent className="p-8 text-center">
@@ -79,14 +78,12 @@ const ReportProblem = () => {
             </CardContent>
           </Card>
         </div>
-        <Footer />
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
@@ -234,7 +231,6 @@ const ReportProblem = () => {
           </CardContent>
         </Card>
       </div>
-      <Footer />
     </div>
   );
 };
