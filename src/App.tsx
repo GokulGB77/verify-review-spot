@@ -7,6 +7,7 @@ import Header from './components/common/Header';
 import Footer from './components/common/Footer';
 import Homepage from './pages/Homepage';
 import Homepage1 from './pages/Homepage1';
+import Homepage from './pages/HomepageV1';
 import HomepageMinimal from './components/homepage/minimal/HomepageMinimal';
 import MyReviewsPage from './pages/user/MyReviews';
 import EntitiesDirectory from './pages/EntitiesDirectory';
@@ -36,7 +37,8 @@ function App() {
             <Header />
             <main>
               <Routes>
-                <Route path="/" element={<Homepage1 />} />
+                <Route path="/" element={<Homepage />} />
+                <Route path="/v1" element={<HomepageV1 />} />
                 <Route path="/1" element={<Homepage1 />} />
                 <Route path="/minimal" element={<HomepageMinimal />} />
                 <Route path="/entities" element={<EntitiesDirectory />} />
