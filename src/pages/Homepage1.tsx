@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Search, CheckCircle, Lock, Eye, Star, Shield, Clock, TrendingUp, Users, ArrowRight, Play, ChevronRight } from 'lucide-react';
 
-const Homepage1 = () => {
+const HomepageV1 = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTab, setSelectedTab] = useState('reviewers');
 
@@ -426,4 +426,4 @@ const Homepage1 = () => {
   );
 };
 
-export default Homepage1;
+export default HomepageV1;
