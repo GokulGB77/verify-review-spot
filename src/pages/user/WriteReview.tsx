@@ -285,8 +285,6 @@ const WriteReview = () => {
             rating: formData.rating,
             content: formData.content.trim(),
             proof_url: proofUrl,
-            user_badge: profile.main_badge || 'Unverified User',
-            review_specific_badge: effectiveConnection || undefined,
             is_update: isUpdate,
             is_proof_submitted: !!proofUrl,
             is_verified: false,
