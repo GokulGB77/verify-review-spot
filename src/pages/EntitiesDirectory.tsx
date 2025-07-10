@@ -19,7 +19,17 @@ const BusinessDirectory = () => {
   const { data: businesses = [], isLoading, error } = useBusinesses();
   const { data: allReviews = [] } = useReviews();
 
-  const categories = ['all', 'Technology', 'Education', 'Food & Beverage', 'Health & Fitness', 'Marketing', 'Beauty & Wellness', 'Retail'];
+  // Dynamically extract categories from actual business data
+  const getCategories = () => {
+    const uniqueCategories = new Set(
+      businesses
+        .map(business => business.industry)
+        .filter(industry => industry && industry.trim() !== '')
+    );
+    return ['all', ...Array.from(uniqueCategories).sort()];
+  };
+  
+  const categories = getCategories();
   const verificationStatuses = ['all', 'Verified', 'Unverified'];
 
   const handleSearch = () => {
