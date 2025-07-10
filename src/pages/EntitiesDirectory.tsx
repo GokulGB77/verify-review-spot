@@ -19,35 +19,6 @@ const BusinessDirectory = () => {
   const { data: businesses = [], isLoading, error } = useBusinesses();
   const { data: allReviews = [] } = useReviews();
 
-  // Get available categories based on current filtered results (excluding category filter)
-  const getAvailableCategories = () => {
-    let businessesToCheck = businessesWithCorrectStats;
-    
-    // Apply search filter
-    if (searchQuery.trim()) {
-      businessesToCheck = businessesToCheck.filter(business => 
-        business.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        business.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        business.industry?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (business.location as any)?.address?.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-
-    // Apply verification filter
-    if (verificationFilter !== 'all') {
-      const isVerified = verificationFilter === 'Verified';
-      businessesToCheck = businessesToCheck.filter(business => business.is_verified === isVerified);
-    }
-
-    const uniqueCategories = new Set(
-      businessesToCheck
-        .map(business => business.industry)
-        .filter(industry => industry && industry.trim() !== '')
-    );
-    return ['all', ...Array.from(uniqueCategories).sort()];
-  };
-  
-  const availableCategories = getAvailableCategories();
   const verificationStatuses = ['all', 'Verified', 'Unverified'];
 
   const handleSearch = () => {
@@ -92,6 +63,36 @@ const BusinessDirectory = () => {
   };
 
   const businessesWithCorrectStats = getBusinessWithCorrectStats();
+
+  // Get available categories based on current filtered results (excluding category filter)
+  const getAvailableCategories = () => {
+    let businessesToCheck = businessesWithCorrectStats;
+    
+    // Apply search filter
+    if (searchQuery.trim()) {
+      businessesToCheck = businessesToCheck.filter(business => 
+        business.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        business.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        business.industry?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (business.location as any)?.address?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    // Apply verification filter
+    if (verificationFilter !== 'all') {
+      const isVerified = verificationFilter === 'Verified';
+      businessesToCheck = businessesToCheck.filter(business => business.is_verified === isVerified);
+    }
+
+    const uniqueCategories = new Set(
+      businessesToCheck
+        .map(business => business.industry)
+        .filter(industry => industry && industry.trim() !== '')
+    );
+    return ['all', ...Array.from(uniqueCategories).sort()];
+  };
+  
+  const availableCategories = getAvailableCategories();
 
   const getFilteredBusinesses = () => {
     let filtered = businessesWithCorrectStats;
