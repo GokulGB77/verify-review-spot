@@ -6,7 +6,7 @@ const HowItWorksSection = () => {
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-8 sm:mb-10 md:mb-12">
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">
-            How Review Spot Works
+            How Verification Works
           </h2>
           <p className="text-base sm:text-lg text-gray-600">
             Simple, transparent, and trustworthy
@@ -19,33 +19,30 @@ const HowItWorksSection = () => {
               <Users className="h-8 w-8 text-blue-600" />
             </div>
             <h3 className="text-lg sm:text-xl font-semibold mb-2">
-              Verify Your Identity
+              1. Verify Your Identity
             </h3>
             <p className="text-sm sm:text-base text-gray-600">
-              Complete PAN verification to ensure authentic reviews from real
-              people
+              Upload an official ID for one-time verification. We use bank-level security.
             </p>
           </div>
           <div className="text-center">
             <div className="bg-green-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="h-8 w-8 text-green-600" />
+              <Shield className="h-8 w-8 text-green-600" />
             </div>
             <h3 className="text-lg sm:text-xl font-semibold mb-2">
-              Share Your Experience
+              2. Submit Proof
             </h3>
             <p className="text-sm sm:text-base text-gray-600">
-              Write honest reviews with optional proof of your experience or
-              interaction
+              Upload receipts, photos, certificates, or other evidence of your experience.
             </p>
           </div>
           <div className="text-center">
             <div className="bg-purple-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-              <Shield className="h-8 w-8 text-purple-600" />
+              <CheckCircle className="h-8 w-8 text-purple-600" />
             </div>
-            <h3 className="text-lg sm:text-xl font-semibold mb-2">Build Trust</h3>
+            <h3 className="text-lg sm:text-xl font-semibold mb-2">3. Get Verified</h3>
             <p className="text-sm sm:text-base text-gray-600">
-              Help others make informed decisions with verified, authentic
-              feedback
+              Our team reviews your proof and approves authentic reviews within 24 hours.
             </p>
           </div>
         </div>

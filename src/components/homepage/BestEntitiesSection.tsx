@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Star, CheckCircle, TrendingUp } from "lucide-react";
+import { Star, CheckCircle, TrendingUp,ArrowRight } from "lucide-react";
 
 interface Entity {
   id: string;
@@ -24,15 +24,13 @@ const BestEntitiesSection: React.FC<BestEntitiesSectionProps> = ({ bestEntities 
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-8 sm:mb-10 md:mb-12">
           <div className="mb-4 sm:mb-0">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 sm:mb-4">
-              Best Entities
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 ">
+              Top Rated Entities
             </h2>
-            <p className="text-lg text-gray-600">
-              Top-rated businesses and organizations trusted by users
-            </p>
+          
           </div>
           <Button variant="outline" asChild>
-            <Link to="/businesses">See more</Link>
+            <Link to="/businesses">View All <ArrowRight className="ml-2 h-4 w-4" /></Link>
           </Button>
         </div>
 

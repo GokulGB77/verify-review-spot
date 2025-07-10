@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -16,8 +15,8 @@ const CTASection = () => {
           Ready to Share Your Experience?
         </h2>
         <p className="text-base sm:text-lg text-blue-100 mb-6 sm:mb-8">
-          Join thousands of verified users making the review ecosystem more
-          trustworthy
+          Join thousands who've already discovered the difference verified
+          reviews make in making informed decisions.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           {user ? (
@@ -36,14 +35,6 @@ const CTASection = () => {
             asChild
           >
             <Link to="/businesses">Browse All Entities</Link>
-          </Button>
-          <Button
-            size="lg"
-            variant="outline"
-            className="bg-transparent border-white text-white hover:bg-white hover:text-blue-600"
-            asChild
-          >
-            <Link to="/register-entity">Register Your Entity</Link>
           </Button>
         </div>
       </div>

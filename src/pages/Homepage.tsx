@@ -1,16 +1,15 @@
 import { Card, CardContent } from "@/components/ui/card";
-import CTASection from "@/components/CtaSection";
+import CTASection from "@/components/homepage/CtaSection";
 import ScrollingReviews from "@/components/homepage/ScrollingReviews";
 import HeroSection from "@/components/homepage/HeroSection";
+import AudienceSegments from "@/components/homepage/AudienceSegments";
 import TrustIndicators from "@/components/homepage/TrustIndicators";
 import WriteReviewPrompt from "@/components/homepage/WriteReviewPrompt";
 import BestEntitiesSection from "@/components/homepage/BestEntitiesSection";
 import HowItWorksSection from "@/components/homepage/HowItWorksSection";
 import { useHomepageData } from "@/hooks/useHomepageData"; // Import the new hook
 
-
 const Index = () => {
- 
   const { bestEntities } = useHomepageData();
 
   return (
@@ -19,17 +18,18 @@ const Index = () => {
       <HeroSection />
       <TrustIndicators />
       <WriteReviewPrompt />
+      <HowItWorksSection />
+      <AudienceSegments />
 
-      {/* Recent Reviews Section */}
-        <Card>
-          <CardContent className="p-0">
-            <ScrollingReviews />
-          </CardContent>
-        </Card>
+      {/* Scrolling Reviews Section */}
+      <Card className="p-0 ">
+        <CardContent className="p-0 ">
+          <ScrollingReviews />
+        </CardContent>
+      </Card>
 
       {/* Best Entities Section */}
       <BestEntitiesSection bestEntities={bestEntities} />
-      <HowItWorksSection />
 
       {/* CTA Section */}
       <CTASection />

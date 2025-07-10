@@ -49,12 +49,13 @@ const Homepage1 = () => {
     <div className="text-center max-w-4xl mx-auto mb-16">
       <div className="inline-flex items-center px-4 py-2 bg-blue-50 rounded-full text-blue-700 text-sm font-medium mb-6">
         <Shield className="h-4 w-4 mr-2" />
+        
         The only review platform that requires proof
       </div>
       
       <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-        Reviews You Can
-        <span className="text-blue-600"> Actually Trust</span>
+        AUTHENTIC Reviews You Can
+        <span className="text-blue-600">  Trust</span>
       </h1>
       
       <p className="text-xl text-gray-600 mb-8 leading-relaxed">

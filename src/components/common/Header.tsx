@@ -91,9 +91,9 @@ const Header = () => {
               >
                 Browse Entities
               </Link>
-              <Link to="/reviews" className="text-gray-700 hover:text-blue-600">
+              {/* <Link to="/reviews" className="text-gray-700 hover:text-blue-600">
                 Reviews
-              </Link>
+              </Link> */}
             </nav>
             <div className="flex items-center space-x-4">
               <div className="w-20 h-10 bg-gray-200 animate-pulse rounded"></div>
@@ -120,9 +120,9 @@ const Header = () => {
             >
               Browse Entities
             </Link>
-            <Link to="/reviews" className="text-gray-700 hover:text-blue-600">
+            {/* <Link to="/reviews" className="text-gray-700 hover:text-blue-600">
               Reviews
-            </Link>
+            </Link> */}
             {user && isSuperAdmin() && (
               <Link to="/admin" className="text-gray-700 hover:text-blue-600">
                 Admin Dashboard
@@ -133,7 +133,7 @@ const Header = () => {
             {user ? (
               <>
                 <Button variant="ghost" asChild>
-                  <Link to="/write-review">Write Review</Link>
+                  <Link to="/write-review">Write A Review</Link>
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>

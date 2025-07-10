@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import TypingAnimation from "@/components/ui/typing-animation";
-import { Search, CheckCircle, Lock, Eye } from "lucide-react";
-import { useBusinesses } from "@/hooks/useBusinesses"; // Assuming this hook is needed for suggestions
+import { Search, Shield, PenTool, Play } from "lucide-react";
+import { useBusinesses } from "@/hooks/useBusinesses";
 
 interface Business {
   entity_id: string;
@@ -66,11 +66,15 @@ const HeroSection = () => {
   }, []);
 
   return (
-    <section className="pt-12 sm:pt-16 md:pt-20 pb-6 sm:pb-8 px-4">
+    <section className="pt-6 sm:pt-16 md:pt-10 pb-6 sm:pb-8 px-4">
       <div className="max-w-4xl mx-auto text-center">
-        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6">
-          AUTHENTIC REVIEWS YOU CAN
-          <span className="text-blue-600"> TRUST</span>
+        <div className="inline-flex items-center px-4 py-2 bg-blue-50 rounded-full text-blue-700 text-sm font-medium mb-2">
+          <Shield className="h-4 w-4 mr-2" />
+          The only review platform that requires proof
+        </div>
+        <h1 className="text-5xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6">
+          Reviews You Can
+          <span className="text-blue-600"> Actually Trust</span>
         </h1>
         <p className="text-base sm:text-lg md:text-xl text-gray-600 mb-6 sm:mb-8 max-w-2xl mx-auto">
           Discover verified reviews from real users. No fake reviews, no
@@ -91,10 +95,7 @@ const HeroSection = () => {
                 className="pl-10 h-12 text-base sm:text-lg"
                 onKeyPress={(e) => e.key === "Enter" && handleSearch()}
                 onFocus={() => {
-                  if (
-                    searchQuery.trim().length > 0 &&
-                    suggestions.length > 0
-                  ) {
+                  if (searchQuery.trim().length > 0 && suggestions.length > 0) {
                     setShowSuggestions(true);
                   }
                 }}
@@ -131,12 +132,33 @@ const HeroSection = () => {
                 </div>
               )}
             </div>
-             <Button onClick={handleSearch} size="lg" className="h-12 w-full sm:w-auto">
+            <Button
+              onClick={handleSearch}
+              size="lg"
+              className="h-12 w-full sm:w-auto"
+            >
               Search
             </Button>
           </div>
-        </div>
 
+          <div className="flex flex-col sm:flex-row gap-4 justify-center  mt-8">
+            {/* <button className="bg-blue-600 text-white px-8 py-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center">
+              <PenTool className="h-6 w-6 mr-2" />
+              <Link to="/write-review">Write A Review</Link>
+            </button> */}
+            <Link
+              to="/write-review"
+              className="border-2 border-blue-600 text-blue-600 px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold hover:bg-blue-50 active:bg-blue-100 transition-colors flex items-center justify-center text-sm sm:text-base min-h-[48px] sm:min-h-[52px]"
+            >
+              <PenTool className="h-4 w-4 sm:h-5 sm:w-5 mr-2 flex-shrink-0" />
+              <span>Write A Review</span>
+            </Link>
+            {/* <button className="border-2 border-blue-600 text-blue-600 px-8 py-4 rounded-lg font-semibold hover:bg-blue-50 transition-colors flex items-center justify-center">
+              <Play className="h-5 w-5 mr-2" />
+              See How It Works
+            </button> */}
+          </div>
+        </div>
       </div>
     </section>
   );

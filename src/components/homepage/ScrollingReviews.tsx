@@ -328,11 +328,11 @@ const AnimatedTestimonials = () => {
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
           {/* Main Header */}
           <div className="text-center mb-12 sm:mb-16 lg:mb-20">
-            <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6 px-4">
-              BUILDING THE INTERNET'S TRUST LAYER
+            <h1 className="text-4xl sm:text-4xl md:text-5xl lg:text-5xl font-bold text-gray-900 mb-4 sm:mb-6 px-4">
+              Building the Internet's <span className="text-blue-600">Trust</span> Layer
             </h1>
-            <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6 px-4">
-              ONE VERIFIED REVIEW AT A TIME
+            <h1 className="text-4xl sm:text-4xl md:text-5xl lg:text-5xl font-bold text-gray-900 mb-4 sm:mb-6 px-4">
+              One Verified Review at a Time
             </h1>
             <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto px-4">
               A new way to review — proof-backed, people-powered, and impossible
@@ -435,11 +435,11 @@ const AnimatedTestimonials = () => {
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
         {/* Main Header */}
         <div className="text-center mb-12 sm:mb-16 lg:mb-20">
-            <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6 px-4">
-              BUILDING THE INTERNET'S <span className="text-blue-600">TRUST</span> LAYER
+            <h1 className="text-4xl sm:text-4xl md:text-5xl lg:text-5xl font-bold text-gray-900 mb-4 sm:mb-6 px-4">
+              Building the Internet's <span className="text-blue-600">Trust</span> Layer
             </h1>
-            <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6 px-4">
-              ONE VERIFIED REVIEW AT A TIME
+            <h1 className="text-4xl sm:text-4xl md:text-5xl lg:text-5xl font-bold text-gray-900 mb-4 sm:mb-6 px-4">
+              One Verified Review at a Time
             </h1>
             <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto px-4">
               A new way to review — proof-backed, people-powered, and impossible
@@ -509,7 +509,7 @@ const AnimatedTestimonials = () => {
               {businesses.filter((b) => b.status === "active").length}+
             </div>
             <div className="text-sm sm:text-base text-gray-600 font-medium">
-              Businesses Listed
+              Entites Listed
             </div>
           </div>
           <div className="p-6 sm:p-8 bg-white rounded-2xl shadow-sm border border-gray-200 sm:col-span-2 md:col-span-1">

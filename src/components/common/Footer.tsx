@@ -23,11 +23,11 @@ const Footer = () => {
                 Browse Entities
               </Link>
             </li>
-            <li>
+            {/* <li>
               <Link to="/reviews" className="hover:text-white">
                 Explore Reviews
               </Link>
-            </li>
+            </li> */}
             <li>
               <Link to="/write-review" className="hover:text-white">
                 Write a Review
@@ -48,11 +48,11 @@ const Footer = () => {
                 Register Entity
               </Link>
             </li>
-            <li>
+            {/* <li>
               <Link to="/business/dashboard" className="hover:text-white">
                 Entity Dashboard
               </Link>
-            </li>
+            </li> */}
             <li>
               <Link to="/business/pricing" className="hover:text-white">
                 Pricing
@@ -87,7 +87,7 @@ const Footer = () => {
         </div>
       </div>
       <div className="max-w-7xl mx-auto mt-8 pt-8 border-t border-gray-800 text-center text-gray-400 text-sm px-4">
-        <p className="mb-2">&copy; 2024 Review Spot. All rights reserved.</p>
+        <p className="mb-2">&copy; 2025 Review Spot. All rights reserved.</p>
         <p>
           <Link
             to="/legal?tab=privacy"
