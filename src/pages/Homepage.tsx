@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import CTASection from "@/components/homepage/CtaSection";
 import ScrollingReviews from "@/components/homepage/ScrollingReviews";
+import RecentReviews from "@/components/homepage/RecentReviews";
 import HeroSection from "@/components/homepage/HeroSection";
 import AudienceSegments from "@/components/homepage/AudienceSegments";
 import TrustIndicators from "@/components/homepage/TrustIndicators";
@@ -30,6 +31,7 @@ const Index = () => {
 
       {/* Best Entities Section */}
       <BestEntitiesSection bestEntities={bestEntities} />
+      <RecentReviews />
 
       {/* CTA Section */}
       <CTASection />

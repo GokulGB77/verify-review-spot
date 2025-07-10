@@ -21,7 +21,7 @@ const getUserInitials = (name: string) => {
 };
 
 // Function to transform review data to testimonial format
-const transformReviewsToTestimonials = (reviews, businesses) => {
+export const transformReviewsToTestimonials = (reviews, businesses) => {
   if (!reviews || !businesses || reviews.length === 0) {
     return [];
   }
