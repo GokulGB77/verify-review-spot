@@ -10,9 +10,11 @@ import { useToast } from "@/hooks/use-toast";
 interface ProofUploadProps {
   proofFile: File | null;
   onFileChange: (file: File | null) => void;
+  proofRemark: string;
+  onRemarkChange: (remark: string) => void;
 }
 
-const ProofUpload = ({ proofFile, onFileChange }: ProofUploadProps) => {
+const ProofUpload = ({ proofFile, onFileChange, proofRemark, onRemarkChange }: ProofUploadProps) => {
   const { toast } = useToast();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -89,6 +91,26 @@ const ProofUpload = ({ proofFile, onFileChange }: ProofUploadProps) => {
                   <X className="h-4 w-4" />
                 </Button>
               </div>
+            </div>
+          )}
+
+          {/* Proof Remark Field - shown after file upload */}
+          {proofFile && (
+            <div className="space-y-2">
+              <Label htmlFor="proof-remark">
+                File Description <span className="text-sm text-gray-500">(Optional)</span>
+              </Label>
+              <Input
+                id="proof-remark"
+                type="text"
+                placeholder="e.g., Experience Certificate, Purchase Receipt, Screenshot"
+                value={proofRemark}
+                onChange={(e) => onRemarkChange(e.target.value)}
+                className="w-full"
+              />
+              <p className="text-xs text-gray-500">
+                Help admins understand what this file represents during verification.
+              </p>
             </div>
           )}
 

@@ -6,6 +6,7 @@ export interface ReviewFormData {
   content: string;
   proofFile: File | null;
   reviewSpecificBadge: string;
+  proofRemark: string;
 }
 
 export interface UserProfile {

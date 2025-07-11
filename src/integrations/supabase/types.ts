@@ -368,6 +368,7 @@ export type Database = {
           is_verified: boolean | null
           parent_review_id: string | null
           proof_rejection_reason: string | null
+          proof_remark: string | null
           proof_url: string | null
           proof_verified: boolean | null
           proof_verified_at: string | null
@@ -392,6 +393,7 @@ export type Database = {
           is_verified?: boolean | null
           parent_review_id?: string | null
           proof_rejection_reason?: string | null
+          proof_remark?: string | null
           proof_url?: string | null
           proof_verified?: boolean | null
           proof_verified_at?: string | null
@@ -416,6 +418,7 @@ export type Database = {
           is_verified?: boolean | null
           parent_review_id?: string | null
           proof_rejection_reason?: string | null
+          proof_remark?: string | null
           proof_url?: string | null
           proof_verified?: boolean | null
           proof_verified_at?: string | null

@@ -14,19 +14,21 @@ import { useQueryClient } from '@tanstack/react-query';
 interface ProofVerificationPanelProps {
   reviewId: string;
   proofUrl: string | null;
+  proofRemark: string | null;
   isProofSubmitted: boolean;
   isVerified: boolean;
   customVerificationTag: string | null;
   onClose: () => void;
 }
 
-const ProofVerificationPanel = ({
-  reviewId,
-  proofUrl,
-  isProofSubmitted,
-  isVerified,
-  customVerificationTag,
-  onClose
+const ProofVerificationPanel = ({ 
+  reviewId, 
+  proofUrl, 
+  proofRemark,
+  isProofSubmitted, 
+  isVerified, 
+  customVerificationTag, 
+  onClose 
 }: ProofVerificationPanelProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();

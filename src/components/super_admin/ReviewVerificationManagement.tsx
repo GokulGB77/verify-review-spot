@@ -231,6 +231,7 @@ const ReviewVerificationManagement = () => {
             <ProofVerificationPanel
               reviewId={selectedReview.id}
               proofUrl={selectedReview.proof_url}
+              proofRemark={selectedReview.proof_remark}
               isProofSubmitted={selectedReview.is_proof_submitted}
               isVerified={selectedReview.is_verified}
               customVerificationTag={selectedReview.custom_verification_tag}

@@ -41,6 +41,7 @@ const WriteReview = () => {
     content: '',
     proofFile: null,
     reviewSpecificBadge: '',
+    proofRemark: '',
   });
 
   // Get parameters from URL
@@ -241,6 +242,7 @@ const WriteReview = () => {
         // Add new proof system fields if file was uploaded
         if (proofUrl) {
           updateData.proof_url = proofUrl;
+          updateData.proof_remark = formData.proofRemark.trim() || null;
           updateData.is_proof_submitted = true;
           updateData.is_verified = false;
           updateData.custom_verification_tag = null;
@@ -285,6 +287,7 @@ const WriteReview = () => {
             rating: formData.rating,
             content: formData.content.trim(),
             proof_url: proofUrl,
+            proof_remark: proofUrl ? (formData.proofRemark.trim() || null) : null,
             is_update: isUpdate,
             is_proof_submitted: !!proofUrl,
             is_verified: false,
@@ -526,6 +529,8 @@ const WriteReview = () => {
             <ProofUpload
               proofFile={formData.proofFile}
               onFileChange={(file) => setFormData(prev => ({ ...prev, proofFile: file }))}
+              proofRemark={formData.proofRemark}
+              onRemarkChange={(remark) => setFormData(prev => ({ ...prev, proofRemark: remark }))}
             />
           )}
 
