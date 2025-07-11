@@ -48,32 +48,36 @@ export const useHomepageData = () => {
   const { data: businesses = [] } = useBusinesses();
   const { data: allReviews = [] } = useReviews();
 
-  // Calculate bestEntities
-  const bestEntities: ProcessedEntity[] = businesses
-    .filter(
-      (business: Business) =>
-        (business.status || 'active') === 'active' &&
-        business.average_rating &&
-        business.average_rating >= 4.0 &&
-        business.review_count &&
-        business.review_count >= 5
-    )
-    .sort((a: Business, b: Business) => {
-      if ((b.average_rating || 0) !== (a.average_rating || 0)) {
-        return (b.average_rating || 0) - (a.average_rating || 0);
-      }
-      return (b.review_count || 0) - (a.review_count || 0);
+  // Calculate bestEntities - show 3 entities with maximum number of reviews
+  // Don't count updates (is_update: true) as separate reviews
+  const entitiesWithReviewCounts = businesses
+    .filter((business: Business) => (business.status || 'active') === 'active')
+    .map((business: Business) => {
+      // Count only non-update reviews for this entity
+      const nonUpdateReviewCount = allReviews.filter(
+        (review: Review) => 
+          review.business_id === business.entity_id && 
+          !review.is_update
+      ).length;
+
+      return {
+        business,
+        actualReviewCount: nonUpdateReviewCount
+      };
     })
-    .slice(0, 8)
-    .map((business: Business) => ({
-      id: business.entity_id,
-      name: business.name,
-      category: business.industry,
-      website: (business.contact as any)?.website,
-      rating: business.average_rating || 0,
-      reviewCount: business.review_count || 0,
-      verificationStatus: business.is_verified ? "Verified" : "Unverified",
-    }));
+    .filter(item => item.actualReviewCount > 0) // Only include entities with actual reviews
+    .sort((a, b) => b.actualReviewCount - a.actualReviewCount) // Sort by review count descending
+    .slice(0, 3); // Take top 3
+
+  const bestEntities: ProcessedEntity[] = entitiesWithReviewCounts.map(({ business, actualReviewCount }) => ({
+    id: business.entity_id,
+    name: business.name,
+    category: business.industry,
+    website: (business.contact as any)?.website,
+    rating: business.average_rating || 0,
+    reviewCount: actualReviewCount,
+    verificationStatus: business.is_verified ? "Verified" : "Unverified",
+  }));
 
   // Logic for getLatestReviewsGrouped
   const getLatestReviewsGrouped = (): ProcessedReview[] => {
