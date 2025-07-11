@@ -14,7 +14,7 @@ const ReviewContent = ({ content, maxLength = 150, maxLines }: ReviewContentProp
   if (maxLines) {
     return (
       <div>
-        <p className={`text-gray-700 text-sm leading-relaxed ${!isExpanded ? `line-clamp-${maxLines}` : ''}`}>
+        <p className={`text-gray-700 text-sm leading-relaxed break-words overflow-wrap-anywhere ${!isExpanded ? `line-clamp-${maxLines}` : ''}`}>
           {content}
         </p>
         {content.length > 100 && (
@@ -34,7 +34,7 @@ const ReviewContent = ({ content, maxLength = 150, maxLines }: ReviewContentProp
   
   return (
     <div>
-      <p className="text-gray-700 text-sm leading-relaxed">
+      <p className="text-gray-700 text-sm leading-relaxed break-words overflow-wrap-anywhere">
         {shouldTruncate && !isExpanded ? `${content.slice(0, maxLength)}...` : content}
       </p>
       {shouldTruncate && (

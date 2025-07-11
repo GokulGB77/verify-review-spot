@@ -207,7 +207,7 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory }: SingleRev
             <span className="text-sm font-medium text-blue-900">Business Response</span>
             <span className="text-xs text-gray-500">{review.businessResponseDate}</span>
           </div>
-          <p className="text-gray-700 text-sm leading-relaxed">{review.businessResponse}</p>
+          <p className="text-gray-700 text-sm leading-relaxed break-words overflow-wrap-anywhere">{review.businessResponse}</p>
         </div>
       )}
 
