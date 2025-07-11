@@ -7,6 +7,7 @@ import { Star, CheckCircle, Shield, Clock, ArrowRight } from "lucide-react";
 const RecentReviews = () => {
   const { data: businesses = [] } = useBusinesses();
   const { data: allReviews = [] } = useReviews();
+  const [expandedReviews, setExpandedReviews] = useState(new Set());
 
   const testimonials = transformReviewsToTestimonials(allReviews, businesses)
     .sort(
@@ -14,6 +15,16 @@ const RecentReviews = () => {
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     )
     .slice(0, 3);
+
+  const toggleExpanded = (index) => {
+    const newExpanded = new Set(expandedReviews);
+    if (newExpanded.has(index)) {
+      newExpanded.delete(index);
+    } else {
+      newExpanded.add(index);
+    }
+    setExpandedReviews(newExpanded);
+  };
 
   const getBadgeDisplay = (testimonial) => {
     if (
@@ -73,7 +84,7 @@ const RecentReviews = () => {
         {testimonials.map((review, index) => {
           const badge = getBadgeDisplay(review);
           const { truncated, needsTruncation } = truncateText(review.text);
-          const [expanded, setExpanded] = useState(false);
+          const expanded = expandedReviews.has(index);
 
           return (
             <div key={index} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
@@ -106,7 +117,7 @@ const RecentReviews = () => {
               {needsTruncation && (
                 <button
                   className="text-blue-600 hover:underline text-xs font-medium mb-4"
-                  onClick={() => setExpanded(!expanded)}
+                  onClick={() => toggleExpanded(index)}
                 >
                   {expanded ? "Show Less" : "Read More"}
                 </button>
