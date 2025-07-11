@@ -69,6 +69,27 @@ const RecentReviews = () => {
     };
   };
 
+  // Early return if no testimonials to prevent hook inconsistency
+  if (testimonials.length === 0) {
+    return (
+      <section className="py-10 sm:py-12 md:py-16 px-4 bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="max-w-6xl mx-auto">
+          <div className="mb-16">
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-3xl font-bold text-gray-900">Recent Verified Reviews</h2>
+              <button className="text-blue-600 hover:text-blue-700 font-semibold flex items-center">
+                View All Reviews <ArrowRight className="ml-2 h-4 w-4" />
+              </button>
+            </div>
+            <div className="text-center py-8">
+              <p className="text-gray-600">No reviews available yet.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="py-10 sm:py-12 md:py-16 px-4 bg-gradient-to-br from-blue-50 to-indigo-100">
       <div className="max-w-6xl mx-auto">
