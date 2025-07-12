@@ -64,10 +64,10 @@ export const transformReviews = (allReviews: Review[]): TransformedReview[] => {
       businessResponseDate: latest.business_response_date 
         ? formatDistanceToNow(new Date(latest.business_response_date), { addSuffix: true })
         : undefined,
-      hasUpdates: allReviews.length > 1,
-      totalUpdates: allReviews.length - 1,
-      updateNumber: allReviews.length,
-      allReviews: allReviews,
+      hasUpdates: userReviews.length > 1,
+      totalUpdates: userReviews.length - 1,
+      updateNumber: userReviews.length,
+      allReviews: sortedReviews,
       created_at: latest.created_at,
       updated_at: latest.updated_at
     };
