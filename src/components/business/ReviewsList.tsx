@@ -1,8 +1,9 @@
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import autoAnimate from '@formkit/auto-animate';
 import SingleReviewCard from './SingleReviewCard';
 
 interface ReviewsListProps {
@@ -14,6 +15,16 @@ interface ReviewsListProps {
 const ReviewsList = ({ reviews, businessId, isLoading }: ReviewsListProps) => {
   const { user } = useAuth();
   const [viewingHistory, setViewingHistory] = useState<Record<string, boolean>>({});
+  const gridRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (gridRef.current) {
+      autoAnimate(gridRef.current, {
+        duration: 300,
+        easing: 'ease-out'
+      });
+    }
+  }, []);
 
   const toggleHistory = (userId: string) => {
     setViewingHistory(prev => ({
@@ -57,18 +68,29 @@ const ReviewsList = ({ reviews, businessId, isLoading }: ReviewsListProps) => {
         <h2 className="text-xl font-semibold text-gray-900 mb-2">See what reviewers are saying</h2>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-        {reviews.map((review) => (
-          <SingleReviewCard
+      <div 
+        ref={gridRef}
+        className="masonry-grid"
+      >
+        {reviews.map((review, index) => (
+          <div
             key={review.userId}
-            review={{
-              ...review,
-              created_at: review.created_at, // Ensure the timestamp is passed through
-              business_id: businessId
+            className="masonry-item animate-fade-in"
+            style={{
+              animationDelay: `${index * 100}ms`,
+              animationFillMode: 'backwards'
             }}
-            viewingHistory={viewingHistory}
-            onToggleHistory={toggleHistory}
-          />
+          >
+            <SingleReviewCard
+              review={{
+                ...review,
+                created_at: review.created_at,
+                business_id: businessId
+              }}
+              viewingHistory={viewingHistory}
+              onToggleHistory={toggleHistory}
+            />
+          </div>
         ))}
       </div>
     </div>

@@ -87,4 +87,35 @@
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 3;
   }
+  
+  /* Masonry Grid Styles */
+  .masonry-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+    align-items: start;
+  }
+  
+  @supports (grid-template-rows: masonry) {
+    .masonry-grid {
+      grid-template-rows: masonry;
+    }
+  }
+  
+  .masonry-item {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    break-inside: avoid;
+  }
+  
+  .masonry-item.animate-fade-in {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  
+  .masonry-item:hover {
+    transform: translateY(-2px) scale(1.02);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
 }
