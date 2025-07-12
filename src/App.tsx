@@ -22,6 +22,7 @@ import SuperAdminDashboard from './pages/super_admin/SuperAdminDashboard';
 import TestScrollPage from './test/TestScrollPage';
 import NotFound from './pages/NotFound';
 import ReportProblem from './pages/ReportProblem';
+import BusinessDashboard from './pages/BusinessDashboard';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserRoles } from '@/hooks/useUserRoles';
 import { Toaster } from "@/components/ui/sonner"
@@ -51,6 +52,7 @@ function App() {
                 <Route path="/register-entity/success" element={<EntityRegistrationSuccess />} />
                 <Route path="/search" element={<SearchResults />} />
                 <Route path="/report-problem" element={<ReportProblem />} />
+                <Route path="/business-dashboard" element={<BusinessDashboard />} />
                 <Route path="/test-scroll" element={<TestScrollPage />} />
                 {/* Redirect old business routes to new entity routes */}
                 <Route path="/businesses" element={<Navigate to="/entities" replace />} />
