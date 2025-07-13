@@ -1,10 +1,9 @@
 
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Star, ThumbsUp, ThumbsDown, Shield, CheckCircle, Clock } from 'lucide-react';
-import { useState } from 'react';
+import { Star, Shield, CheckCircle, Clock } from 'lucide-react';
+import { VoteButtons } from '@/components/review/VoteButtons';
 
 interface ReviewCardProps {
   id: string;
@@ -33,45 +32,15 @@ const ReviewCard = ({
   reviewSpecificBadge,
   proofProvided,
   proofVerified,
-  upvotes: initialUpvotes,
-  downvotes: initialDownvotes,
+  upvotes,
+  downvotes,
   date,
   businessResponse,
   businessResponseDate,
   title,
   pseudonym
 }: ReviewCardProps) => {
-  const [upvotes, setUpvotes] = useState(initialUpvotes);
-  const [downvotes, setDownvotes] = useState(initialDownvotes);
-  const [userVote, setUserVote] = useState<'up' | 'down' | null>(null);
 
-  const handleVote = (voteType: 'up' | 'down') => {
-    if (userVote === voteType) {
-      // Remove vote
-      if (voteType === 'up') {
-        setUpvotes(upvotes - 1);
-      } else {
-        setDownvotes(downvotes - 1);
-      }
-      setUserVote(null);
-    } else {
-      // Change or add vote
-      if (userVote === 'up' && voteType === 'down') {
-        setUpvotes(upvotes - 1);
-        setDownvotes(downvotes + 1);
-      } else if (userVote === 'down' && voteType === 'up') {
-        setDownvotes(downvotes - 1);
-        setUpvotes(upvotes + 1);
-      } else if (userVote === null) {
-        if (voteType === 'up') {
-          setUpvotes(upvotes + 1);
-        } else {
-          setDownvotes(downvotes + 1);
-        }
-      }
-      setUserVote(voteType);
-    }
-  };
 
   // Badge display logic - show only one badge per review
   const getBadgeDisplay = () => {
@@ -170,30 +139,11 @@ const ReviewCard = ({
           </div>
         )}
 
-        <div className="flex items-center space-x-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleVote('up')}
-            className={`flex items-center space-x-1 ${
-              userVote === 'up' ? 'text-green-600 bg-green-50' : ''
-            }`}
-          >
-            <ThumbsUp className="h-4 w-4" />
-            <span>{upvotes}</span>
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleVote('down')}
-            className={`flex items-center space-x-1 ${
-              userVote === 'down' ? 'text-red-600 bg-red-50' : ''
-            }`}
-          >
-            <ThumbsDown className="h-4 w-4" />
-            <span>{downvotes}</span>
-          </Button>
-        </div>
+        <VoteButtons 
+          reviewId={id}
+          upvotes={upvotes || 0}
+          downvotes={downvotes || 0}
+        />
       </CardContent>
     </Card>
   );

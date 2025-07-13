@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import ReviewContent from './ReviewContent';
 import ReviewHistory from './ReviewHistory';
+import { VoteButtons } from '@/components/review/VoteButtons';
 
 interface SingleReviewCardProps {
   review: {
@@ -248,6 +249,15 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory }: SingleRev
           </Badge>
         </div>
       )}
+
+      {/* Vote Buttons */}
+      <div className="pt-3 border-t border-gray-100">
+        <VoteButtons 
+          reviewId={review.id}
+          upvotes={review.upvotes || 0}
+          downvotes={review.downvotes || 0}
+        />
+      </div>
 
       {/* Review History */}
       {review.hasUpdates && viewingHistory[review.userId] && (
