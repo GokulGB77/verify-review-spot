@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import ReviewContent from './ReviewContent';
 import ReviewHistory from './ReviewHistory';
 import { VoteButtons } from '@/components/review/VoteButtons';
+import ReviewShareButton from '@/components/ui/review-share-button';
 
 interface SingleReviewCardProps {
   review: {
@@ -34,9 +35,10 @@ interface SingleReviewCardProps {
   };
   viewingHistory: Record<string, boolean>;
   onToggleHistory: (userId: string) => void;
+  entityName?: string;
 }
 
-const SingleReviewCard = ({ review, viewingHistory, onToggleHistory }: SingleReviewCardProps) => {
+const SingleReviewCard = ({ review, viewingHistory, onToggleHistory, entityName = "this business" }: SingleReviewCardProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [timeLeft, setTimeLeft] = useState<number>(0);
@@ -250,13 +252,26 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory }: SingleRev
         </div>
       )}
 
-      {/* Vote Buttons */}
+      {/* Vote Buttons and Share */}
       <div className="pt-3 border-t border-gray-100">
-        <VoteButtons 
-          reviewId={review.id}
-          upvotes={review.upvotes || 0}
-          downvotes={review.downvotes || 0}
-        />
+        <div className="flex items-center justify-between">
+          <VoteButtons 
+            reviewId={review.id}
+            upvotes={review.upvotes || 0}
+            downvotes={review.downvotes || 0}
+          />
+          {review.business_id && (
+            <ReviewShareButton
+              reviewId={review.id}
+              entityName={entityName}
+              entityId={review.business_id}
+              rating={review.rating}
+              reviewContent={review.content}
+              reviewerName={review.userName}
+              variant="icon"
+            />
+          )}
+        </div>
       </div>
 
       {/* Review History */}

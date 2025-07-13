@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Star, Shield, CheckCircle, Clock } from 'lucide-react';
 import { VoteButtons } from '@/components/review/VoteButtons';
+import ReviewShareButton from '@/components/ui/review-share-button';
 
 interface ReviewCardProps {
   id: string;
@@ -21,6 +22,8 @@ interface ReviewCardProps {
   businessResponseDate?: string;
   title?: string;
   pseudonym?: string | null;
+  entityName?: string;
+  entityId?: string;
 }
 
 const ReviewCard = ({
@@ -38,7 +41,9 @@ const ReviewCard = ({
   businessResponse,
   businessResponseDate,
   title,
-  pseudonym
+  pseudonym,
+  entityName = "this business",
+  entityId
 }: ReviewCardProps) => {
 
 
@@ -139,11 +144,24 @@ const ReviewCard = ({
           </div>
         )}
 
-        <VoteButtons 
-          reviewId={id}
-          upvotes={upvotes || 0}
-          downvotes={downvotes || 0}
-        />
+        <div className="flex items-center justify-between">
+          <VoteButtons 
+            reviewId={id}
+            upvotes={upvotes || 0}
+            downvotes={downvotes || 0}
+          />
+          {entityId && (
+            <ReviewShareButton
+              reviewId={id}
+              entityName={entityName}
+              entityId={entityId}
+              rating={rating}
+              reviewContent={content}
+              reviewerName={displayName}
+              variant="icon"
+            />
+          )}
+        </div>
       </CardContent>
     </Card>
   );
