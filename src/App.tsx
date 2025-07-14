@@ -40,8 +40,6 @@ function App() {
             <main>
               <Routes>
                 <Route path="/" element={<Homepage />} />
-                <Route path="/v1" element={<HomepageV1 />} />
-                <Route path="/minimal" element={<HomepageMinimal />} />
                 <Route path="/entities" element={<EntitiesDirectory />} />
                 <Route path="/entities/:id" element={<EntityProfile />} />
                 <Route path="/write-review" element={<WriteReview />} />
