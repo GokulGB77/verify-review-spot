@@ -107,7 +107,6 @@ export default function ClaimEntity() {
   if (!user) {
     return (
       <div className="min-h-screen flex flex-col">
-        <Header />
         <div className="flex-1 flex items-center justify-center">
           <Card className="w-full max-w-md">
             <CardHeader className="text-center">
@@ -127,14 +126,12 @@ export default function ClaimEntity() {
             </CardContent>
           </Card>
         </div>
-        <Footer />
       </div>
     );
   }
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header />
       
       <main className="flex-1 container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
@@ -333,7 +330,6 @@ export default function ClaimEntity() {
         </div>
       </main>
 
-      <Footer />
     </div>
   );
 }
