@@ -34,13 +34,12 @@ export default function ClaimEntity() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   
-  // Filter entities based on search term
+  // Filter entities based on search term - prioritize entity name
   const filteredEntities = entities?.filter(entity => {
     if (!searchTerm) return false; // Only show results when user is searching
     const searchLower = searchTerm.toLowerCase();
     return entity.name.toLowerCase().includes(searchLower) ||
-           entity.description?.toLowerCase().includes(searchLower) ||
-           entity.industry?.toLowerCase().includes(searchLower);
+           entity.description?.toLowerCase().includes(searchLower);
   }) || [];
 
   // Debug logging
