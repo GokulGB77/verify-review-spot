@@ -19,7 +19,7 @@ export default function ClaimEntity() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { data: entities, isLoading } = useBusinesses();
+  const { data: entities, isLoading, error } = useBusinesses();
   
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedEntity, setSelectedEntity] = useState<any>(null);
@@ -33,11 +33,25 @@ export default function ClaimEntity() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Filter entities based on search term
-  const filteredEntities = entities?.filter(entity =>
-    entity.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    entity.description?.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || [];
+  
+  // Filter entities based on search term - prioritize entity name
+  const filteredEntities = entities?.filter(entity => {
+    if (!searchTerm) return false; // Only show results when user is searching
+    const searchLower = searchTerm.toLowerCase();
+    return entity.name.toLowerCase().includes(searchLower) ||
+           entity.description?.toLowerCase().includes(searchLower);
+  }) || [];
+
+  // Debug logging
+  console.log('=== CLAIM ENTITY DEBUG ===');
+  console.log('Search term:', searchTerm);
+  console.log('Entities loading:', isLoading);
+  console.log('Query error:', error);
+  console.log('All entities count:', entities?.length);
+  console.log('All entities:', entities);
+  console.log('Filtered entities count:', filteredEntities.length);
+  console.log('Filtered entities:', filteredEntities);
+  console.log('========================');
 
   const handleEntitySelect = (entity: any) => {
     setSelectedEntity(entity);
