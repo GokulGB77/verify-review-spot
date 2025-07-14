@@ -154,7 +154,7 @@ const AudienceSegments = () => {
               </ul>
               
               <Link
-                to="/claim-business"
+                to="/claim-entity"
                 className="w-full bg-blue-600 text-white py-3 sm:py-4 rounded-xl font-semibold hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center space-x-2 shadow-sm"
               >
                 <Building2 className="h-5 w-5" />
