@@ -17,6 +17,7 @@ import Auth from './pages/Auth';
 import ProfileSettings from './pages/user/ProfileSettings';
 import EntityRegistration from './pages/admin/EntityRegistration';
 import EntityRegistrationSuccess from './pages/admin/EntityRegistrationSuccess';
+import ClaimEntity from './pages/ClaimEntity';
 import SearchResults from './pages/SearchResults';
 import SuperAdminDashboard from './pages/super_admin/SuperAdminDashboard';
 import TestScrollPage from './test/TestScrollPage';
@@ -50,6 +51,7 @@ function App() {
                 <Route path="/profile" element={<ProfileSettings />} />
                 <Route path="/register-entity" element={<EntityRegistration />} />
                 <Route path="/register-entity/success" element={<EntityRegistrationSuccess />} />
+                <Route path="/claim-entity" element={<ClaimEntity />} />
                 <Route path="/search" element={<SearchResults />} />
                 <Route path="/report-problem" element={<ReportProblem />} />
                 <Route path="/business-dashboard" element={<BusinessDashboard />} />
