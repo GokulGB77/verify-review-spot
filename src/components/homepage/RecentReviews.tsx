@@ -10,6 +10,7 @@ const RecentReviews = () => {
   const [expandedReviews, setExpandedReviews] = useState(new Set());
 
   const testimonials = transformReviewsToTestimonials(allReviews, businesses)
+    .filter(testimonial => testimonial.isVerified === true)
     .sort(
       (a, b) =>
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
