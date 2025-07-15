@@ -42,16 +42,6 @@ export default function ClaimEntity() {
            entity.description?.toLowerCase().includes(searchLower);
   }) || [];
 
-  // Debug logging
-  console.log('=== CLAIM ENTITY DEBUG ===');
-  console.log('Search term:', searchTerm);
-  console.log('Entities loading:', isLoading);
-  console.log('Query error:', error);
-  console.log('All entities count:', entities?.length);
-  console.log('All entities:', entities);
-  console.log('Filtered entities count:', filteredEntities.length);
-  console.log('Filtered entities:', filteredEntities);
-  console.log('========================');
 
   const handleEntitySelect = (entity: any) => {
     setSelectedEntity(entity);
@@ -146,7 +136,7 @@ export default function ClaimEntity() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      
+      <Header />
       <main className="flex-1 container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8">
@@ -343,7 +333,7 @@ export default function ClaimEntity() {
           </div>
         </div>
       </main>
-
+      <Footer />
     </div>
   );
 }
