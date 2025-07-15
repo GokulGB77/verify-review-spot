@@ -2,9 +2,18 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Star, Shield, CheckCircle, Clock } from 'lucide-react';
+import { Star, Shield, CheckCircle, Clock, MoreVertical, Edit, Trash2 } from 'lucide-react';
 import { VoteButtons } from '@/components/review/VoteButtons';
 import ReviewShareButton from '@/components/ui/review-share-button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface ReviewCardProps {
   id: string;
@@ -24,6 +33,7 @@ interface ReviewCardProps {
   pseudonym?: string | null;
   entityName?: string;
   entityId?: string;
+  userId?: string;
 }
 
 const ReviewCard = ({
@@ -43,8 +53,24 @@ const ReviewCard = ({
   title,
   pseudonym,
   entityName = "this business",
-  entityId
+  entityId,
+  userId
 }: ReviewCardProps) => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const isOwnReview = user && userId && user.id === userId;
+
+  const handleEdit = () => {
+    if (entityId) {
+      navigate(`/write-review?entityId=${entityId}&reviewId=${id}&isEdit=true`);
+    }
+  };
+
+  const handleDelete = () => {
+    // TODO: Implement delete functionality
+    console.log('Delete review:', id);
+  };
 
 
   // Badge display logic - show only one badge per review
@@ -124,6 +150,25 @@ const ReviewCard = ({
               </div>
             </div>
           </div>
+          {isOwnReview && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={handleEdit}>
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleDelete} className="text-red-600">
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </CardHeader>
       <CardContent>
