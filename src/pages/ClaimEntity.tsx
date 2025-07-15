@@ -38,26 +38,20 @@ export default function ClaimEntity() {
   const filteredEntities = entities?.filter(entity => {
     if (!searchTerm) return false; // Only show results when user is searching
     const searchLower = searchTerm.toLowerCase();
-    const nameMatch = entity.name.toLowerCase().includes(searchLower);
-    const descMatch = entity.description?.toLowerCase().includes(searchLower);
-    console.log('🔍 Search Debug:', { 
-      searchTerm: searchLower, 
-      entityName: entity.name, 
-      nameMatch, 
-      descMatch,
-      willShow: nameMatch || descMatch 
-    });
-    return nameMatch || descMatch;
+    return entity.name.toLowerCase().includes(searchLower) ||
+           entity.description?.toLowerCase().includes(searchLower);
   }) || [];
 
-  console.log('📊 Claim Entity Search Results:', {
-    searchTerm,
-    totalEntities: entities?.length,
-    filteredCount: filteredEntities.length,
-    isLoading,
-    hasError: !!error
-  });
-
+  // Debug logging
+  console.log('=== CLAIM ENTITY DEBUG ===');
+  console.log('Search term:', searchTerm);
+  console.log('Entities loading:', isLoading);
+  console.log('Query error:', error);
+  console.log('All entities count:', entities?.length);
+  console.log('All entities:', entities);
+  console.log('Filtered entities count:', filteredEntities.length);
+  console.log('Filtered entities:', filteredEntities);
+  console.log('========================');
 
   const handleEntitySelect = (entity: any) => {
     setSelectedEntity(entity);
@@ -152,7 +146,7 @@ export default function ClaimEntity() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header />
+      
       <main className="flex-1 container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8">
@@ -349,7 +343,7 @@ export default function ClaimEntity() {
           </div>
         </div>
       </main>
-      <Footer />
+
     </div>
   );
 }
