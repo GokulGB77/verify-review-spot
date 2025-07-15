@@ -38,9 +38,25 @@ export default function ClaimEntity() {
   const filteredEntities = entities?.filter(entity => {
     if (!searchTerm) return false; // Only show results when user is searching
     const searchLower = searchTerm.toLowerCase();
-    return entity.name.toLowerCase().includes(searchLower) ||
-           entity.description?.toLowerCase().includes(searchLower);
+    const nameMatch = entity.name.toLowerCase().includes(searchLower);
+    const descMatch = entity.description?.toLowerCase().includes(searchLower);
+    console.log('🔍 Search Debug:', { 
+      searchTerm: searchLower, 
+      entityName: entity.name, 
+      nameMatch, 
+      descMatch,
+      willShow: nameMatch || descMatch 
+    });
+    return nameMatch || descMatch;
   }) || [];
+
+  console.log('📊 Claim Entity Search Results:', {
+    searchTerm,
+    totalEntities: entities?.length,
+    filteredCount: filteredEntities.length,
+    isLoading,
+    hasError: !!error
+  });
 
 
   const handleEntitySelect = (entity: any) => {
