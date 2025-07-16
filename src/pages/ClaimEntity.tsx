@@ -55,7 +55,6 @@ export default function ClaimEntity() {
 
   const handleEntitySelect = (entity: any) => {
     setSelectedEntity(entity);
-    setSearchTerm(''); // Reset search field when entity is selected
     setClaimData(prev => ({
       ...prev,
       contact_email: user?.email || ''
