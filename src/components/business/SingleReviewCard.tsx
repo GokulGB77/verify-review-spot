@@ -205,10 +205,6 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory, entityName 
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={handleEdit}>
-                <Edit className="h-4 w-4 mr-2" />
-                Edit
-              </DropdownMenuItem>
               <DropdownMenuItem onClick={handleDelete} className="text-red-600">
                 <Trash2 className="h-4 w-4 mr-2" />
                 Delete
