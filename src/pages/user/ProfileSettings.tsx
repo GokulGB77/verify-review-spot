@@ -82,8 +82,11 @@ const ProfileSettings = () => {
 
       console.log("Fetched profile:", data);
       setProfile(data);
+      // Get full name from user metadata (Google auth) or fallback to profile data
+      const fullNameFromAuth = user.user_metadata?.full_name || user.user_metadata?.name || "";
+      
       setFormData({
-        full_name: data.full_name || "",
+        full_name: fullNameFromAuth || data.full_name || "",
         phone: data.phone || "",
         pan_number: "", // Don't populate PAN number for security
         mobile: data.mobile || "",

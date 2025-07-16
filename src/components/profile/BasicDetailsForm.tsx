@@ -43,6 +43,8 @@ const BasicDetailsForm = ({
           value={formData.full_name}
           onChange={(e) => handleInputChange("full_name", e.target.value)}
           placeholder="Enter your full name"
+          disabled
+          className="bg-muted"
         />
       </div>
 
