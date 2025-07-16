@@ -160,10 +160,6 @@ const MyReviews = () => {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => handleEdit(item.review.id, item.businessId)}>
-                        <Edit className="h-4 w-4 mr-2" />
-                        Edit
-                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handleDelete(item.review.id)} className="text-red-600">
                         <Trash2 className="h-4 w-4 mr-2" />
                         Delete
