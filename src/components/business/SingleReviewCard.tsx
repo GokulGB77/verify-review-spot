@@ -1,13 +1,19 @@
 import { useState, useEffect } from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Star, CheckCircle, MessageSquare, History, Edit, Shield, Clock } from 'lucide-react';
+import { Star, CheckCircle, MessageSquare, History, Edit, Shield, Clock, MoreVertical, Trash2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import ReviewContent from './ReviewContent';
 import ReviewHistory from './ReviewHistory';
 import { VoteButtons } from '@/components/review/VoteButtons';
 import ReviewShareButton from '@/components/ui/review-share-button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface SingleReviewCardProps {
   review: {
@@ -105,6 +111,11 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory, entityName 
     }
   };
 
+  const handleDelete = () => {
+    // TODO: Implement delete functionality
+    console.log('Delete review:', review.id);
+  };
+
   const isEditable = timeLeft > 0 && user && review.userId === user.id && !hasBeenEdited;
 
   // Badge display logic - show only one badge per review
@@ -186,6 +197,25 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory, entityName 
             </div>
           </div>
         </div>
+        {user && review.userId === user.id && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 ml-2">
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={handleEdit}>
+                <Edit className="h-4 w-4 mr-2" />
+                Edit
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleDelete} className="text-red-600">
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
 
       {/* Review Content */}

@@ -3,15 +3,31 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Star, Calendar, History, ExternalLink, Plus } from 'lucide-react';
+import { Star, Calendar, History, ExternalLink, Plus, MoreVertical, Edit, Trash2 } from 'lucide-react';
 import { useUserReviews } from '@/hooks/useReviews';
 import { useAuth } from '@/contexts/AuthContext';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const MyReviews = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { data: reviews, isLoading, error } = useUserReviews();
   const [viewingHistory, setViewingHistory] = useState<Record<string, boolean>>({});
+
+  const handleEdit = (reviewId: string, businessId: string) => {
+    navigate(`/write-review?entityId=${businessId}&reviewId=${reviewId}&isEdit=true`);
+  };
+
+  const handleDelete = (reviewId: string) => {
+    // TODO: Implement delete functionality
+    console.log('Delete review:', reviewId);
+  };
 
   if (!user) {
     return (
@@ -137,6 +153,23 @@ const MyReviews = () => {
                       Update #{item.updateNumber}
                     </Badge>
                   )}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => handleEdit(item.review.id, item.businessId)}>
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleDelete(item.review.id)} className="text-red-600">
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
             </CardHeader>
