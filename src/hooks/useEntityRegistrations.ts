@@ -146,46 +146,13 @@ export const useEntityRegistrations = () => {
 
       if (error) throw error;
 
-      // If approved, create the entity with claimed_by_business set to true
-      if (status === 'approved') {
-        const registration = registrations.find(r => r.id === registrationId);
-        if (registration) {
-          const { error: entityError } = await supabase
-            .from('entities')
-            .insert({
-              name: registration.entity_name,
-              industry: registration.category,
-              description: registration.description,
-              contact: {
-                website: registration.website,
-                email: registration.contact_email,
-                phone: registration.contact_phone
-              },
-              location: {
-                address: registration.address,
-                city: registration.city,
-                state: registration.state,
-                pincode: registration.zip_code
-              },
-              is_verified: true,
-              trust_level: 'verified',
-              claimed_by_business: true, // Mark as business claimed
-              registration_info: {
-                registration_number: registration.registration_number,
-                tax_id: registration.tax_id,
-                owner_name: registration.owner_name,
-                owner_email: registration.owner_email
-              }
-            });
-
-          if (entityError) throw entityError;
-        }
-      }
+      // Note: For entity claims, admin will manually handle credentials and access
+      // No automatic entity creation for existing entity claims
 
       toast({
         title: `Registration ${status === 'approved' ? 'Approved' : 'Rejected'}`,
         description: status === 'approved' 
-          ? "The entity has been approved and added to the directory as a business claimed entity."
+          ? "The entity claim has been approved. Admin will contact the user to provide access credentials."
           : "The registration has been rejected.",
       });
 
