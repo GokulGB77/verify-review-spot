@@ -24,6 +24,7 @@ import TestScrollPage from './test/TestScrollPage';
 import NotFound from './pages/NotFound';
 import ReportProblem from './pages/ReportProblem';
 import BusinessDashboard from './pages/BusinessDashboard';
+import EntityDashboard from './pages/admin/EntityDashboard';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserRoles } from '@/hooks/useUserRoles';
 import { Toaster } from "@/components/ui/sonner"
@@ -53,6 +54,14 @@ function App() {
                 <Route path="/search" element={<SearchResults />} />
                 <Route path="/report-problem" element={<ReportProblem />} />
                 <Route path="/business-dashboard" element={<BusinessDashboard />} />
+                <Route 
+                  path="/entity-dashboard/:id" 
+                  element={
+                    <EntityAdminRoute>
+                      <EntityDashboard />
+                    </EntityAdminRoute>
+                  } 
+                />
                 <Route path="/test-scroll" element={<TestScrollPage />} />
                 {/* Redirect old business routes to new entity routes */}
                 <Route path="/businesses" element={<Navigate to="/entities" replace />} />
@@ -88,6 +97,26 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
 
   if (!user || !isSuperAdmin()) {
     return <Navigate to="/auth" replace />;
+  }
+
+  return children;
+}
+
+function EntityAdminRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+  const { isEntityAdmin, isSuperAdmin, loading: rolesLoading } = useUserRoles();
+
+  if (loading || rolesLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
+
+  // Allow access if user is super admin or entity admin for any entity
+  if (!isSuperAdmin() && !isEntityAdmin()) {
+    return <Navigate to="/" replace />;
   }
 
   return children;

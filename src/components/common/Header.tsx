@@ -16,7 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const Header = () => {
   const { user, signOut, loading } = useAuth();
-  const { isSuperAdmin } = useUserRoles();
+  const { isSuperAdmin, isEntityAdmin, roles } = useUserRoles();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<{ full_name?: string | null } | null>(
     null
@@ -125,8 +125,21 @@ const Header = () => {
             </Link> */}
             {user && isSuperAdmin() && (
               <Link to="/admin" className="text-gray-700 hover:text-blue-600">
-                Admin Dashboard
+                Super Admin Dashboard
               </Link>
+            )}
+            {user && isEntityAdmin() && (
+              <>
+                {roles.filter(role => role.role === 'entity_admin' && role.entity_id).map((role) => (
+                  <Link 
+                    key={role.entity_id} 
+                    to={`/entity-dashboard/${role.entity_id}`} 
+                    className="text-gray-700 hover:text-blue-600"
+                  >
+                    Brototype Dashboard
+                  </Link>
+                ))}
+              </>
             )}
           </nav>
           <div className="flex items-center space-x-4">
