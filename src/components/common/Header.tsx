@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -52,12 +51,12 @@ const Header = () => {
 
   const handleSignOut = async () => {
     try {
-      console.log('Header: Starting sign out process');
+      console.log("Header: Starting sign out process");
       await signOut();
-      console.log('Header: Sign out completed, navigating to home');
-      navigate('/');
+      console.log("Header: Sign out completed, navigating to home");
+      navigate("/");
     } catch (error) {
-      console.error('Header: Sign out error:', error);
+      console.error("Header: Sign out error:", error);
     }
   };
 
@@ -85,6 +84,9 @@ const Header = () => {
               </Link>
             </div>
             <nav className="hidden md:flex items-center space-x-6">
+              <Link to="/" className="text-gray-700 hover:text-blue-600">
+                Home
+              </Link>
               <Link
                 to="/businesses"
                 className="text-gray-700 hover:text-blue-600"
@@ -130,15 +132,19 @@ const Header = () => {
             )}
             {user && isEntityAdmin() && (
               <>
-                {roles.filter(role => role.role === 'entity_admin' && role.entity_id).map((role) => (
-                  <Link 
-                    key={role.entity_id} 
-                    to={`/entity-dashboard/${role.entity_id}`} 
-                    className="text-gray-700 hover:text-blue-600"
-                  >
-                    Brototype Dashboard
-                  </Link>
-                ))}
+                {roles
+                  .filter(
+                    (role) => role.role === "entity_admin" && role.entity_id
+                  )
+                  .map((role) => (
+                    <Link
+                      key={role.entity_id}
+                      to={`/entity-dashboard/${role.entity_id}`}
+                      className="text-gray-700 hover:text-blue-600"
+                    >
+                      Brototype Dashboard
+                    </Link>
+                  ))}
               </>
             )}
           </nav>
@@ -155,7 +161,9 @@ const Header = () => {
                       className="flex items-center gap-2"
                     >
                       <UserCircle className="h-4 w-4" />
-                      <span className="max-w-[120px] truncate">{firstName}</span>
+                      <span className="max-w-[120px] truncate">
+                        {firstName}
+                      </span>
                       <ChevronDown className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
