@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Star, TrendingUp, MessageSquare, Users, Edit, Save } from 'lucide-react';
+import { Star, TrendingUp, MessageSquare, Users, Edit, Save, Code, Copy, ExternalLink, Key } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -189,10 +189,11 @@ const EntityDashboard = () => {
         </div>
 
         <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="profile">Entity Profile</TabsTrigger>
             <TabsTrigger value="reviews">Reviews</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="api">API Access</TabsTrigger>
           </TabsList>
 
           <TabsContent value="profile">
@@ -410,6 +411,209 @@ const EntityDashboard = () => {
                         }%
                       </span>
                     </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="api">
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Code className="h-5 w-5" />
+                    API Access
+                  </CardTitle>
+                  <CardDescription>
+                    Access your entity's API endpoints and integration tools for your website
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Widget API */}
+                  <div className="border rounded-lg p-6 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-lg font-semibold flex items-center gap-2">
+                          <Star className="h-4 w-4" />
+                          Review Widget API
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          Embed reviews directly on your website with our widget API
+                        </p>
+                      </div>
+                      <Badge variant="outline">REST API</Badge>
+                    </div>
+                    
+                    <div className="bg-muted p-3 rounded font-mono text-sm">
+                      https://hsympreltgeoellhzvus.supabase.co/functions/v1/widget-api?entityId={id}
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          const url = `https://hsympreltgeoellhzvus.supabase.co/functions/v1/widget-api?entityId=${id}`;
+                          navigator.clipboard.writeText(url);
+                          toast({
+                            title: "API URL Copied",
+                            description: "Widget API URL has been copied to clipboard",
+                          });
+                        }}
+                      >
+                        <Copy className="h-4 w-4 mr-2" />
+                        Copy URL
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          window.open(`https://hsympreltgeoellhzvus.supabase.co/functions/v1/widget-api?entityId=${id}`, '_blank');
+                        }}
+                      >
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        Test API
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          window.open('/widget-api/docs/API.md', '_blank');
+                        }}
+                      >
+                        <Code className="h-4 w-4 mr-2" />
+                        Documentation
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Entity Data API */}
+                  <div className="border rounded-lg p-6 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-lg font-semibold flex items-center gap-2">
+                          <Users className="h-4 w-4" />
+                          Entity Data API
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          Get your entity information and basic statistics
+                        </p>
+                      </div>
+                      <Badge variant="outline">REST API</Badge>
+                    </div>
+                    
+                    <div className="bg-muted p-3 rounded font-mono text-sm">
+                      https://hsympreltgeoellhzvus.supabase.co/rest/v1/entities?entity_id=eq.{id}&select=*
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          const url = `https://hsympreltgeoellhzvus.supabase.co/rest/v1/entities?entity_id=eq.${id}&select=*`;
+                          navigator.clipboard.writeText(url);
+                          toast({
+                            title: "API URL Copied",
+                            description: "Entity Data API URL has been copied to clipboard",
+                          });
+                        }}
+                      >
+                        <Copy className="h-4 w-4 mr-2" />
+                        Copy URL
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          window.open(`https://hsympreltgeoellhzvus.supabase.co/rest/v1/entities?entity_id=eq.${id}&select=*`, '_blank');
+                        }}
+                      >
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        Test API
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Reviews API */}
+                  <div className="border rounded-lg p-6 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-lg font-semibold flex items-center gap-2">
+                          <MessageSquare className="h-4 w-4" />
+                          Reviews API
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          Access all reviews for your entity
+                        </p>
+                      </div>
+                      <Badge variant="outline">REST API</Badge>
+                    </div>
+                    
+                    <div className="bg-muted p-3 rounded font-mono text-sm">
+                      https://hsympreltgeoellhzvus.supabase.co/rest/v1/reviews?business_id=eq.{id}&select=*
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          const url = `https://hsympreltgeoellhzvus.supabase.co/rest/v1/reviews?business_id=eq.${id}&select=*`;
+                          navigator.clipboard.writeText(url);
+                          toast({
+                            title: "API URL Copied",
+                            description: "Reviews API URL has been copied to clipboard",
+                          });
+                        }}
+                      >
+                        <Copy className="h-4 w-4 mr-2" />
+                        Copy URL
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          window.open(`https://hsympreltgeoellhzvus.supabase.co/rest/v1/reviews?business_id=eq.${id}&select=*`, '_blank');
+                        }}
+                      >
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        Test API
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* API Key Information */}
+                  <div className="border rounded-lg p-6 space-y-4 bg-blue-50 dark:bg-blue-950">
+                    <div className="flex items-center gap-2">
+                      <Key className="h-5 w-5 text-blue-600" />
+                      <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-200">
+                        API Authentication
+                      </h3>
+                    </div>
+                    <p className="text-sm text-blue-700 dark:text-blue-300">
+                      For public APIs (entity data, reviews), no authentication is required. 
+                      For widget API, use the public anonymous key:
+                    </p>
+                    <div className="bg-blue-100 dark:bg-blue-900 p-3 rounded font-mono text-sm">
+                      apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzeW1wcmVsdGdlb2VsbGh6dnVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAyMzAzOTksImV4cCI6MjA2NTgwNjM5OX0.k-eoqqv9MC7TbztMttuUaAMImgsr1h1npr7OKtLB85k
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => {
+                        const apiKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzeW1wcmVsdGdlb2VsbGh6dnVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAyMzAzOTksImV4cCI6MjA2NTgwNjM5OX0.k-eoqqv9MC7TbztMttuUaAMImgsr1h1npr7OKtLB85k";
+                        navigator.clipboard.writeText(apiKey);
+                        toast({
+                          title: "API Key Copied",
+                          description: "Anonymous API key has been copied to clipboard",
+                        });
+                      }}
+                    >
+                      <Copy className="h-4 w-4 mr-2" />
+                      Copy API Key
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
