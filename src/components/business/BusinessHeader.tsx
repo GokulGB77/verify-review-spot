@@ -1,9 +1,14 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Star, MapPin, Globe, Phone, CheckCircle } from 'lucide-react';
+import { Star, MapPin, Globe, Phone, CheckCircle, MoreVertical, Share2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import ShareButton from '@/components/ui/share-button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import type { Entity } from '@/hooks/useEntities';
 
 interface BusinessHeaderProps {
@@ -138,12 +143,34 @@ const BusinessHeader = ({ business, totalReviews }: BusinessHeaderProps) => {
             {/* <Button variant="outline" size="lg">
               Contact Business
             </Button> */}
-            <ShareButton 
-              entityName={business.name}
-              entityId={business.entity_id}
-              rating={displayRating}
-              description={business.description}
-            />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="lg">
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem 
+                  onClick={() => {
+                    const url = window.location.href;
+                    const shareData = {
+                      title: `${business.name} - ${displayRating.toFixed(1)}★ Rating`,
+                      text: business.description || `Check out ${business.name}`,
+                      url: url
+                    };
+                    
+                    if (navigator.share) {
+                      navigator.share(shareData);
+                    } else {
+                      navigator.clipboard.writeText(url);
+                    }
+                  }}
+                >
+                  <Share2 className="h-4 w-4 mr-2" />
+                  Share
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </CardContent>
