@@ -1,6 +1,6 @@
-
 import { Shield } from "lucide-react";
 import { Link } from "react-router-dom";
+import { contactInfo } from "@/components/common/CompanyDatas";
 
 const Footer = () => {
   return (
@@ -113,10 +113,10 @@ const Footer = () => {
         <p className="text-gray-500 text-sm mt-2">
           Questions? Contact us at{" "}
           <a
-            href="mailto:onlyreviews.team@gmail.com"
+            href={`mailto:${contactInfo.email}`}
             className="text-blue-400 hover:text-blue-300"
           >
-            onlyreviews.team@gmail.com
+            {contactInfo.email}
           </a>
         </p>
       </div>
