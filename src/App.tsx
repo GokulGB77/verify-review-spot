@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './contexts/AuthContext';
 import Header from './components/common/Header';
 import Footer from './components/common/Footer';
+import ScrollToTop from './components/common/ScrollToTop';
 import Homepage from './pages/Homepage';
 import HomepageV1 from './pages/Homepage1';
 import HomepageMinimal from './components/homepage/minimal/HomepageMinimal';
@@ -36,6 +37,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <AuthProvider>
+          <ScrollToTop />
           <div className="min-h-screen bg-background">
             <Header />
             <main>
