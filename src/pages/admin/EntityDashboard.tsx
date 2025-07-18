@@ -11,7 +11,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Star, TrendingUp, MessageSquare, Users, Edit, Save, Code, Copy, ExternalLink, Key } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Star, TrendingUp, MessageSquare, Users, Edit, Save, Code, Copy, ExternalLink, Key, Reply } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -25,6 +26,9 @@ const EntityDashboard = () => {
   const navigate = useNavigate();
   
   const [isEditing, setIsEditing] = useState(false);
+  const [responseDialogOpen, setResponseDialogOpen] = useState(false);
+  const [selectedReviewId, setSelectedReviewId] = useState<string | null>(null);
+  const [responseText, setResponseText] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -90,6 +94,43 @@ const EntityDashboard = () => {
       toast({
         title: 'Error',
         description: 'Failed to update entity profile',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleRespond = (reviewId: string) => {
+    setSelectedReviewId(reviewId);
+    setResponseText('');
+    setResponseDialogOpen(true);
+  };
+
+  const handleSubmitResponse = async () => {
+    if (!selectedReviewId || !responseText.trim()) return;
+
+    try {
+      const { error } = await supabase
+        .from('reviews')
+        .update({
+          business_response: responseText,
+          business_response_date: new Date().toISOString()
+        })
+        .eq('id', selectedReviewId);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success',
+        description: 'Response submitted successfully',
+      });
+      
+      setResponseDialogOpen(false);
+      setSelectedReviewId(null);
+      setResponseText('');
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to submit response',
         variant: 'destructive',
       });
     }
@@ -343,8 +384,24 @@ const EntityDashboard = () => {
                           </Badge>
                         </div>
                         <p className="text-gray-700 mb-3">{review.content}</p>
-                        {!review.business_response && (
-                          <Button variant="outline" size="sm">
+                        {review.business_response ? (
+                          <div className="mt-4 p-3 bg-blue-50 border-l-4 border-blue-500 rounded">
+                            <div className="flex items-center mb-2">
+                              <Reply className="w-4 h-4 text-blue-600 mr-2" />
+                              <span className="text-sm font-medium text-blue-600">Business Response</span>
+                              <span className="ml-2 text-xs text-gray-500">
+                                {new Date(review.business_response_date).toLocaleDateString()}
+                              </span>
+                            </div>
+                            <p className="text-gray-700">{review.business_response}</p>
+                          </div>
+                        ) : (
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleRespond(review.id)}
+                          >
+                            <Reply className="w-4 h-4 mr-2" />
                             Respond
                           </Button>
                         )}
@@ -620,6 +677,41 @@ const EntityDashboard = () => {
             </div>
           </TabsContent>
         </Tabs>
+
+        {/* Response Dialog */}
+        <Dialog open={responseDialogOpen} onOpenChange={setResponseDialogOpen}>
+          <DialogContent className="sm:max-w-[525px]">
+            <DialogHeader>
+              <DialogTitle>Respond to Review</DialogTitle>
+              <DialogDescription>
+                Write a professional response to this customer review. Your response will be visible to all users.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <Textarea
+                placeholder="Type your response here..."
+                value={responseText}
+                onChange={(e) => setResponseText(e.target.value)}
+                rows={6}
+                className="resize-none"
+              />
+            </div>
+            <DialogFooter>
+              <Button 
+                variant="outline" 
+                onClick={() => setResponseDialogOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleSubmitResponse}
+                disabled={!responseText.trim()}
+              >
+                Submit Response
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

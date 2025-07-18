@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,20 +28,21 @@ const HeroSection = () => {
     }
   };
 
-  useEffect(() => {
+  const filteredSuggestions = useMemo(() => {
     if (searchQuery.trim().length > 0) {
-      const filtered = businesses
+      return businesses
         .filter((business) =>
           business.name.toLowerCase().includes(searchQuery.toLowerCase())
         )
         .slice(0, 5); // Show max 5 suggestions
-      setSuggestions(filtered);
-      setShowSuggestions(true);
-    } else {
-      setSuggestions([]);
-      setShowSuggestions(false);
     }
+    return [];
   }, [searchQuery, businesses]);
+
+  useEffect(() => {
+    setSuggestions(filteredSuggestions);
+    setShowSuggestions(filteredSuggestions.length > 0 && searchQuery.trim().length > 0);
+  }, [filteredSuggestions, searchQuery]);
 
   const handleSuggestionClick = (business: Business) => {
     setSearchQuery(business.name);
