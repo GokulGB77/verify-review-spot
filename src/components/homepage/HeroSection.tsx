@@ -85,7 +85,7 @@ const HeroSection = () => {
 
         {/* Search Bar */}
         <div className="max-w-2xl mx-auto mt-6 sm:mt-8" ref={searchInputRef}>
-          <div className="flex flex-col sm:flex-row gap-2 relative">
+          <div className="flex flex-row gap-2 relative">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
               <Input
@@ -135,13 +135,13 @@ const HeroSection = () => {
             <Button
               onClick={handleSearch}
               size="lg"
-              className="h-12 w-full sm:w-auto"
+              className="h-12 w-auto px-4 sm:px-6"
             >
               Search
             </Button>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center  mt-8">
+          <div className="flex flex-row gap-4 justify-center  mt-8">
             {/* <button className="bg-blue-600 text-white px-8 py-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center">
               <PenTool className="h-6 w-6 mr-2" />
               <Link to="/write-review">Write A Review</Link>
