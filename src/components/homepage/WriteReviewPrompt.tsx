@@ -8,9 +8,9 @@ const WriteReviewPrompt = () => {
         <div className="hidden sm:flex flex-1 h-px bg-gray-300"></div>
         
         {/* Pill container */}
-        <div className="bg-white bg-opacity-80 backdrop-blur-sm rounded-full px-4 sm:px-6 lg:px-8 py-3 sm:py-4 mx-2 sm:mx-6 shadow-sm border border-gray-200 w-full sm:w-auto">
-          <div className="flex flex-col sm:flex-row items-center justify-center text-center sm:text-left">
-            <span className="text-gray-700 text-xs sm:text-sm font-medium mb-2 sm:mb-0 sm:mr-2 leading-relaxed">
+        <div className="bg-white bg-opacity-80 backdrop-blur-sm rounded-full px-3 sm:px-6 lg:px-8 py-2 sm:py-4 mx-2 sm:mx-6 shadow-sm border border-gray-200 w-full sm:w-auto">
+          <div className="flex flex-row items-center justify-center text-center">
+            <span className="text-gray-700 text-xs sm:text-sm font-medium mr-1 sm:mr-2 leading-relaxed">
               Tried something new — maybe a course or a product?
             </span>
             <Link
