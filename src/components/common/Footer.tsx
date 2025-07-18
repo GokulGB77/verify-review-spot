@@ -9,7 +9,7 @@ const Footer = () => {
         <div>
           <div className="flex items-center space-x-2 mb-4">
             <Shield className="h-6 w-6" />
-            <span className="text-xl font-bold">Review Spot</span>
+            <span className="text-xl font-bold">Verifyd Trust</span>
           </div>
           <p className="text-gray-400">
             Building trust through verified, authentic reviews
@@ -87,7 +87,7 @@ const Footer = () => {
         </div>
       </div>
       <div className="max-w-7xl mx-auto mt-8 pt-8 border-t border-gray-800 text-center text-gray-400 text-sm px-4">
-        <p className="mb-2">&copy; 2025 Review Spot. All rights reserved.</p>
+        <p className="mb-2">&copy; 2025 Verifyd Trust. All rights reserved.</p>
         <p>
           <Link
             to="/legal?tab=privacy"

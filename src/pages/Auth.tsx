@@ -118,7 +118,7 @@ const Auth = () => {
                   <Shield className="h-12 w-12 text-blue-600" />
                 </div>
                 <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900 border-b-2 pb-6">
-                  Review Spot
+                  Verifyd Trust
                 </h2>
               </CardTitle>
             </CardHeader>
@@ -148,7 +148,7 @@ const Auth = () => {
             <Shield className="h-12 w-12 text-blue-600" />
           </div>
           <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-            Review Spot
+            Verifyd Trust
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             {isSignUp ? "Create your account" : "Sign in to your account"}

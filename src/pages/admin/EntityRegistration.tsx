@@ -110,7 +110,7 @@ const EntityRegistration = () => {
             Register Your Entity
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Join Review Spot to build trust with your customers through verified reviews and transparent feedback.
+            Join Verifyd Trust to build trust with your customers through verified reviews and transparent feedback.
           </p>
         </div>
 

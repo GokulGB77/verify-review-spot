@@ -17,7 +17,7 @@ const EntityRegistrationSuccess = () => {
             Registration Submitted Successfully!
           </h1>
           <p className="text-lg text-gray-600">
-            Thank you for registering your entity with Review Spot.
+            Thank you for registering your entity with Verifyd Trust.
           </p>
         </div>
 
@@ -133,7 +133,7 @@ const EntityRegistrationSuccess = () => {
               <div>
                 <h4 className="font-medium text-gray-900 mb-2">Learn More</h4>
                 <p className="text-sm text-gray-600">
-                  Explore our platform features and see how other businesses are using Review Spot to build trust.
+                  Explore our platform features and see how other businesses are using Verifyd Trust to build trust.
                 </p>
               </div>
             </div>

@@ -53,7 +53,7 @@ const Legal = () => {
         </CardHeader>
         <CardContent>
           <p className="text-gray-600 mb-6">
-            At Review Spot, your privacy is our priority. This policy explains how we collect, use, and protect your personal information on our verification-focused review platform.
+            At Verifyd Trust, your privacy is our priority. This policy explains how we collect, use, and protect your personal information on our verification-focused review platform.
           </p>
         </CardContent>
       </Card>
@@ -199,7 +199,7 @@ const Legal = () => {
           </p>
           <div className="space-y-2 text-sm">
             <p><strong>Email:</strong> privacy@reviewspot.com</p>
-            <p><strong>Address:</strong> Review Spot Privacy Team, [Your Address]</p>
+            <p><strong>Address:</strong> Verifyd Trust Privacy Team, [Your Address]</p>
             <p><strong>Response Time:</strong> Within 30 days of your request</p>
           </div>
         </CardContent>
@@ -221,18 +221,18 @@ const Legal = () => {
         </CardHeader>
         <CardContent>
           <p className="text-gray-600 mb-6">
-            These terms govern your use of Review Spot's verification-focused review platform. By using our service, you agree to these terms.
+            These terms govern your use of Verifyd Trust's verification-focused review platform. By using our service, you agree to these terms.
           </p>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>About Review Spot</CardTitle>
+          <CardTitle>About Verifyd Trust</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-gray-700">
-            Review Spot is a verification-focused review aggregator platform that eliminates fake reviews through Aadhaar-based user verification and proof-of-experience validation. We create a trustworthy ecosystem for authentic reviews across educational institutions, businesses, and services.
+            Verifyd Trust is a verification-focused review aggregator platform that eliminates fake reviews through Aadhaar-based user verification and proof-of-experience validation. We create a trustworthy ecosystem for authentic reviews across educational institutions, businesses, and services.
           </p>
         </CardContent>
       </Card>
@@ -245,7 +245,7 @@ const Legal = () => {
           <div className="flex items-start">
             <CheckCircle className="w-6 h-6 text-green-600 mr-3 mt-1 flex-shrink-0" />
             <div>
-              <h4 className="font-semibold text-gray-900 mb-2">You can use Review Spot if you:</h4>
+              <h4 className="font-semibold text-gray-900 mb-2">You can use Verifyd Trust if you:</h4>
               <ul className="space-y-1 text-gray-700">
                 <li>• Are at least 18 years old</li>
                 <li>• Have a valid Aadhaar card for verification</li>
@@ -331,7 +331,7 @@ const Legal = () => {
                   <li>• All Basic features</li>
                   <li>• Advanced analytics</li>
                   <li>• Priority support</li>
-                  <li>• "Trusted by Review Spot" badge</li>
+                  <li>• "Trusted by Verifyd Trust" badge</li>
                 </ul>
               </CardContent>
             </Card>
@@ -400,7 +400,7 @@ const Legal = () => {
         </CardHeader>
         <CardContent>
           <p className="text-gray-600 mb-6">
-            Review Spot is here to help you make informed decisions through authentic, verified reviews. Follow these guidelines to help us maintain a trustworthy platform for everyone.
+            Verifyd Trust is here to help you make informed decisions through authentic, verified reviews. Follow these guidelines to help us maintain a trustworthy platform for everyone.
           </p>
         </CardContent>
       </Card>
