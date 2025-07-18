@@ -42,7 +42,7 @@ const ProfileTabs = ({ activeTab, setActiveTab, profile }: ProfileTabsProps) => 
             <div className="ml-2 w-2 h-2 bg-green-500 rounded-full"></div>
           )}
         </button>
-        <button
+        {/* <button
           onClick={() => setActiveTab("aadhaar")}
           className={`flex items-center gap-2 text-sm px-4 h-full border-b-2 transition-all ${
             activeTab === "aadhaar"
@@ -55,7 +55,7 @@ const ProfileTabs = ({ activeTab, setActiveTab, profile }: ProfileTabsProps) => 
           {profile?.aadhaar_number && (
             <div className="ml-2 w-2 h-2 bg-blue-500 rounded-full"></div>
           )}
-        </button>
+        </button> */}
       </div>
     </div>
   );
