@@ -108,14 +108,19 @@ const EntityDashboard = () => {
   const handleSubmitResponse = async () => {
     if (!selectedReviewId || !responseText.trim()) return;
 
+    console.log('Submitting response:', { selectedReviewId, responseText });
+
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('reviews')
         .update({
           business_response: responseText,
           business_response_date: new Date().toISOString()
         })
-        .eq('id', selectedReviewId);
+        .eq('id', selectedReviewId)
+        .select();
+
+      console.log('Response submission result:', { data, error });
 
       if (error) throw error;
 
@@ -131,6 +136,7 @@ const EntityDashboard = () => {
       // Force refresh of reviews data
       window.location.reload();
     } catch (error) {
+      console.error('Response submission error:', error);
       toast({
         title: 'Error',
         description: 'Failed to submit response',
