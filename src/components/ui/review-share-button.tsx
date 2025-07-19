@@ -34,7 +34,7 @@ const ReviewShareButton = ({
     ? reviewContent.substring(0, 100) + "..." 
     : reviewContent;
   
-  const shareText = `Check out this ${rating}⭐ review of ${entityName} ${reviewerName ? `by ${reviewerName}` : ''} on VerifyReviewSpot!\n\n"${truncatedContent}"`;
+  const shareText = `Check out this ${rating}⭐ review of ${entityName} ${reviewerName ? `by ${reviewerName}` : ''} on Verifyd Trust!\n\n"${truncatedContent}"`;
   
   const shareToWhatsApp = () => {
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(`${shareText}\n\n${reviewUrl}`)}`;

@@ -18,7 +18,7 @@ const ShareButton = ({ entityName, entityId, rating, description }: ShareButtonP
   const currentUrl = window.location.origin;
   const profileUrl = `${currentUrl}/entities/${entityId}`;
   
-  const shareText = `Check out ${entityName} on VerifyReviewSpot! ${rating ? `⭐ ${rating.toFixed(1)}/5` : ''} ${description ? `- ${description}` : ''}`;
+  const shareText = `Check out ${entityName} on Verifyd Trust! ${rating ? `⭐ ${rating.toFixed(1)}/5` : ''} ${description ? `- ${description}` : ''}`;
   
   const shareToWhatsApp = () => {
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(`${shareText}\n\n${profileUrl}`)}`;
