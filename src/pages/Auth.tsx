@@ -13,6 +13,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { Shield, Eye, EyeOff } from "lucide-react";
+import { GoogleLogin, CredentialResponse } from '@react-oauth/google';
 
 const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -21,9 +22,8 @@ const Auth = () => {
   const [fullName, setFullName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
 
-  const { signUp, signIn, signInWithGoogle, user } = useAuth();
+  const { signUp, signIn, signInWithGoogleCredential, user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -78,26 +78,33 @@ const Auth = () => {
     }
   };
 
-  const handleGoogleSignIn = async () => {
-    setGoogleLoading(true);
-    try {
-      const { error } = await signInWithGoogle();
-      if (error) {
+  const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
+    if (credentialResponse.credential) {
+      try {
+        const { error } = await signInWithGoogleCredential(credentialResponse.credential);
+        if (error) {
+          toast({
+            title: "Error signing in with Google",
+            description: error.message,
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
         toast({
-          title: "Error signing in with Google",
-          description: error.message,
+          title: "An error occurred",
+          description: "Please try again later.",
           variant: "destructive",
         });
       }
-    } catch (error) {
-      toast({
-        title: "An error occurred",
-        description: "Please try again later.",
-        variant: "destructive",
-      });
-    } finally {
-      setGoogleLoading(false);
     }
+  };
+
+  const handleGoogleError = () => {
+    toast({
+      title: "Google Sign-In Failed",
+      description: "Could not sign in with Google. Please try again.",
+      variant: "destructive",
+    });
   };
 
   const toggleAuthMode = () => {
@@ -129,14 +136,13 @@ const Auth = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <Button
-                onClick={handleGoogleSignIn}
-                disabled={googleLoading}
-                variant="outline"
-                className="w-full h-12 mb-6 mt-6"
-              >
-                {googleLoading ? "Signing in..." : "Continue with Google"}
-              </Button>
+              <div className="w-full h-12 mb-6 mt-6 flex justify-center">
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={handleGoogleError}
+                  useOneTap
+                />
+              </div>
             </CardContent>
           </Card>
         </div>
