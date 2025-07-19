@@ -26,6 +26,7 @@ import NotFound from './pages/NotFound';
 import ReportProblem from './pages/ReportProblem';
 import BusinessDashboard from './pages/BusinessDashboard';
 import EntityDashboard from './pages/admin/EntityDashboard';
+import Legal from './pages/Legal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserRoles } from '@/hooks/useUserRoles';
 import { Toaster } from "@/components/ui/sonner"
@@ -55,6 +56,7 @@ function App() {
                 <Route path="/claim-entity" element={<ClaimEntity />} />
                 <Route path="/search" element={<SearchResults />} />
                 <Route path="/report-problem" element={<ReportProblem />} />
+                <Route path="/legal" element={<Legal />} />
                 <Route path="/business-dashboard" element={<BusinessDashboard />} />
                 <Route 
                   path="/entity-dashboard/:id" 

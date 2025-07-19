@@ -96,8 +96,8 @@ const EntityRegistrationSuccess = () => {
               <h4 className="text-sm font-medium text-gray-900 mb-2">Need Help?</h4>
               <p className="text-sm text-gray-600">
                 If you have any questions about your registration, please contact our support team at{" "}
-                <a href="mailto:support@reviewspot.com" className="text-blue-600 hover:text-blue-700">
-                  support@reviewspot.com
+                <a href="mailto:verifydtrust@gmail.com" className="text-blue-600 hover:text-blue-700">
+                  verifydtrust@gmail.com
                 </a>
               </p>
             </div>

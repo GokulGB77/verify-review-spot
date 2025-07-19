@@ -198,7 +198,7 @@ const Legal = () => {
             For privacy concerns or to exercise your rights, contact our Data Protection Officer:
           </p>
           <div className="space-y-2 text-sm">
-            <p><strong>Email:</strong> privacy@reviewspot.com</p>
+            <p><strong>Email:</strong> verifydtrust@gmail.com</p>
             <p><strong>Address:</strong> Verifyd Trust Privacy Team, [Your Address]</p>
             <p><strong>Response Time:</strong> Within 30 days of your request</p>
           </div>
@@ -572,9 +572,9 @@ const Legal = () => {
             Have questions about our guidelines or need help with verification?
           </p>
           <div className="space-y-2 text-sm">
-            <p><strong>Support Email:</strong> support@reviewspot.com</p>
-            <p><strong>Guidelines Questions:</strong> guidelines@reviewspot.com</p>
-            <p><strong>Verification Help:</strong> verify@reviewspot.com</p>
+            <p><strong>Support Email:</strong> verifydtrust@gmail.com</p>
+            <p><strong>Guidelines Questions:</strong> verifydtrust@gmail.com</p>
+            <p><strong>Verification Help:</strong> verifydtrust@gmail.com</p>
           </div>
         </CardContent>
       </Card>
