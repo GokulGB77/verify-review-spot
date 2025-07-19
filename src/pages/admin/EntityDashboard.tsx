@@ -127,6 +127,9 @@ const EntityDashboard = () => {
       setResponseDialogOpen(false);
       setSelectedReviewId(null);
       setResponseText('');
+      
+      // Force refresh of reviews data
+      window.location.reload();
     } catch (error) {
       toast({
         title: 'Error',
