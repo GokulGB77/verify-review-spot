@@ -140,7 +140,7 @@ const Header = () => {
               Reviews
             </Link> */}
           </nav>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4">
             {user ? (
               <>
                 <Button variant="ghost" asChild className="hidden sm:flex">
@@ -148,16 +148,19 @@ const Header = () => {
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3"
-                    >
-                      <UserCircle className="h-4 w-4" />
-                      <span className="hidden sm:inline max-w-[80px] truncate">
-                        {firstName}
-                      </span>
-                      <ChevronDown className="h-4 w-4" />
-                    </Button>
+                    <div className="scale-125 sm:scale-100 flex items-center">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="flex items-center gap-2 px-1 sm:px-3 sm:variant-outline sm:border"
+                      >
+                        <UserCircle className="h-4 w-4 text-blue-600 sm:text-current" />
+                        <span className="hidden sm:inline max-w-[80px] truncate">
+                          {firstName}
+                        </span>
+                        <ChevronDown className="h-4 w-4 hidden sm:inline" />
+                      </Button>
+                    </div>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48">
                     <DropdownMenuItem asChild>
@@ -218,8 +221,9 @@ const Header = () => {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-                                <NotificationDropdown unreadCount={unreadCount} />
-
+                <div className="scale-125 sm:scale-100 flex items-center ">
+                  <NotificationDropdown unreadCount={unreadCount} />
+                </div>
               </>
             ) : (
               <Button asChild>
