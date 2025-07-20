@@ -12,10 +12,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { UserCircle, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import NotificationDropdown from "@/components/notifications/NotificationDropdown";
+import { useUnreadNotificationsCount } from "@/hooks/useNotifications";
 
 const Header = () => {
   const { user, signOut, loading } = useAuth();
   const { isSuperAdmin, isEntityAdmin, roles } = useUserRoles();
+  const { data: unreadCount = 0 } = useUnreadNotificationsCount();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<{ full_name?: string | null } | null>(
     null
@@ -155,6 +158,7 @@ const Header = () => {
           <div className="flex items-center space-x-4">
             {user ? (
               <>
+                <NotificationDropdown unreadCount={unreadCount} />
                 <Button variant="ghost" asChild className="hidden sm:flex">
                   <Link to="/write-review">Write A Review</Link>
                 </Button>
