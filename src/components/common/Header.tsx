@@ -123,7 +123,7 @@ const Header = () => {
                 alt="Verifyd Trust Logo"
                 className="h-8 w-8"
               />
-              <span>Verifyd Trust</span>
+              <span className="whitespace-nowrap">Verifyd Trust</span>
             </Link>
           </div>
           <nav className="hidden md:flex items-center space-x-6">
