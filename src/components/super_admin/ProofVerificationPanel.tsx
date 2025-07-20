@@ -36,7 +36,11 @@ const ProofVerificationPanel = ({
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handleVerify = async () => {
+    console.log("🔍 Starting verification process for review:", reviewId);
+    console.log("🏷️ Verification tag:", verificationTag);
+    
     if (!verificationTag.trim()) {
+      console.log("❌ No verification tag provided");
       toast({
         title: "Verification Tag Required",
         description: "Please enter a custom verification tag for this review.",
@@ -46,8 +50,9 @@ const ProofVerificationPanel = ({
     }
 
     setIsProcessing(true);
+    console.log("⏳ Starting database update...");
     try {
-      const { error } = await supabase
+      const { error, data } = await supabase
         .from('reviews')
         .update({
           is_verified: true,
@@ -58,10 +63,17 @@ const ProofVerificationPanel = ({
         })
         .eq('id', reviewId);
 
-      if (error) throw error;
+      console.log("📊 Update result:", { error, data });
+      
+      if (error) {
+        console.error("❌ Database error:", error);
+        throw error;
+      }
 
+      console.log("🔄 Invalidating queries...");
       queryClient.invalidateQueries({ queryKey: ['reviews'] });
       
+      console.log("✅ Verification successful!");
       toast({
         title: "Review Verified",
         description: `Review has been verified with tag: "${verificationTag.trim()}" - User earned 1 token!`,
@@ -69,6 +81,7 @@ const ProofVerificationPanel = ({
       
       onClose();
     } catch (error: any) {
+      console.error("💥 Verification failed:", error);
       toast({
         title: "Verification Failed",
         description: error.message || "Failed to verify review",
