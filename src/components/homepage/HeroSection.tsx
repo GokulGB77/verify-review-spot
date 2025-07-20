@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import TypingAnimation from "@/components/ui/typing-animation";
-import { Search, Shield, PenTool, Play } from "lucide-react";
+import { Search, Shield, PenTool, Building2 } from "lucide-react";
 import { useBusinesses } from "@/hooks/useBusinesses";
 
 interface Business {
@@ -73,11 +73,11 @@ const HeroSection = () => {
           <Shield className="h-4 w-4 mr-2" />
           The only review platform that requires proof
         </div>
-        <h1 className="text-5xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6">
+        <h1 className="text-5xl sm:text-3xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-8 sm:mb-6">
           Reviews You Can
           <span className="text-blue-600"> Actually Trust</span>
         </h1>
-        <p className="text-base sm:text-lg md:text-xl text-gray-600 mb-6 sm:mb-8 max-w-2xl mx-auto">
+        <p className="text-base sm:text-lg md:text-xl text-gray-600 mb-12 sm:mb-8 max-w-2xl mx-auto">
           Discover verified reviews from real users. No fake reviews, no
           manipulation. Just honest experiences backed by proof.
         </p>
@@ -142,22 +142,23 @@ const HeroSection = () => {
             </Button>
           </div>
 
-          <div className="flex flex-row gap-4 justify-center  mt-8">
-            {/* <button className="bg-blue-600 text-white px-8 py-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center">
-              <PenTool className="h-6 w-6 mr-2" />
-              <Link to="/write-review">Write A Review</Link>
-            </button> */}
+           <div className="flex flex-row gap-2 sm:gap-4 justify-center mt-8">
+            
             <Link
               to="/write-review"
-              className="border-2 border-blue-600 text-blue-600 px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold hover:bg-blue-50 active:bg-blue-100 transition-colors flex items-center justify-center text-sm sm:text-base min-h-[48px] sm:min-h-[52px]"
+              className="border-2 border-blue-600 text-blue-600 px-3 sm:px-8 py-2 sm:py-4 rounded-lg font-semibold hover:bg-blue-50 active:bg-blue-100 transition-colors flex items-center justify-center text-xs sm:text-base min-h-[40px] sm:min-h-[52px]"
             >
-              <PenTool className="h-4 w-4 sm:h-5 sm:w-5 mr-2 flex-shrink-0" />
+              <PenTool className="h-3 w-3 sm:h-5 sm:w-5 mr-1 sm:mr-2 flex-shrink-0" />
               <span>Write A Review</span>
             </Link>
-            {/* <button className="border-2 border-blue-600 text-blue-600 px-8 py-4 rounded-lg font-semibold hover:bg-blue-50 transition-colors flex items-center justify-center">
-              <Play className="h-5 w-5 mr-2" />
-              See How It Works
-            </button> */}
+            <Link
+              to="/businesses"
+              className="border-2 border-blue-600 text-blue-600 px-3 sm:px-8 py-2 sm:py-4 rounded-lg font-semibold hover:bg-blue-50 active:bg-blue-100 transition-colors flex items-center justify-center text-xs sm:text-base min-h-[40px] sm:min-h-[52px]"
+            >
+              <Building2 className="h-3 w-3 sm:h-5 sm:w-5 mr-1 sm:mr-2 flex-shrink-0" />
+              <span>Browse Entities</span>
+            </Link>
+            
           </div>
         </div>
       </div>
