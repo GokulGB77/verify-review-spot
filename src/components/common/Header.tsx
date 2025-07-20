@@ -114,15 +114,22 @@ const Header = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-2">
-            <Link to="/" className="flex items-center space-x-2 text-2xl font-bold text-blue-600">
-              <img src="/logo.svg" alt="Verifyd Trust Logo" className="h-8 w-8" />
+            <Link
+              to="/"
+              className="flex items-center space-x-2 text-2xl font-bold text-blue-600"
+            >
+              <img
+                src="/logo.svg"
+                alt="Verifyd Trust Logo"
+                className="h-8 w-8"
+              />
               <span>Verifyd Trust</span>
             </Link>
           </div>
           <nav className="hidden md:flex items-center space-x-6">
             <Link to="/" className="text-gray-700 hover:text-blue-600">
-                Home
-              </Link>
+              Home
+            </Link>
             <Link
               to="/businesses"
               className="text-gray-700 hover:text-blue-600"
@@ -132,28 +139,6 @@ const Header = () => {
             {/* <Link to="/reviews" className="text-gray-700 hover:text-blue-600">
               Reviews
             </Link> */}
-            {user && isSuperAdmin() && (
-              <Link to="/admin" className="text-gray-700 hover:text-blue-600">
-                Super Admin Dashboard
-              </Link>
-            )}
-            {user && isEntityAdmin() && (
-              <>
-                {roles
-                  .filter(
-                    (role) => role.role === "entity_admin" && role.entity_id
-                  )
-                  .map((role) => (
-                    <Link
-                      key={role.entity_id}
-                      to={`/entity-dashboard/${role.entity_id}`}
-                      className="text-gray-700 hover:text-blue-600"
-                    >
-                      Brototype Dashboard
-                    </Link>
-                  ))}
-              </>
-            )}
           </nav>
           <div className="flex items-center space-x-4">
             {user ? (
@@ -177,19 +162,58 @@ const Header = () => {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48">
                     <DropdownMenuItem asChild>
-                      <Link to="/my-reviews" className="w-full cursor-pointer">
+                      <Link
+                        to="/my-reviews"
+                        className="w-full cursor-pointer hover:text-blue-600"
+                      >
                         My Reviews
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link to="/profile" className="w-full cursor-pointer">
+                      <Link
+                        to="/profile"
+                        className="w-full cursor-pointer hover:text-blue-600"
+                      >
                         Profile
                       </Link>
                     </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <div>
+                        {user && isEntityAdmin() && (
+                          <>
+                            {roles
+                              .filter(
+                                (role) =>
+                                  role.role === "entity_admin" && role.entity_id
+                              )
+                              .map((role) => (
+                                <Link
+                                  key={role.entity_id}
+                                  to={`/entity-dashboard/${role.entity_id}`}
+                                  className="w-full cursor-pointer hover:text-blue-600"
+                                >
+                                  Admin Dashboard
+                                </Link>
+                              ))}
+                          </>
+                        )}
+                      </div>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      {user && isSuperAdmin() && (
+                        <Link
+                          to="/admin"
+                          className="w-full cursor-pointer hover:text-blue-600"
+                        >
+                          Super Admin Dashboard
+                        </Link>
+                      )}
+                    </DropdownMenuItem>
+
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onClick={handleSignOut}
-                      className="cursor-pointer"
+                      className="cursor-pointer hover:text-blue-600"
                     >
                       Sign Out
                     </DropdownMenuItem>
