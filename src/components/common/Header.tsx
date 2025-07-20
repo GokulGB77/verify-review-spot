@@ -221,7 +221,7 @@ const Header = () => {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-                <div className="scale-125 sm:scale-100 flex items-center ">
+                <div className="scale-125 sm:scale-100 flex items-center [&_svg]:text-blue-600 [&_svg]:sm:text-current">
                   <NotificationDropdown unreadCount={unreadCount} />
                 </div>
               </>
