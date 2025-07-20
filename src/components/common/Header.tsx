@@ -151,10 +151,10 @@ const Header = () => {
                   <DropdownMenuTrigger asChild>
                     <Button
                       variant="outline"
-                      className="flex items-center gap-2"
+                      className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3"
                     >
                       <UserCircle className="h-4 w-4" />
-                      <span className="max-w-[120px] truncate">
+                      <span className="hidden sm:inline max-w-[80px] truncate">
                         {firstName}
                       </span>
                       <ChevronDown className="h-4 w-4" />
