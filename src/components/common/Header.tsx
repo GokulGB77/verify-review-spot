@@ -146,7 +146,6 @@ const Header = () => {
                 <Button variant="ghost" asChild className="hidden sm:flex">
                   <Link to="/write-review">Write A Review</Link>
                 </Button>
-                <NotificationDropdown unreadCount={unreadCount} />
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
@@ -219,6 +218,8 @@ const Header = () => {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
+                                <NotificationDropdown unreadCount={unreadCount} />
+
               </>
             ) : (
               <Button asChild>
