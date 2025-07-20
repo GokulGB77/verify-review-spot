@@ -158,10 +158,10 @@ const Header = () => {
           <div className="flex items-center space-x-4">
             {user ? (
               <>
-                <NotificationDropdown unreadCount={unreadCount} />
                 <Button variant="ghost" asChild className="hidden sm:flex">
                   <Link to="/write-review">Write A Review</Link>
                 </Button>
+                <NotificationDropdown unreadCount={unreadCount} />
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
