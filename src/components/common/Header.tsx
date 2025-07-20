@@ -155,7 +155,7 @@ const Header = () => {
           <div className="flex items-center space-x-4">
             {user ? (
               <>
-                <Button variant="ghost" asChild>
+                <Button variant="ghost" asChild className="hidden sm:flex">
                   <Link to="/write-review">Write A Review</Link>
                 </Button>
                 <DropdownMenu>
