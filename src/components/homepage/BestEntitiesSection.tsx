@@ -37,7 +37,7 @@ const BestEntitiesSection: React.FC<BestEntitiesSectionProps> = ({ bestEntities 
         {bestEntities.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {bestEntities.map((entity) => (
-              <Link key={entity.id} to={`/business/${entity.id}`}>
+              <Link key={entity.id} to={`/entities/${entity.id}`}>
                 <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer border border-gray-200">
                   <CardContent className="p-4 sm:p-6">
                     <div className="space-y-3 sm:space-y-4">
