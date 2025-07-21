@@ -41,8 +41,11 @@ const HeroSection = () => {
 
   useEffect(() => {
     setSuggestions(filteredSuggestions);
+  }, [filteredSuggestions]);
+
+  useEffect(() => {
     setShowSuggestions(filteredSuggestions.length > 0 && searchQuery.trim().length > 0);
-  }, [filteredSuggestions, searchQuery]);
+  }, [filteredSuggestions.length, searchQuery]);
 
   const handleSuggestionClick = (business: Business) => {
     setSearchQuery(business.name);

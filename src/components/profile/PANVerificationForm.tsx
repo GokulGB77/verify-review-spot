@@ -74,7 +74,7 @@ const PANVerificationForm = ({
     return data.publicUrl;
   };
 
-  const handleReapply = () => {
+  const handleReapply = async () => {
     // Clear the form for reapplication
     handleInputChange("full_name_pan", "");
     handleInputChange("pan_number", "");

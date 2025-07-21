@@ -405,6 +405,8 @@ const ProfileSettings = () => {
         mobile: formData.mobile.trim(),
         pan_image_url: panImageUrl,
         is_verified: false, // Set to false initially, will be verified manually
+        rejection_reason: null, // Clear any previous rejection reason
+        main_badge: 'Unverified User', // Reset badge status
       };
 
       console.log("Updating verification data:", verificationData);
