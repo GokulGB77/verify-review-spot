@@ -3,6 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { useEntities } from "@/hooks/useEntities";
 import { useReviews } from "@/hooks/useReviews";
+import { useTotalAdminNotifications } from "@/hooks/useAdminNotifications";
 import {
   Card,
   CardContent,
@@ -32,6 +33,7 @@ import {
   ClipboardList,
   Upload,
   AlertTriangle,
+  Bell,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
@@ -49,17 +51,19 @@ import ReviewVerificationManagement from "@/components/super_admin/ReviewVerific
 import AnalyticsSection from "@/components/super_admin/AnalyticsSection";
 import ReviewManagementSection from "@/components/super_admin/ReviewManagementSection";
 import ProblemReportsManagement from "@/components/super_admin/ProblemReportsManagement";
+import AdminNotificationsSection from "@/components/super_admin/AdminNotificationsSection";
 
 const SuperAdminDashboard = () => {
   const { user } = useAuth();
   const { isSuperAdmin, loading: rolesLoading } = useUserRoles();
   const { data: entities, isLoading: entitiesLoading } = useEntities();
   const { data: reviews, isLoading: reviewsLoading } = useReviews();
+  const totalAdminNotifications = useTotalAdminNotifications();
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const [activeSection, setActiveSection] = useState("users");
+  const [activeSection, setActiveSection] = useState("notifications");
 
   if (rolesLoading) {
     return (
@@ -105,6 +109,12 @@ const SuperAdminDashboard = () => {
 
   // Menu items for the sidebar
   const menuItems = [
+    {
+      title: "Notifications",
+      icon: Bell,
+      value: "notifications",
+      badge: totalAdminNotifications > 0 ? totalAdminNotifications : undefined,
+    },
     {
       title: "Users",
       icon: Users,
@@ -171,6 +181,13 @@ const SuperAdminDashboard = () => {
 
   const renderContent = () => {
     switch (activeSection) {
+      case "notifications":
+        return (
+          <AdminNotificationsSection 
+            onNavigateToSection={setActiveSection}
+          />
+        );
+        
       case "create-entity":
         return (
           <EntityCreateForm
@@ -256,7 +273,12 @@ const SuperAdminDashboard = () => {
               }`}
             >
               <item.icon className="h-4 w-4" />
-              {item.title}
+              <span className="flex-1 text-left">{item.title}</span>
+              {item.badge && (
+                <Badge variant="destructive" className="text-xs">
+                  {item.badge}
+                </Badge>
+              )}
             </button>
           ))}
         </nav>
