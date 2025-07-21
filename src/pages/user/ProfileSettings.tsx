@@ -423,7 +423,7 @@ const ProfileSettings = () => {
 
       console.log("Verification data submitted successfully");
       
-      // Clear form data
+      // Clear form data to prevent re-editing after submission
       setFormData(prev => ({
         ...prev,
         full_name_pan: "",

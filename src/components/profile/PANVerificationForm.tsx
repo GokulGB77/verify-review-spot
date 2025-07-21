@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,11 +50,14 @@ const PANVerificationForm = ({
   // Check if user has submitted verification details
   const hasSubmittedVerification = profile?.pan_number && profile?.full_name_pan && profile?.mobile;
   
-  // Check if verification was rejected
-  const isRejected = profile?.is_verified === false;
+  // Check if verification was rejected (has rejection reason or is_verified is false AND has rejection reason)
+  const isRejected = profile?.is_verified === false && profile?.rejection_reason;
   
   // Check if user is verified
   const isVerified = profile?.main_badge === 'Verified User';
+  
+  // Check if verification is pending (submitted but not yet approved or rejected)
+  const isPending = hasSubmittedVerification && !isVerified && !isRejected;
   
   // Function to get proper image URL
   const getImageUrl = (imageUrl: string | null) => {
@@ -130,150 +132,197 @@ const PANVerificationForm = ({
             </div>
           </div>
 
-          {/* Show form fields for reapplication */}
-          <div className="space-y-6">
-            <div className="bg-blue-50 p-4 rounded-md border border-blue-100">
-              <p className="text-sm text-blue-700">
-                <strong>Reapply for Verification</strong> - Please provide your details again to submit a new verification request.
-              </p>
-            </div>
-
-            <div>
-              <div className="text-left mb-1">
-                <Label htmlFor="full_name_pan">Full Name as per PAN</Label>
+          {/* Show form fields for reapplication only if form data is empty (after clicking reapply) */}
+          {(!formData.full_name_pan && !formData.pan_number && !formData.mobile) && (
+            <div className="space-y-6">
+              <div className="bg-blue-50 p-4 rounded-md border border-blue-100">
+                <p className="text-sm text-blue-700">
+                  <strong>Reapply for Verification</strong> - Please provide your details again to submit a new verification request.
+                </p>
               </div>
-              <Input
-                id="full_name_pan"
-                type="text"
-                value={formData.full_name_pan || ""}
-                onChange={(e) => handleInputChange("full_name_pan", e.target.value)}
-                placeholder="Enter your full name exactly as it appears on your PAN card"
-              />
-            </div>
 
-            <div>
-              <div className="text-left mb-1">
-                <Label htmlFor="pan_number">PAN Card Number</Label>
-              </div>
-              <Input
-                id="pan_number"
-                type="text"
-                value={formData.pan_number}
-                onChange={(e) => handleInputChange("pan_number", e.target.value.toUpperCase())}
-                placeholder="Enter your 10-character PAN number"
-                maxLength={10}
-                className="uppercase"
-              />
-            </div>
-
-            <div>
-              <div className="text-left mb-1">
-                <Label htmlFor="mobile">Mobile Number (for verification)</Label>
-              </div>
-              <Input
-                id="mobile"
-                type="tel"
-                value={formData.mobile}
-                onChange={(e) => handleInputChange("mobile", e.target.value)}
-                placeholder="Enter mobile number linked to your PAN"
-                maxLength={10}
-              />
-            </div>
-
-            {/* PAN Card Upload */}
-            <div>
-              <div className="text-left mb-1">
-                <Label htmlFor="pan-upload">Upload PAN Card Image</Label>
-              </div>
-              <div className="mt-1 border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
-                {panFile ? (
-                  <div className="space-y-3">
-                    <Image className="h-12 w-12 text-green-500 mx-auto" />
-                    <div className="text-sm text-green-600 font-medium">
-                      ✓ {panFileName} selected
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      File ready for upload
-                    </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        const input = document.getElementById('pan-upload') as HTMLInputElement;
-                        if (input) {
-                          input.value = '';
-                          input.dispatchEvent(new Event('change', { bubbles: true }));
-                        }
-                      }}
-                    >
-                      Choose Different File
-                    </Button>
-                  </div>
-                ) : (
-                  <>
-                    <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                    <div className="text-sm text-gray-600">
-                      <label
-                        htmlFor="pan-upload"
-                        className="cursor-pointer text-blue-600 hover:text-blue-500"
-                      >
-                        Upload a file
-                      </label>
-                      <span> or drag and drop</span>
-                    </div>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Clear image of your PAN card (JPG, PNG, PDF up to 2MB)
-                    </p>
-                  </>
-                )}
-                <input
-                  id="pan-upload"
-                  type="file"
-                  className="hidden"
-                  accept=".pdf,.jpg,.jpeg,.png"
-                  onChange={handlePanFileUpload}
-                />
-              </div>
-            </div>
-
-            {/* PAN Consent Message */}
-            <div className="mt-4 border border-gray-200 rounded-lg p-4 bg-gray-50">
-              <div className="flex items-start space-x-3">
-                <Checkbox
-                  id="pan-consent"
-                  checked={panConsent}
-                  onCheckedChange={(checked) => setPanConsent(checked === true)}
-                  className="mt-1"
-                />
+              <div>
                 <div className="text-left mb-1">
-                  <Label htmlFor="pan-consent" className="font-medium cursor-pointer">
-                    PAN Verification Consent
-                  </Label>
-                  <p className="text-sm text-gray-700 mt-1">
-                    I consent to submit my PAN details for identity verification. This information will be used solely to verify my identity, prevent duplicate accounts, and assign a 'Verified by PAN' badge to my profile for added credibility. This information will not be shared with any third party.
-                  </p>
+                  <Label htmlFor="full_name_pan">Full Name as per PAN</Label>
+                </div>
+                <Input
+                  id="full_name_pan"
+                  type="text"
+                  value={formData.full_name_pan || ""}
+                  onChange={(e) => handleInputChange("full_name_pan", e.target.value)}
+                  placeholder="Enter your full name exactly as it appears on your PAN card"
+                />
+              </div>
+
+              <div>
+                <div className="text-left mb-1">
+                  <Label htmlFor="pan_number">PAN Card Number</Label>
+                </div>
+                <Input
+                  id="pan_number"
+                  type="text"
+                  value={formData.pan_number}
+                  onChange={(e) => handleInputChange("pan_number", e.target.value.toUpperCase())}
+                  placeholder="Enter your 10-character PAN number"
+                  maxLength={10}
+                  className="uppercase"
+                />
+              </div>
+
+              <div>
+                <div className="text-left mb-1">
+                  <Label htmlFor="mobile">Mobile Number (for verification)</Label>
+                </div>
+                <Input
+                  id="mobile"
+                  type="tel"
+                  value={formData.mobile}
+                  onChange={(e) => handleInputChange("mobile", e.target.value)}
+                  placeholder="Enter mobile number linked to your PAN"
+                  maxLength={10}
+                />
+              </div>
+
+              {/* PAN Card Upload */}
+              <div>
+                <div className="text-left mb-1">
+                  <Label htmlFor="pan-upload">Upload PAN Card Image</Label>
+                </div>
+                <div className="mt-1 border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+                  {panFile ? (
+                    <div className="space-y-3">
+                      <Image className="h-12 w-12 text-green-500 mx-auto" />
+                      <div className="text-sm text-green-600 font-medium">
+                        ✓ {panFileName} selected
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        File ready for upload
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const input = document.getElementById('pan-upload') as HTMLInputElement;
+                          if (input) {
+                            input.value = '';
+                            input.dispatchEvent(new Event('change', { bubbles: true }));
+                          }
+                        }}
+                      >
+                        Choose Different File
+                      </Button>
+                    </div>
+                  ) : (
+                    <>
+                      <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                      <div className="text-sm text-gray-600">
+                        <label
+                          htmlFor="pan-upload"
+                          className="cursor-pointer text-blue-600 hover:text-blue-500"
+                        >
+                          Upload a file
+                        </label>
+                        <span> or drag and drop</span>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Clear image of your PAN card (JPG, PNG, PDF up to 2MB)
+                      </p>
+                    </>
+                  )}
+                  <input
+                    id="pan-upload"
+                    type="file"
+                    className="hidden"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    onChange={handlePanFileUpload}
+                  />
                 </div>
               </div>
-            </div>
 
-            <div className="flex justify-end">
-              <Button
-                type="submit"
-                disabled={
-                  !formData.full_name_pan?.trim() ||
-                  !formData.pan_number?.trim() ||
-                  formData.pan_number.length !== 10 ||
-                  !formData.mobile?.trim() ||
-                  formData.mobile.length !== 10 ||
-                  !panConsent ||
-                  loading
-                }
-              >
-                {loading ? "Submitting..." : "Resubmit for Verification"}
-              </Button>
+              {/* PAN Consent Message */}
+              <div className="mt-4 border border-gray-200 rounded-lg p-4 bg-gray-50">
+                <div className="flex items-start space-x-3">
+                  <Checkbox
+                    id="pan-consent"
+                    checked={panConsent}
+                    onCheckedChange={(checked) => setPanConsent(checked === true)}
+                    className="mt-1"
+                  />
+                  <div className="text-left mb-1">
+                    <Label htmlFor="pan-consent" className="font-medium cursor-pointer">
+                      PAN Verification Consent
+                    </Label>
+                    <p className="text-sm text-gray-700 mt-1">
+                      I consent to submit my PAN details for identity verification. This information will be used solely to verify my identity, prevent duplicate accounts, and assign a 'Verified by PAN' badge to my profile for added credibility. This information will not be shared with any third party.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end">
+                <Button
+                  type="submit"
+                  disabled={
+                    !formData.full_name_pan?.trim() ||
+                    !formData.pan_number?.trim() ||
+                    formData.pan_number.length !== 10 ||
+                    !formData.mobile?.trim() ||
+                    formData.mobile.length !== 10 ||
+                    !panConsent ||
+                    loading
+                  }
+                >
+                  {loading ? "Submitting..." : "Resubmit for Verification"}
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      ) : isPending ? (
+        <div className="bg-yellow-50 p-4 rounded-md border border-yellow-100">
+          <p className="flex items-center text-sm text-yellow-700">
+            <Clock className="h-5 w-5 text-yellow-600 mr-2" />
+            <strong>Verification under process.</strong> You will get the "Verified User" badge once we verify your details.
+          </p>
+          
+          {/* Show submitted details in read-only format */}
+          <div className="mt-4 space-y-3">
+            <div className="bg-white p-3 rounded border">
+              <Label className="text-sm font-medium text-gray-700">Full Name as per PAN:</Label>
+              <p className="text-sm text-gray-900 mt-1">{profile?.full_name_pan}</p>
+            </div>
+            <div className="bg-white p-3 rounded border">
+              <Label className="text-sm font-medium text-gray-700">PAN Number:</Label>
+              <p className="text-sm text-gray-900 mt-1">{profile?.pan_number}</p>
+            </div>
+            <div className="bg-white p-3 rounded border">
+              <Label className="text-sm font-medium text-gray-700">Mobile Number:</Label>
+              <p className="text-sm text-gray-900 mt-1">{profile?.mobile}</p>
             </div>
           </div>
+
+          {profile?.pan_image_url && (
+            <div className="mt-4">
+              <Label className="text-sm font-medium text-yellow-700">Your uploaded PAN card:</Label>
+              <div className="mt-2">
+                <img
+                  src={getImageUrl(profile.pan_image_url)}
+                  alt="Uploaded PAN Card"
+                  className="max-w-xs h-auto border rounded-lg shadow-sm"
+                  style={{ maxHeight: '200px' }}
+                  onError={(e) => {
+                    console.error('Failed to load image:', profile.pan_image_url);
+                    console.error('Constructed URL:', getImageUrl(profile.pan_image_url));
+                    e.currentTarget.style.display = 'none';
+                  }}
+                  onLoad={() => {
+                    console.log('Image loaded successfully:', getImageUrl(profile.pan_image_url));
+                  }}
+                />
+              </div>
+            </div>
+          )}
         </div>
       ) : hasSubmittedVerification ? (
         <div className="bg-yellow-50 p-4 rounded-md border border-yellow-100">
@@ -291,7 +340,7 @@ const PANVerificationForm = ({
                   className="max-w-xs h-auto border rounded-lg shadow-sm"
                   style={{ maxHeight: '200px' }}
                   onError={(e) => {
-                    console.error('Failed to loa image:', profile.pan_image_url);
+                    console.error('Failed to load image:', profile.pan_image_url);
                     console.error('Constructed URL:', getImageUrl(profile.pan_image_url));
                     e.currentTarget.style.display = 'none';
                   }}
