@@ -404,9 +404,9 @@ const ProfileSettings = () => {
         pan_number: formData.pan_number.toUpperCase(),
         mobile: formData.mobile.trim(),
         pan_image_url: panImageUrl,
-        is_verified: false, // Set to false initially, will be verified manually
+        is_verified: null, // Set to null for pending verification status
         rejection_reason: null, // Clear any previous rejection reason
-        main_badge: 'Unverified User', // Reset badge status
+        main_badge: 'Verification Pending', // Set pending badge status
       };
 
       console.log("Updating verification data:", verificationData);
