@@ -8,7 +8,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Eye, Check, X, AlertCircle, RefreshCw, ExternalLink } from 'lucide-react';
+import { useVerificationHistory, useUserVerificationStats } from '@/hooks/useVerificationHistory';
+import { Eye, Check, X, AlertCircle, RefreshCw, ExternalLink, History, Clock } from 'lucide-react';
+import VerificationHistoryPanel from './VerificationHistoryPanel';
 
 interface VerificationRequest {
   id: string;
@@ -325,94 +327,105 @@ const VerificationManagement = () => {
                               <Eye className="h-4 w-4" />
                             </Button>
                           </DialogTrigger>
-                          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                             <DialogHeader>
                               <DialogTitle>Verification Details</DialogTitle>
                               <DialogDescription>
-                                Review the user's verification information
+                                Review the user's verification information and history
                               </DialogDescription>
                             </DialogHeader>
                             {selectedRequest && (
-                              <div className="space-y-4">
-                                <div className="grid grid-cols-2 gap-4">
-                                  <div>
-                                    <label className="text-sm font-medium">Full Name:</label>
-                                    <p className="text-sm">{selectedRequest.full_name || 'N/A'}</p>
-                                  </div>
-                                  <div>
-                                    <label className="text-sm font-medium">Email:</label>
-                                    <p className="text-sm">{selectedRequest.email || 'N/A'}</p>
-                                  </div>
-                                  <div>
-                                    <label className="text-sm font-medium">PAN Name:</label>
-                                    <p className="text-sm">{selectedRequest.full_name_pan || 'N/A'}</p>
-                                  </div>
-                                  <div>
-                                    <label className="text-sm font-medium">PAN Number:</label>
-                                    <p className="text-sm font-mono">{selectedRequest.pan_number || 'N/A'}</p>
-                                  </div>
-                                  <div>
-                                    <label className="text-sm font-medium">Mobile:</label>
-                                    <p className="text-sm">{selectedRequest.mobile || 'N/A'}</p>
-                                  </div>
-                                  <div>
-                                    <label className="text-sm font-medium">Status:</label>
-                                    <div className="mt-1">{getVerificationStatus(selectedRequest)}</div>
-                                  </div>
-                                </div>
-
-                                {selectedRequest.is_verified === false && selectedRequest.rejection_reason && (
-                                  <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-                                    <label className="text-sm font-medium text-red-800">Rejection Reason:</label>
-                                    <p className="text-sm text-red-700 mt-1">{selectedRequest.rejection_reason}</p>
-                                  </div>
-                                )}
-                                
-                                {selectedRequest.pan_image_url ? (
-                                  <div>
-                                    <label className="text-sm font-medium">PAN Card Image:</label>
-                                    <div className="mt-2 space-y-3">
-                                      <div className="flex items-center gap-2">
-                                        <Button
-                                          variant="outline"
-                                          size="sm"
-                                          onClick={() => handleViewPanImage(selectedRequest.pan_image_url)}
-                                        >
-                                          <ExternalLink className="h-4 w-4 mr-2" />
-                                          Open Image in New Tab
-                                        </Button>
+                              <div className="space-y-6">
+                                {/* Current Verification Details */}
+                                <Card>
+                                  <CardHeader>
+                                    <CardTitle className="text-lg">Current Verification Details</CardTitle>
+                                  </CardHeader>
+                                  <CardContent className="space-y-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <div>
+                                        <label className="text-sm font-medium">Full Name:</label>
+                                        <p className="text-sm">{selectedRequest.full_name || 'N/A'}</p>
                                       </div>
-                                      <div className="text-xs text-gray-500 space-y-1">
-                                        <p><strong>Original URL:</strong> {selectedRequest.pan_image_url}</p>
+                                      <div>
+                                        <label className="text-sm font-medium">Email:</label>
+                                        <p className="text-sm">{selectedRequest.email || 'N/A'}</p>
+                                      </div>
+                                      <div>
+                                        <label className="text-sm font-medium">PAN Name:</label>
+                                        <p className="text-sm">{selectedRequest.full_name_pan || 'N/A'}</p>
+                                      </div>
+                                      <div>
+                                        <label className="text-sm font-medium">PAN Number:</label>
+                                        <p className="text-sm font-mono">{selectedRequest.pan_number || 'N/A'}</p>
+                                      </div>
+                                      <div>
+                                        <label className="text-sm font-medium">Mobile:</label>
+                                        <p className="text-sm">{selectedRequest.mobile || 'N/A'}</p>
+                                      </div>
+                                      <div>
+                                        <label className="text-sm font-medium">Status:</label>
+                                        <div className="mt-1">{getVerificationStatus(selectedRequest)}</div>
                                       </div>
                                     </div>
-                                  </div>
-                                ) : (
-                                  <div className="text-sm text-gray-500">
-                                    No PAN card image uploaded
-                                  </div>
-                                )}
 
-                                {isPending(selectedRequest) && (
-                                  <div className="flex gap-2 pt-4">
-                                    <Button
-                                      onClick={() => handleApproveVerification(selectedRequest.id)}
-                                      disabled={processing === selectedRequest.id}
-                                      className="bg-green-600 hover:bg-green-700"
-                                    >
-                                      <Check className="h-4 w-4 mr-2" />
-                                      {processing === selectedRequest.id ? 'Processing...' : 'Approve'}
-                                    </Button>
-                                    <Button
-                                      variant="destructive"
-                                      onClick={() => openRejectDialog(selectedRequest.id)}
-                                      disabled={processing === selectedRequest.id}
-                                    >
-                                      <X className="h-4 w-4 mr-2" />
-                                      Reject
-                                    </Button>
-                                  </div>
-                                )}
+                                    {selectedRequest.is_verified === false && selectedRequest.rejection_reason && (
+                                      <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+                                        <label className="text-sm font-medium text-red-800">Current Rejection Reason:</label>
+                                        <p className="text-sm text-red-700 mt-1">{selectedRequest.rejection_reason}</p>
+                                      </div>
+                                    )}
+                                    
+                                    {selectedRequest.pan_image_url ? (
+                                      <div>
+                                        <label className="text-sm font-medium">PAN Card Image:</label>
+                                        <div className="mt-2 space-y-3">
+                                          <div className="flex items-center gap-2">
+                                            <Button
+                                              variant="outline"
+                                              size="sm"
+                                              onClick={() => handleViewPanImage(selectedRequest.pan_image_url)}
+                                            >
+                                              <ExternalLink className="h-4 w-4 mr-2" />
+                                              Open Image in New Tab
+                                            </Button>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <div className="text-sm text-gray-500">
+                                        No PAN card image uploaded
+                                      </div>
+                                    )}
+
+                                    {isPending(selectedRequest) && (
+                                      <div className="flex gap-2 pt-4">
+                                        <Button
+                                          onClick={() => handleApproveVerification(selectedRequest.id)}
+                                          disabled={processing === selectedRequest.id}
+                                          className="bg-green-600 hover:bg-green-700"
+                                        >
+                                          <Check className="h-4 w-4 mr-2" />
+                                          {processing === selectedRequest.id ? 'Processing...' : 'Approve'}
+                                        </Button>
+                                        <Button
+                                          variant="destructive"
+                                          onClick={() => openRejectDialog(selectedRequest.id)}
+                                          disabled={processing === selectedRequest.id}
+                                        >
+                                          <X className="h-4 w-4 mr-2" />
+                                          Reject
+                                        </Button>
+                                      </div>
+                                    )}
+                                  </CardContent>
+                                </Card>
+
+                                {/* Verification History */}
+                                <VerificationHistoryPanel 
+                                  userId={selectedRequest.id}
+                                  onViewDocument={handleViewPanImage}
+                                />
                               </div>
                             )}
                           </DialogContent>

@@ -593,6 +593,57 @@ export type Database = {
           },
         ]
       }
+      verification_history: {
+        Row: {
+          attempt_number: number
+          created_at: string
+          full_name_pan: string | null
+          id: string
+          mobile: string | null
+          pan_image_url: string | null
+          pan_number: string | null
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          submitted_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attempt_number: number
+          created_at?: string
+          full_name_pan?: string | null
+          id?: string
+          mobile?: string | null
+          pan_image_url?: string | null
+          pan_number?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          submitted_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          attempt_number?: number
+          created_at?: string
+          full_name_pan?: string | null
+          id?: string
+          mobile?: string | null
+          pan_image_url?: string | null
+          pan_number?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          submitted_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
