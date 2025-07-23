@@ -20,6 +20,8 @@ const AdminNotificationsSection = ({ onNavigateToSection }: AdminNotificationsSe
         return <FileCheck className="h-5 w-5" />;
       case 'pending_pan_verification':
         return <UserCheck className="h-5 w-5" />;
+      case 'verification_history':
+        return <UserCheck className="h-5 w-5" />;
       case 'entity_registration':
         return <ClipboardList className="h-5 w-5" />;
       default:
@@ -34,6 +36,8 @@ const AdminNotificationsSection = ({ onNavigateToSection }: AdminNotificationsSe
       case 'pending_review_verification':
         return 'review-verification';
       case 'pending_pan_verification':
+        return 'verification';
+      case 'verification_history':
         return 'verification';
       case 'entity_registration':
         return 'entity-registrations';

@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface AdminNotification {
-  type: 'entity_addition_request' | 'pending_review_verification' | 'pending_pan_verification' | 'entity_registration';
+  type: 'entity_addition_request' | 'pending_review_verification' | 'pending_pan_verification' | 'entity_registration' | 'verification_history';
   count: number;
   title: string;
   description: string;
@@ -52,7 +52,25 @@ export const useAdminNotifications = () => {
         });
       }
 
-      // Get pending PAN verifications
+      // Get pending verification attempts from verification_history
+      const { data: pendingVerifications, error: verificationError } = await supabase
+        .from('verification_history')
+        .select('id')
+        .eq('status', 'pending');
+
+      if (verificationError) {
+        console.error('Error fetching pending verifications:', verificationError);
+      } else if (pendingVerifications && pendingVerifications.length > 0) {
+        notifications.push({
+          type: 'verification_history',
+          count: pendingVerifications.length,
+          title: 'Verification Attempts',
+          description: `${pendingVerifications.length} verification attempt${pendingVerifications.length > 1 ? 's' : ''} pending review`,
+          priority: 'high'
+        });
+      }
+
+      // Get pending PAN verifications (legacy - keeping for backward compatibility)
       const { data: pendingPanVerifications, error: panError } = await supabase
         .from('profiles')
         .select('id')
