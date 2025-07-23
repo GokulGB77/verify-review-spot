@@ -232,10 +232,12 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory, entityName 
       {/* Business Response */}
       {review.businessResponse && (
         <div className="bg-gray-50 rounded p-3 mb-4 border-l-2 border-blue-400">
-          <div className="flex items-center space-x-2 mb-2">
-            <MessageSquare className="h-4 w-4 text-blue-600" />
-            <span className="text-sm font-medium text-blue-900">Business Response</span>
-            <span className="text-xs text-gray-500">{review.businessResponseDate}</span>
+          <div className="mb-2">
+            <div className="flex items-center space-x-2 mb-1">
+              <MessageSquare className="h-4 w-4 text-blue-600" />
+              <span className="text-sm font-medium text-blue-900">{entityName}</span>
+            </div>
+            <span className="text-xs text-gray-500 ml-6">{review.businessResponseDate}</span>
           </div>
           <p className="text-gray-700 text-sm leading-relaxed break-words overflow-wrap-anywhere">{review.businessResponse}</p>
         </div>
