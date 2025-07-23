@@ -260,7 +260,7 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory, entityName 
           <div className="mb-2">
             <div className="flex items-center space-x-2 mb-1">
               <MessageSquare className="h-4 w-4 text-blue-600" />
-              <span className="text-sm font-medium text-blue-900">{entityName || fetchedEntityName || "this business"}</span>
+              <span className="text-sm font-medium text-blue-900">{fetchedEntityName}</span>
             </div>
             <span className="text-xs text-gray-500 ml-6">{review.businessResponseDate}</span>
           </div>
