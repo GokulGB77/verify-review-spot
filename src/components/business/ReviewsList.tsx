@@ -15,6 +15,7 @@ interface ReviewsListProps {
 const ReviewsList = ({ reviews, businessId, isLoading }: ReviewsListProps) => {
   const { user } = useAuth();
   const [viewingHistory, setViewingHistory] = useState<Record<string, boolean>>({});
+  const [displayedReviews, setDisplayedReviews] = useState<number>(10);
   const gridRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -32,6 +33,14 @@ const ReviewsList = ({ reviews, businessId, isLoading }: ReviewsListProps) => {
       [userId]: !prev[userId]
     }));
   };
+
+  const handleViewMore = () => {
+    setDisplayedReviews(prev => Math.min(prev + 10, reviews.length));
+  };
+
+  // Get the reviews to display based on current pagination
+  const reviewsToDisplay = reviews.slice(0, displayedReviews);
+  const hasMoreReviews = displayedReviews < reviews.length;
 
   if (isLoading) {
     return (
@@ -72,7 +81,7 @@ const ReviewsList = ({ reviews, businessId, isLoading }: ReviewsListProps) => {
         ref={gridRef}
         className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
       >
-        {reviews.map((review, index) => (
+        {reviewsToDisplay.map((review, index) => (
           <div
             key={review.userId}
             className="masonry-item animate-fade-in"
@@ -93,6 +102,19 @@ const ReviewsList = ({ reviews, businessId, isLoading }: ReviewsListProps) => {
           </div>
         ))}
       </div>
+      
+      {/* View More Button */}
+      {hasMoreReviews && (
+        <div className="text-center mt-8">
+          <Button 
+            onClick={handleViewMore}
+            variant="outline"
+            className="px-8 py-2"
+          >
+            View More Reviews ({reviews.length - displayedReviews} remaining)
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
