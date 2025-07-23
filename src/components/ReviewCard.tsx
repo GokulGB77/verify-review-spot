@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Star, Shield, CheckCircle, Clock, MoreVertical, Edit, Trash2 } from 'lucide-react';
+import { Star, Shield, CheckCircle, Clock, MoreVertical, Plus } from 'lucide-react';
 import { VoteButtons } from '@/components/review/VoteButtons';
 import ReviewShareButton from '@/components/ui/review-share-button';
 import {
@@ -67,9 +67,10 @@ const ReviewCard = ({
     }
   };
 
-  const handleDelete = () => {
-    // TODO: Implement delete functionality
-    console.log('Delete review:', id);
+  const handleAddUpdate = () => {
+    if (entityId) {
+      navigate(`/write-review?entityId=${entityId}`);
+    }
   };
 
 
@@ -157,10 +158,10 @@ const ReviewCard = ({
                   <MoreVertical className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={handleDelete} className="text-red-600">
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete
+               <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={handleAddUpdate}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Update
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
