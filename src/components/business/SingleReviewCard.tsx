@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Star, CheckCircle, MessageSquare, History, Edit, Shield, Clock, MoreVertical, Trash2 } from 'lucide-react';
+import { Star, CheckCircle, MessageSquare, History, Edit, Shield, Clock, MoreVertical, Plus } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import ReviewContent from './ReviewContent';
@@ -111,9 +111,10 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory, entityName 
     }
   };
 
-  const handleDelete = () => {
-    // TODO: Implement delete functionality
-    console.log('Delete review:', review.id);
+  const handleAddUpdate = () => {
+    if (review.business_id) {
+      navigate(`/write-review?entityId=${review.business_id}`);
+    }
   };
 
   const isEditable = timeLeft > 0 && user && review.userId === user.id && !hasBeenEdited;
@@ -205,9 +206,9 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory, entityName 
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={handleDelete} className="text-red-600">
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete
+              <DropdownMenuItem onClick={handleAddUpdate}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Update
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

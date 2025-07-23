@@ -24,9 +24,8 @@ const MyReviews = () => {
     navigate(`/write-review?entityId=${businessId}&reviewId=${reviewId}&isEdit=true`);
   };
 
-  const handleDelete = (reviewId: string) => {
-    // TODO: Implement delete functionality
-    console.log('Delete review:', reviewId);
+  const handleAddUpdate = (entityId: string) => {
+    navigate(`/write-review?entityId=${entityId}`);
   };
 
   if (!user) {
@@ -160,9 +159,9 @@ const MyReviews = () => {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => handleDelete(item.review.id)} className="text-red-600">
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete
+                      <DropdownMenuItem onClick={() => handleAddUpdate(item.review.business_id)}>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Update
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>

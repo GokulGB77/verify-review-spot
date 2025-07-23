@@ -8,7 +8,7 @@ import Footer from './components/common/Footer';
 import ScrollToTop from './components/common/ScrollToTop';
 import Homepage from './pages/Homepage';
 import HomepageV1 from './pages/Homepage1';
-import HomepageMinimal from './components/homepage/minimal/HomepageMinimal';
+// import HomepageMinimal from './components/homepage/minimal/HomepageMinimal';
 import MyReviewsPage from './pages/user/MyReviews';
 import EntitiesDirectory from './pages/EntitiesDirectory';
 import EntityProfile from './pages/EntityProfile';
