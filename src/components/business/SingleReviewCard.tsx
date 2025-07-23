@@ -258,7 +258,7 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory, entityName 
       {review.businessResponse && (
         <div className="bg-gray-50 rounded p-3 mb-4 border-l-2 border-blue-400">
           <div className="mb-2">
-            <div className="flex items-center space-x-2 mb-1">
+            <div className="flex items-center space-x-2 ">
               <MessageSquare className="h-4 w-4 text-blue-600" />
               <span className="text-sm font-medium text-blue-900">{fetchedEntityName}</span>
             </div>
