@@ -8,6 +8,7 @@ import ReviewContent from './ReviewContent';
 import ReviewHistory from './ReviewHistory';
 import { VoteButtons } from '@/components/review/VoteButtons';
 import ReviewShareButton from '@/components/ui/review-share-button';
+import { supabase } from '@/integrations/supabase/client';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -44,10 +45,34 @@ interface SingleReviewCardProps {
   entityName?: string;
 }
 
-const SingleReviewCard = ({ review, viewingHistory, onToggleHistory, entityName = "this business" }: SingleReviewCardProps) => {
+const SingleReviewCard = ({ review, viewingHistory, onToggleHistory, entityName }: SingleReviewCardProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [timeLeft, setTimeLeft] = useState<number>(0);
+  const [fetchedEntityName, setFetchedEntityName] = useState<string>("");
+
+  // Fetch entity name from database
+  useEffect(() => {
+    const fetchEntityName = async () => {
+      if (review.business_id && !entityName) {
+        try {
+          const { data, error } = await supabase
+            .from('entities')
+            .select('name')
+            .eq('entity_id', review.business_id)
+            .single();
+          
+          if (data && !error) {
+            setFetchedEntityName(data.name);
+          }
+        } catch (error) {
+          console.error('Error fetching entity name:', error);
+        }
+      }
+    };
+
+    fetchEntityName();
+  }, [review.business_id, entityName]);
 
   // Check if review has been edited (updated_at is different from created_at)
   const hasBeenEdited = review.updated_at && review.created_at && 
@@ -235,7 +260,7 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory, entityName 
           <div className="mb-2">
             <div className="flex items-center space-x-2 mb-1">
               <MessageSquare className="h-4 w-4 text-blue-600" />
-              <span className="text-sm font-medium text-blue-900">{entityName}</span>
+              <span className="text-sm font-medium text-blue-900">{entityName || fetchedEntityName || "this business"}</span>
             </div>
             <span className="text-xs text-gray-500 ml-6">{review.businessResponseDate}</span>
           </div>
@@ -292,7 +317,7 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory, entityName 
           {review.business_id && (
             <ReviewShareButton
               reviewId={review.id}
-              entityName={entityName}
+              entityName={entityName || fetchedEntityName || "this business"}
               entityId={review.business_id}
               rating={review.rating}
               reviewContent={review.content}
