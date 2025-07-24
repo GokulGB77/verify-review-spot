@@ -19,6 +19,7 @@ interface Business {
 const HeroSection = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [suggestions, setSuggestions] = useState<Business[]>([]);
   const navigate = useNavigate();
   const { data: businesses = [] } = useBusinesses();
   const searchInputRef = useRef<HTMLDivElement>(null);
@@ -95,8 +96,12 @@ const HeroSection = () => {
   }, [searchQuery, businesses]);
 
   useEffect(() => {
+    setSuggestions(filteredSuggestions);
+  }, [filteredSuggestions]);
+
+  useEffect(() => {
     setShowSuggestions(filteredSuggestions.length > 0 && searchQuery.trim().length > 0);
-  }, [filteredSuggestions, searchQuery]);
+  }, [filteredSuggestions.length, searchQuery]);
 
   const handleSuggestionClick = (business: Business) => {
     setSearchQuery(business.name);
@@ -150,16 +155,16 @@ const HeroSection = () => {
                 className="pl-10 h-12 text-base sm:text-lg"
                 onKeyPress={(e) => e.key === "Enter" && handleSearch()}
                 onFocus={() => {
-                  if (searchQuery.trim().length > 0 && filteredSuggestions.length > 0) {
+                  if (searchQuery.trim().length > 0 && suggestions.length > 0) {
                     setShowSuggestions(true);
                   }
                 }}
               />
 
               {/* Suggestions Dropdown */}
-              {showSuggestions && filteredSuggestions.length > 0 && (
+              {showSuggestions && suggestions.length > 0 && (
                 <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-md shadow-lg z-50 mt-1">
-                  {filteredSuggestions.map((business) => (
+                  {suggestions.map((business) => (
                     <div
                       key={business.entity_id}
                       className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
@@ -206,7 +211,7 @@ const HeroSection = () => {
               <span>Write A Review</span>
             </Link>
             <Link
-              to="/entities"
+              to="/businesses"
               className="border-2 border-blue-600 text-blue-600 px-3 sm:px-8 py-2 sm:py-4 rounded-lg font-semibold hover:bg-blue-50 active:bg-blue-100 transition-colors flex items-center justify-center text-xs sm:text-base min-h-[40px] sm:min-h-[52px]"
             >
               <Building2 className="h-3 w-3 sm:h-5 sm:w-5 mr-1 sm:mr-2 flex-shrink-0" />
