@@ -11,6 +11,9 @@ interface Business {
   name: string;
   industry?: string;
   average_rating?: number;
+  description?: string;
+  category_tags?: string[];
+  keywords?: string[];
 }
 
 const HeroSection = () => {
@@ -30,11 +33,64 @@ const HeroSection = () => {
 
   const filteredSuggestions = useMemo(() => {
     if (searchQuery.trim().length > 0) {
-      return businesses
-        .filter((business) =>
-          business.name.toLowerCase().includes(searchQuery.toLowerCase())
-        )
+      const query = searchQuery.toLowerCase();
+      
+      // Helper function to check if text matches query
+      const matchesQuery = (text: string) => text.toLowerCase().includes(query);
+      
+      // Helper function to check if array contains matching item
+      const arrayContainsMatch = (arr: string[] | undefined) => 
+        arr?.some(item => matchesQuery(item)) || false;
+      
+      // Filter and score businesses
+      const scoredBusinesses = businesses
+        .map((business) => {
+          let score = 0;
+          let matchFound = false;
+          
+          // Exact name match gets highest priority (score 100)
+          if (business.name.toLowerCase() === query) {
+            score = 100;
+            matchFound = true;
+          }
+          // Name starts with query gets high priority (score 90)
+          else if (business.name.toLowerCase().startsWith(query)) {
+            score = 90;
+            matchFound = true;
+          }
+          // Name contains query gets medium-high priority (score 80)
+          else if (matchesQuery(business.name)) {
+            score = 80;
+            matchFound = true;
+          }
+          // Industry matches get medium priority (score 60)
+          else if (business.industry && matchesQuery(business.industry)) {
+            score = 60;
+            matchFound = true;
+          }
+          // Category tags match get medium priority (score 50)
+          else if (arrayContainsMatch(business.category_tags)) {
+            score = 50;
+            matchFound = true;
+          }
+          // Keywords match get medium-low priority (score 40)
+          else if (arrayContainsMatch(business.keywords)) {
+            score = 40;
+            matchFound = true;
+          }
+          // Description matches get low priority (score 30)
+          else if (business.description && matchesQuery(business.description)) {
+            score = 30;
+            matchFound = true;
+          }
+          
+          return matchFound ? { ...business, searchScore: score } : null;
+        })
+        .filter(Boolean) // Remove null values
+        .sort((a, b) => b!.searchScore - a!.searchScore) // Sort by score (highest first)
         .slice(0, 5); // Show max 5 suggestions
+      
+      return scoredBusinesses;
     }
     return [];
   }, [searchQuery, businesses]);
