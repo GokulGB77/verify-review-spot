@@ -91,7 +91,7 @@ const Header = () => {
                 Home
               </Link>
               <Link
-                to="/businesses"
+                to="/entities"
                 className="text-gray-700 hover:text-blue-600"
               >
                 Browse Entities
@@ -131,7 +131,7 @@ const Header = () => {
               Home
             </Link>
             <Link
-              to="/businesses"
+              to="/entities"
               className="text-gray-700 hover:text-blue-600"
             >
               Browse Entities
