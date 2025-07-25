@@ -298,9 +298,9 @@ const EntityManagementSection: React.FC<EntityManagementSectionProps> = ({
                   <TableCell className="font-medium">
                     <div>
                       <div className="font-medium">{entity.name}</div>
-                      <div className="text-xs text-gray-500 font-mono">
+                      {/* <div className="text-xs text-gray-500 font-mono">
                         ID: {entity.entity_id}
-                      </div>
+                      </div> */}
                     </div>
                   </TableCell>
                   <TableCell className="capitalize">{entity.entity_type?.replace('_', ' ') || 'N/A'}</TableCell>
