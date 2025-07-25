@@ -7,8 +7,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Switch } from '@/components/ui/switch';
-import { Search, Eye, Edit, Ban, RefreshCcw } from 'lucide-react';
+import { Search, Eye, Edit, Ban, RefreshCcw, Trash2 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 import EntityEditForm from '@/components/EntityEditForm';
@@ -36,6 +37,7 @@ const EntityManagementSection: React.FC<EntityManagementSectionProps> = ({
     toggleBusinessClaimed,
     deactivateEntity,
     reactivateEntity,
+    deleteEntity,
   } = useEntityMutations(queryClient);
 
   const filteredEntities = entities?.filter(entity => {
@@ -305,6 +307,36 @@ const EntityManagementSection: React.FC<EntityManagementSectionProps> = ({
                           {deactivateEntity.isPending ? 'Deactivating...' : 'Deactivate'}
                         </Button>
                       )}
+
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                          >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            Delete
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Entity</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete "{entity.name}"? This action cannot be undone and will permanently remove the entity and all its associated data.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => deleteEntity.mutate(entity.entity_id)}
+                              disabled={deleteEntity.isPending}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              {deleteEntity.isPending ? 'Deleting...' : 'Delete'}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   </TableCell>
                 </TableRow>
