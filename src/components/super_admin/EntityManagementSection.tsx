@@ -10,7 +10,8 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink, Paginati
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Switch } from '@/components/ui/switch';
-import { Search, Eye, Edit, Ban, RefreshCcw, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Search, Eye, Edit, Ban, RefreshCcw, Trash2, ChevronUp, ChevronDown, CheckSquare, Square } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 import EntityEditForm from '@/components/EntityEditForm';
@@ -34,6 +35,9 @@ const EntityManagementSection: React.FC<EntityManagementSectionProps> = ({
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  
+  // Bulk selection state
+  const [selectedEntityIds, setSelectedEntityIds] = useState<Set<string>>(new Set());
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -146,6 +150,117 @@ const EntityManagementSection: React.FC<EntityManagementSectionProps> = ({
     });
   };
 
+  // Bulk operations functions
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      const allIds = new Set(paginatedEntities?.map(entity => entity.entity_id) || []);
+      setSelectedEntityIds(allIds);
+    } else {
+      setSelectedEntityIds(new Set());
+    }
+  };
+
+  const handleSelectEntity = (entityId: string, checked: boolean) => {
+    const newSelection = new Set(selectedEntityIds);
+    if (checked) {
+      newSelection.add(entityId);
+    } else {
+      newSelection.delete(entityId);
+    }
+    setSelectedEntityIds(newSelection);
+  };
+
+  const handleBulkDeactivate = async () => {
+    const activeEntities = Array.from(selectedEntityIds).filter(id => {
+      const entity = entities?.find(e => e.entity_id === id);
+      return entity && (entity.status || 'active') === 'active';
+    });
+
+    if (activeEntities.length === 0) {
+      toast({
+        title: 'No Active Entities',
+        description: 'No active entities selected for deactivation.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    for (const entityId of activeEntities) {
+      try {
+        await deactivateEntity.mutateAsync(entityId);
+      } catch (error) {
+        console.error(`Failed to deactivate entity ${entityId}:`, error);
+      }
+    }
+
+    setSelectedEntityIds(new Set());
+    toast({
+      title: 'Bulk Deactivation Complete',
+      description: `Successfully deactivated ${activeEntities.length} entities.`,
+    });
+  };
+
+  const handleBulkReactivate = async () => {
+    const inactiveEntities = Array.from(selectedEntityIds).filter(id => {
+      const entity = entities?.find(e => e.entity_id === id);
+      return entity && (entity.status || 'active') === 'inactive';
+    });
+
+    if (inactiveEntities.length === 0) {
+      toast({
+        title: 'No Inactive Entities',
+        description: 'No inactive entities selected for reactivation.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    for (const entityId of inactiveEntities) {
+      try {
+        await reactivateEntity.mutateAsync(entityId);
+      } catch (error) {
+        console.error(`Failed to reactivate entity ${entityId}:`, error);
+      }
+    }
+
+    setSelectedEntityIds(new Set());
+    toast({
+      title: 'Bulk Reactivation Complete',
+      description: `Successfully reactivated ${inactiveEntities.length} entities.`,
+    });
+  };
+
+  const handleBulkDelete = async () => {
+    const selectedEntitiesArray = Array.from(selectedEntityIds);
+    
+    if (selectedEntitiesArray.length === 0) {
+      toast({
+        title: 'No Entities Selected',
+        description: 'Please select entities to delete.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    for (const entityId of selectedEntitiesArray) {
+      try {
+        await deleteEntity.mutateAsync(entityId);
+      } catch (error) {
+        console.error(`Failed to delete entity ${entityId}:`, error);
+      }
+    }
+
+    setSelectedEntityIds(new Set());
+    toast({
+      title: 'Bulk Deletion Complete',
+      description: `Successfully deleted ${selectedEntitiesArray.length} entities.`,
+    });
+  };
+
+  const isAllSelected = paginatedEntities?.length > 0 && 
+    paginatedEntities.every(entity => selectedEntityIds.has(entity.entity_id));
+  const isIndeterminate = selectedEntityIds.size > 0 && !isAllSelected;
+
   return (
     <Card>
       <CardHeader>
@@ -198,12 +313,92 @@ const EntityManagementSection: React.FC<EntityManagementSectionProps> = ({
       </CardHeader>
 
       <CardContent>
+        {/* Bulk Actions Toolbar */}
+        {selectedEntityIds.size > 0 && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary">
+                  {selectedEntityIds.size} selected
+                </Badge>
+                <span className="text-sm text-gray-600">
+                  Bulk Actions:
+                </span>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleBulkReactivate}
+                  disabled={deactivateEntity.isPending || reactivateEntity.isPending}
+                >
+                  <RefreshCcw className="h-4 w-4 mr-1" />
+                  Reactivate Selected
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleBulkDeactivate}
+                  disabled={deactivateEntity.isPending || reactivateEntity.isPending}
+                >
+                  <Ban className="h-4 w-4 mr-1" />
+                  Deactivate Selected
+                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      disabled={deleteEntity.isPending}
+                    >
+                      <Trash2 className="h-4 w-4 mr-1" />
+                      Delete Selected
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete Selected Entities</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to delete {selectedEntityIds.size} selected entities? This action cannot be undone and will permanently remove all selected entities and their associated data.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleBulkDelete}
+                        disabled={deleteEntity.isPending}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        {deleteEntity.isPending ? 'Deleting...' : 'Delete All Selected'}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedEntityIds(new Set())}
+                >
+                  Clear Selection
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {entitiesLoading ? (
           <div className="text-center py-8">Loading entities...</div>
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-12">
+                  <Checkbox
+                    checked={isAllSelected}
+                    onCheckedChange={handleSelectAll}
+                    className={isIndeterminate ? "data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground" : ""}
+                  />
+                </TableHead>
                 <TableHead>
                   <Button
                     variant="ghost"
@@ -295,6 +490,14 @@ const EntityManagementSection: React.FC<EntityManagementSectionProps> = ({
             <TableBody>
               {paginatedEntities?.map((entity) => (
                 <TableRow key={entity.entity_id}>
+                  <TableCell>
+                    <Checkbox
+                      checked={selectedEntityIds.has(entity.entity_id)}
+                      onCheckedChange={(checked) => 
+                        handleSelectEntity(entity.entity_id, checked as boolean)
+                      }
+                    />
+                  </TableCell>
                   <TableCell className="font-medium">
                     <div>
                       <div className="font-medium">{entity.name}</div>
