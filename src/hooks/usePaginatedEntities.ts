@@ -18,7 +18,7 @@ export const usePaginatedEntities = () => {
         .from('entities')
         .select('*', { count: 'exact' })
         .eq('status', 'active')
-        .order('created_at', { ascending: false })
+        .order('name', { ascending: true })
         .range(from, to);
       
       if (error) throw error;
