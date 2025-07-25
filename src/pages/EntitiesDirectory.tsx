@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,7 @@ const BusinessDirectory = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [verificationFilter, setVerificationFilter] = useState('all');
+  const loadMoreButtonRef = useRef<HTMLButtonElement>(null);
   
   const { 
     data, 
@@ -333,9 +334,18 @@ const BusinessDirectory = () => {
               Showing {businesses.length} of {totalCount} entities
             </p>
             <Button 
+              ref={loadMoreButtonRef}
               variant="outline" 
               size="lg"
-              onClick={() => fetchNextPage()}
+              onClick={() => {
+                const currentScrollPosition = window.scrollY;
+                fetchNextPage().then(() => {
+                  // Maintain scroll position after new content loads
+                  setTimeout(() => {
+                    window.scrollTo(0, currentScrollPosition);
+                  }, 100);
+                });
+              }}
             >
               Load More Businesses
             </Button>
