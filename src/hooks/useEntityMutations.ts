@@ -33,11 +33,15 @@ export const useEntityMutations = (queryClient: QueryClient) => {
 
   const deactivateEntity = useMutation({
     mutationFn: async (entityId: string) => {
-      const { error } = await supabase
+      console.log('Deactivating entity with ID:', entityId);
+      const { data, error } = await supabase
         .from('entities')
         .update({ status: 'inactive' })
-        .eq('entity_id', entityId);
+        .eq('entity_id', entityId)
+        .select();
+      console.log('Deactivate result:', { data, error });
       if (error) throw error;
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['entities'] });
@@ -58,11 +62,15 @@ export const useEntityMutations = (queryClient: QueryClient) => {
 
   const reactivateEntity = useMutation({
     mutationFn: async (entityId: string) => {
-      const { error } = await supabase
+      console.log('Reactivating entity with ID:', entityId);
+      const { data, error } = await supabase
         .from('entities')
         .update({ status: 'active' })
-        .eq('entity_id', entityId);
+        .eq('entity_id', entityId)
+        .select();
+      console.log('Reactivate result:', { data, error });
       if (error) throw error;
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['entities'] });
