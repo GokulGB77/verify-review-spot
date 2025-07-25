@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Switch } from '@/components/ui/switch';
-import { Search, Eye, Edit, Ban, RefreshCcw, Trash2 } from 'lucide-react';
+import { Search, Eye, Edit, Ban, RefreshCcw, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 import EntityEditForm from '@/components/EntityEditForm';
@@ -29,6 +29,8 @@ const EntityManagementSection: React.FC<EntityManagementSectionProps> = ({
   const [verificationFilter, setVerificationFilter] = useState('all');
   const [selectedEntity, setSelectedEntity] = useState<any | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [sortColumn, setSortColumn] = useState<string>('name');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -40,6 +42,36 @@ const EntityManagementSection: React.FC<EntityManagementSectionProps> = ({
     deleteEntity,
   } = useEntityMutations(queryClient);
 
+  const handleSort = (column: string) => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortColumn(column);
+      setSortDirection('asc');
+    }
+  };
+
+  const getSortValue = (entity: any, column: string) => {
+    switch (column) {
+      case 'name':
+        return entity.name?.toLowerCase() || '';
+      case 'type':
+        return entity.entity_type || '';
+      case 'industry':
+        return entity.industry?.toLowerCase() || '';
+      case 'rating':
+        return entity.average_rating || 0;
+      case 'reviews':
+        return entity.review_count || 0;
+      case 'verification':
+        return entity.is_verified ? 1 : 0;
+      case 'status':
+        return entity.status || 'active';
+      default:
+        return '';
+    }
+  };
+
   const filteredEntities = entities?.filter(entity => {
     const nameMatch = entity.name?.toLowerCase().includes(searchTerm.toLowerCase());
     const industryMatch = entity.industry?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -48,7 +80,33 @@ const EntityManagementSection: React.FC<EntityManagementSectionProps> = ({
     const matchesVerification = verificationFilter === 'all' ||
                                (entity.is_verified ? 'Verified' : 'Unverified') === verificationFilter;
     return matchesSearch && matchesStatus && matchesVerification;
+  })?.sort((a, b) => {
+    const aValue = getSortValue(a, sortColumn);
+    const bValue = getSortValue(b, sortColumn);
+    
+    if (typeof aValue === 'string' && typeof bValue === 'string') {
+      return sortDirection === 'asc' 
+        ? aValue.localeCompare(bValue)
+        : bValue.localeCompare(aValue);
+    }
+    
+    if (typeof aValue === 'number' && typeof bValue === 'number') {
+      return sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
+    }
+    
+    return 0;
   });
+
+  const getSortIcon = (column: string) => {
+    if (sortColumn !== column) {
+      return null;
+    }
+    return sortDirection === 'asc' ? (
+      <ChevronUp className="h-4 w-4" />
+    ) : (
+      <ChevronDown className="h-4 w-4" />
+    );
+  };
 
   const handleViewDialogClose = () => {
     setSelectedEntity(null);
@@ -122,13 +180,90 @@ const EntityManagementSection: React.FC<EntityManagementSectionProps> = ({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Industry</TableHead>
-                <TableHead>Rating</TableHead>
-                <TableHead>Reviews</TableHead>
-                <TableHead>Verification</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>
+                  <Button
+                    variant="ghost"
+                    className="h-auto p-0 font-semibold hover:bg-transparent"
+                    onClick={() => handleSort('name')}
+                  >
+                    <span className="flex items-center gap-1">
+                      Name
+                      {getSortIcon('name')}
+                    </span>
+                  </Button>
+                </TableHead>
+                <TableHead>
+                  <Button
+                    variant="ghost"
+                    className="h-auto p-0 font-semibold hover:bg-transparent"
+                    onClick={() => handleSort('type')}
+                  >
+                    <span className="flex items-center gap-1">
+                      Type
+                      {getSortIcon('type')}
+                    </span>
+                  </Button>
+                </TableHead>
+                <TableHead>
+                  <Button
+                    variant="ghost"
+                    className="h-auto p-0 font-semibold hover:bg-transparent"
+                    onClick={() => handleSort('industry')}
+                  >
+                    <span className="flex items-center gap-1">
+                      Industry
+                      {getSortIcon('industry')}
+                    </span>
+                  </Button>
+                </TableHead>
+                <TableHead>
+                  <Button
+                    variant="ghost"
+                    className="h-auto p-0 font-semibold hover:bg-transparent"
+                    onClick={() => handleSort('rating')}
+                  >
+                    <span className="flex items-center gap-1">
+                      Rating
+                      {getSortIcon('rating')}
+                    </span>
+                  </Button>
+                </TableHead>
+                <TableHead>
+                  <Button
+                    variant="ghost"
+                    className="h-auto p-0 font-semibold hover:bg-transparent"
+                    onClick={() => handleSort('reviews')}
+                  >
+                    <span className="flex items-center gap-1">
+                      Reviews
+                      {getSortIcon('reviews')}
+                    </span>
+                  </Button>
+                </TableHead>
+                <TableHead>
+                  <Button
+                    variant="ghost"
+                    className="h-auto p-0 font-semibold hover:bg-transparent"
+                    onClick={() => handleSort('verification')}
+                  >
+                    <span className="flex items-center gap-1">
+                      Verification
+                      {getSortIcon('verification')}
+                    </span>
+                  </Button>
+                </TableHead>
+                <TableHead>
+                  <Button
+                    variant="ghost"
+                    className="h-auto p-0 font-semibold hover:bg-transparent"
+                    onClick={() => handleSort('status')}
+                  >
+                    <span className="flex items-center gap-1">
+                      Status
+                      {getSortIcon('status')}
+                    </span>
+                  </Button>
+                </TableHead>
                 <TableHead>Business Claimed</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
