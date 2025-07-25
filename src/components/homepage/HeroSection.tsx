@@ -1,129 +1,9 @@
-import { useState, useEffect, useRef, useMemo } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Link } from "react-router-dom";
 import TypingAnimation from "@/components/ui/typing-animation";
-import { Search, Shield, PenTool, Building2 } from "lucide-react";
-import { useBusinesses } from "@/hooks/useBusinesses";
-
-interface Business {
-  entity_id: string;
-  name: string;
-  industry?: string;
-  average_rating?: number;
-  description?: string;
-  category_tags?: string[];
-  keywords?: string[];
-}
+import { Shield, PenTool, Building2 } from "lucide-react";
+import SearchBar from "@/components/common/SearchBar";
 
 const HeroSection = () => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [suggestions, setSuggestions] = useState<Business[]>([]);
-  const navigate = useNavigate();
-  const { data: businesses = [] } = useBusinesses();
-  const searchInputRef = useRef<HTMLDivElement>(null);
-
-  const handleSearch = () => {
-    if (searchQuery.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-      setShowSuggestions(false);
-    }
-  };
-
-  const filteredSuggestions = useMemo(() => {
-    if (searchQuery.trim().length > 0) {
-      const query = searchQuery.toLowerCase();
-      
-      // Helper function to check if text matches query
-      const matchesQuery = (text: string) => text.toLowerCase().includes(query);
-      
-      // Helper function to check if array contains matching item
-      const arrayContainsMatch = (arr: string[] | undefined) => 
-        arr?.some(item => matchesQuery(item)) || false;
-      
-      // Filter and score businesses
-      const scoredBusinesses = businesses
-        .map((business) => {
-          let score = 0;
-          let matchFound = false;
-          
-          // Exact name match gets highest priority (score 100)
-          if (business.name.toLowerCase() === query) {
-            score = 100;
-            matchFound = true;
-          }
-          // Name starts with query gets high priority (score 90)
-          else if (business.name.toLowerCase().startsWith(query)) {
-            score = 90;
-            matchFound = true;
-          }
-          // Name contains query gets medium-high priority (score 80)
-          else if (matchesQuery(business.name)) {
-            score = 80;
-            matchFound = true;
-          }
-          // Industry matches get medium priority (score 60)
-          else if (business.industry && matchesQuery(business.industry)) {
-            score = 60;
-            matchFound = true;
-          }
-          // Category tags match get medium priority (score 50)
-          else if (arrayContainsMatch(business.category_tags)) {
-            score = 50;
-            matchFound = true;
-          }
-          // Keywords match get medium-low priority (score 40)
-          else if (arrayContainsMatch(business.keywords)) {
-            score = 40;
-            matchFound = true;
-          }
-          // Description matches get low priority (score 30)
-          else if (business.description && matchesQuery(business.description)) {
-            score = 30;
-            matchFound = true;
-          }
-          
-          return matchFound ? { ...business, searchScore: score } : null;
-        })
-        .filter(Boolean) // Remove null values
-        .sort((a, b) => b!.searchScore - a!.searchScore) // Sort by score (highest first)
-        .slice(0, 5); // Show max 5 suggestions
-      
-      return scoredBusinesses;
-    }
-    return [];
-  }, [searchQuery, businesses]);
-
-  useEffect(() => {
-    setSuggestions(filteredSuggestions);
-  }, [filteredSuggestions]);
-
-  useEffect(() => {
-    setShowSuggestions(filteredSuggestions.length > 0 && searchQuery.trim().length > 0);
-  }, [filteredSuggestions.length, searchQuery]);
-
-  const handleSuggestionClick = (business: Business) => {
-    setSearchQuery(business.name);
-    setShowSuggestions(false);
-    navigate(`/entities/${business.entity_id}`);
-  };
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        searchInputRef.current &&
-        !searchInputRef.current.contains(event.target as Node)
-      ) {
-        setShowSuggestions(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
 
   return (
     <section className="pt-6 sm:pt-16 md:pt-10 pb-6 sm:pb-8 px-4">
@@ -144,81 +24,25 @@ const HeroSection = () => {
         <TypingAnimation />
 
         {/* Search Bar */}
-        <div className="max-w-2xl mx-auto mt-6 sm:mt-8" ref={searchInputRef}>
-          <div className="flex flex-row gap-2 relative">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-              <Input
-                placeholder="Search for entities..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 h-12 text-base sm:text-lg"
-                onKeyPress={(e) => e.key === "Enter" && handleSearch()}
-                onFocus={() => {
-                  if (searchQuery.trim().length > 0 && suggestions.length > 0) {
-                    setShowSuggestions(true);
-                  }
-                }}
-              />
+        <div className="max-w-2xl mx-auto mt-6 sm:mt-8">
+          <SearchBar variant="hero" placeholder="Search for entities..." />
+        </div>
 
-              {/* Suggestions Dropdown */}
-              {showSuggestions && suggestions.length > 0 && (
-                <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-md shadow-lg z-50 mt-1">
-                  {suggestions.map((business) => (
-                    <div
-                      key={business.entity_id}
-                      className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
-                      onClick={() => handleSuggestionClick(business)}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                          <span className="text-sm font-bold text-blue-600">
-                            {business.name.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                        <div className="flex-1">
-                          <div className="font-medium text-gray-900">
-                            {business.name}
-                          </div>
-                          {business.industry && (
-                            <div className="text-sm text-gray-500">
-                              {business.industry}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            <Button
-              onClick={handleSearch}
-              size="lg"
-              className="h-12 w-auto px-4 sm:px-6"
-            >
-              Search
-            </Button>
-          </div>
-
-           <div className="flex flex-row gap-2 sm:gap-4 justify-center mt-8">
-            
-            <Link
-              to="/write-review"
-              className="border-2 border-blue-600 text-blue-600 px-3 sm:px-8 py-2 sm:py-4 rounded-lg font-semibold hover:bg-blue-50 active:bg-blue-100 transition-colors flex items-center justify-center text-xs sm:text-base min-h-[40px] sm:min-h-[52px]"
-            >
-              <PenTool className="h-3 w-3 sm:h-5 sm:w-5 mr-1 sm:mr-2 flex-shrink-0" />
-              <span>Write A Review</span>
-            </Link>
-            <Link
-              to="/businesses"
-              className="border-2 border-blue-600 text-blue-600 px-3 sm:px-8 py-2 sm:py-4 rounded-lg font-semibold hover:bg-blue-50 active:bg-blue-100 transition-colors flex items-center justify-center text-xs sm:text-base min-h-[40px] sm:min-h-[52px]"
-            >
-              <Building2 className="h-3 w-3 sm:h-5 sm:w-5 mr-1 sm:mr-2 flex-shrink-0" />
-              <span>Browse Entities</span>
-            </Link>
-            
-          </div>
+        <div className="flex flex-row gap-2 sm:gap-4 justify-center mt-8">
+          <Link
+            to="/write-review"
+            className="border-2 border-blue-600 text-blue-600 px-3 sm:px-8 py-2 sm:py-4 rounded-lg font-semibold hover:bg-blue-50 active:bg-blue-100 transition-colors flex items-center justify-center text-xs sm:text-base min-h-[40px] sm:min-h-[52px]"
+          >
+            <PenTool className="h-3 w-3 sm:h-5 sm:w-5 mr-1 sm:mr-2 flex-shrink-0" />
+            <span>Write A Review</span>
+          </Link>
+          <Link
+            to="/entities"
+            className="border-2 border-blue-600 text-blue-600 px-3 sm:px-8 py-2 sm:py-4 rounded-lg font-semibold hover:bg-blue-50 active:bg-blue-100 transition-colors flex items-center justify-center text-xs sm:text-base min-h-[40px] sm:min-h-[52px]"
+          >
+            <Building2 className="h-3 w-3 sm:h-5 sm:w-5 mr-1 sm:mr-2 flex-shrink-0" />
+            <span>Browse Entities</span>
+          </Link>
         </div>
       </div>
     </section>
