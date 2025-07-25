@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Switch } from '@/components/ui/switch';
@@ -31,6 +32,8 @@ const EntityManagementSection: React.FC<EntityManagementSectionProps> = ({
   const [isEditMode, setIsEditMode] = useState(false);
   const [sortColumn, setSortColumn] = useState<string>('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -96,6 +99,27 @@ const EntityManagementSection: React.FC<EntityManagementSectionProps> = ({
     
     return 0;
   });
+
+  // Pagination calculations
+  const totalItems = filteredEntities?.length || 0;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedEntities = filteredEntities?.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter, verificationFilter, sortColumn, sortDirection]);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handleItemsPerPageChange = (value: string) => {
+    setItemsPerPage(parseInt(value));
+    setCurrentPage(1);
+  };
 
   const getSortIcon = (column: string) => {
     if (sortColumn !== column) {
@@ -269,7 +293,7 @@ const EntityManagementSection: React.FC<EntityManagementSectionProps> = ({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredEntities?.map((entity) => (
+              {paginatedEntities?.map((entity) => (
                 <TableRow key={entity.entity_id}>
                   <TableCell className="font-medium">
                     <div>
@@ -479,6 +503,86 @@ const EntityManagementSection: React.FC<EntityManagementSectionProps> = ({
             </TableBody>
           </Table>
         )}
+
+        {/* Pagination Controls */}
+        {!entitiesLoading && totalItems > 0 && (
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6">
+            <div className="flex items-center gap-2">
+              <Label htmlFor="items-per-page">Items per page:</Label>
+              <Select value={itemsPerPage.toString()} onValueChange={handleItemsPerPageChange}>
+                <SelectTrigger id="items-per-page" className="w-20">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="5">5</SelectItem>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="25">25</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                  <SelectItem value="100">100</SelectItem>
+                </SelectContent>
+              </Select>
+              <span className="text-sm text-muted-foreground">
+                Showing {startIndex + 1} to {Math.min(endIndex, totalItems)} of {totalItems} entities
+              </span>
+            </div>
+
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (currentPage > 1) handlePageChange(currentPage - 1);
+                    }}
+                    className={currentPage <= 1 ? 'pointer-events-none opacity-50' : ''}
+                  />
+                </PaginationItem>
+
+                {/* Page Numbers */}
+                {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                  let pageNumber;
+                  if (totalPages <= 5) {
+                    pageNumber = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNumber = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNumber = totalPages - 4 + i;
+                  } else {
+                    pageNumber = currentPage - 2 + i;
+                  }
+
+                  return (
+                    <PaginationItem key={pageNumber}>
+                      <PaginationLink
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handlePageChange(pageNumber);
+                        }}
+                        isActive={currentPage === pageNumber}
+                      >
+                        {pageNumber}
+                      </PaginationLink>
+                    </PaginationItem>
+                  );
+                })}
+
+                <PaginationItem>
+                  <PaginationNext
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (currentPage < totalPages) handlePageChange(currentPage + 1);
+                    }}
+                    className={currentPage >= totalPages ? 'pointer-events-none opacity-50' : ''}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        )}
+
         {filteredEntities && filteredEntities.length === 0 && !entitiesLoading && (
           <div className="text-center py-8 text-gray-500">No entities found matching your criteria.</div>
         )}
