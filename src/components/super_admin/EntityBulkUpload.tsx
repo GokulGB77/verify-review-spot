@@ -6,7 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { Upload, FileText, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Upload, FileText, CheckCircle, XCircle, AlertTriangle, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -50,11 +51,21 @@ interface ValidationError {
   message: string;
 }
 
+interface ExistingEntity {
+  name: string;
+  rowIndex: number;
+  existingId: string;
+}
+
 const EntityBulkUpload = () => {
   const [file, setFile] = useState<File | null>(null);
   const [csvData, setCsvData] = useState<CSVRow[]>([]);
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
+  const [existingEntities, setExistingEntities] = useState<ExistingEntity[]>([]);
+  const [showDuplicates, setShowDuplicates] = useState(false);
+  const [excludeDuplicates, setExcludeDuplicates] = useState(true);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
+  const [isCheckingDuplicates, setIsCheckingDuplicates] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -107,6 +118,41 @@ const EntityBulkUpload = () => {
     });
 
     return errors;
+  };
+
+  const checkForExistingEntities = async (data: CSVRow[]): Promise<ExistingEntity[]> => {
+    const entityNames = data.map(row => row.name?.trim()).filter(Boolean);
+    
+    if (entityNames.length === 0) return [];
+
+    try {
+      const { data: existingEntities, error } = await supabase
+        .from('entities')
+        .select('entity_id, name')
+        .in('name', entityNames);
+
+      if (error) {
+        console.error('Error checking for existing entities:', error);
+        return [];
+      }
+
+      const existing: ExistingEntity[] = [];
+      existingEntities?.forEach(entity => {
+        const rowIndex = data.findIndex(row => row.name?.trim() === entity.name);
+        if (rowIndex !== -1) {
+          existing.push({
+            name: entity.name,
+            rowIndex,
+            existingId: entity.entity_id
+          });
+        }
+      });
+
+      return existing;
+    } catch (error) {
+      console.error('Error checking duplicates:', error);
+      return [];
+    }
   };
 
   const parseCSV = (text: string): CSVRow[] => {
@@ -182,23 +228,40 @@ const EntityBulkUpload = () => {
     setFile(selectedFile);
     
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       const text = e.target?.result as string;
       const parsed = parseCSV(text);
-      
-      // Debug: Log the parsed data to see what we're getting
-      console.log('Parsed CSV data:', parsed);
-      parsed.forEach((row, index) => {
-        console.log(`Row ${index + 1} - trust_level: "${row.trust_level}", status: "${row.status}"`);
-      });
       
       const errors = validateCSVData(parsed);
       
       setCsvData(parsed);
       setValidationErrors(errors);
+      
+      // Check for existing entities
+      setIsCheckingDuplicates(true);
+      const existing = await checkForExistingEntities(parsed);
+      setExistingEntities(existing);
+      setIsCheckingDuplicates(false);
+      
+      if (existing.length > 0) {
+        setShowDuplicates(true);
+        toast({
+          title: "Duplicates found",
+          description: `Found ${existing.length} entities that already exist in the database`,
+          variant: "default"
+        });
+      }
+      
       setIsPreviewMode(true);
     };
     reader.readAsText(selectedFile);
+  };
+
+  const getDataToUpload = (): CSVRow[] => {
+    if (!excludeDuplicates) return csvData;
+    
+    const duplicateRowIndices = existingEntities.map(e => e.rowIndex);
+    return csvData.filter((_, index) => !duplicateRowIndices.includes(index));
   };
 
   const bulkUploadMutation = useMutation({
@@ -262,6 +325,9 @@ const EntityBulkUpload = () => {
       setFile(null);
       setCsvData([]);
       setValidationErrors([]);
+      setExistingEntities([]);
+      setShowDuplicates(false);
+      setExcludeDuplicates(true);
       setIsPreviewMode(false);
     },
     onError: (error: any) => {
@@ -283,7 +349,18 @@ const EntityBulkUpload = () => {
       return;
     }
 
-    bulkUploadMutation.mutate(csvData);
+    const dataToUpload = getDataToUpload();
+    
+    if (dataToUpload.length === 0) {
+      toast({
+        title: "No data to upload",
+        description: "All entities in the file already exist",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    bulkUploadMutation.mutate(dataToUpload);
   };
 
   const downloadSampleCSV = () => {
@@ -355,11 +432,56 @@ const EntityBulkUpload = () => {
             </Alert>
           )}
 
+          {isCheckingDuplicates && (
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                Checking for existing entities in the database...
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {existingEntities.length > 0 && showDuplicates && (
+            <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>
+                <div className="space-y-2">
+                  <p className="font-medium">Found {existingEntities.length} duplicate entities:</p>
+                  <div className="max-h-32 overflow-y-auto">
+                    {existingEntities.map((entity, index) => (
+                      <p key={index} className="text-sm">
+                        Row {entity.rowIndex + 1}: "{entity.name}" already exists
+                      </p>
+                    ))}
+                  </div>
+                  <div className="flex items-center space-x-2 pt-2">
+                    <Checkbox
+                      id="exclude-duplicates"
+                      checked={excludeDuplicates}
+                      onCheckedChange={(checked) => setExcludeDuplicates(checked as boolean)}
+                    />
+                    <Label htmlFor="exclude-duplicates" className="text-sm">
+                      Exclude duplicates and upload only new entities ({getDataToUpload().length} entities)
+                    </Label>
+                  </div>
+                </div>
+              </AlertDescription>
+            </Alert>
+          )}
+
           {isPreviewMode && csvData.length > 0 && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <h3 className="text-lg font-medium">Preview ({csvData.length} entities)</h3>
+                  <h3 className="text-lg font-medium">
+                    Preview ({csvData.length} entities
+                    {existingEntities.length > 0 && excludeDuplicates && (
+                      <span className="text-sm text-muted-foreground">
+                        , {getDataToUpload().length} to upload
+                      </span>
+                    )}
+                    )
+                  </h3>
                   <Badge variant={validationErrors.length > 0 ? "destructive" : "default"}>
                     {validationErrors.length > 0 ? (
                       <>
@@ -377,9 +499,9 @@ const EntityBulkUpload = () => {
                 
                 <Button 
                   onClick={handleUpload} 
-                  disabled={validationErrors.length > 0 || bulkUploadMutation.isPending}
+                  disabled={validationErrors.length > 0 || bulkUploadMutation.isPending || getDataToUpload().length === 0}
                 >
-                  {bulkUploadMutation.isPending ? 'Uploading...' : 'Upload Entities'}
+                  {bulkUploadMutation.isPending ? 'Uploading...' : `Upload ${getDataToUpload().length} Entities`}
                 </Button>
               </div>
 
@@ -399,9 +521,25 @@ const EntityBulkUpload = () => {
                   <TableBody>
                     {csvData.slice(0, 10).map((row, index) => {
                       const rowErrors = validationErrors.filter(e => e.row === index + 1);
+                      const isDuplicate = existingEntities.some(e => e.rowIndex === index);
+                      const willBeSkipped = isDuplicate && excludeDuplicates;
+                      
                       return (
-                        <TableRow key={index} className={rowErrors.length > 0 ? 'bg-red-50' : ''}>
-                          <TableCell className="font-medium">{row.name}</TableCell>
+                        <TableRow 
+                          key={index} 
+                          className={`
+                            ${rowErrors.length > 0 ? 'bg-red-50' : ''} 
+                            ${willBeSkipped ? 'bg-yellow-50 opacity-60' : ''}
+                          `}
+                        >
+                          <TableCell className="font-medium">
+                            {row.name}
+                            {isDuplicate && (
+                              <Badge variant="outline" className="ml-2 text-xs">
+                                Duplicate
+                              </Badge>
+                            )}
+                          </TableCell>
                           <TableCell className="capitalize">{row.entity_type?.replace('_', ' ')}</TableCell>
                           <TableCell>{row.industry || 'N/A'}</TableCell>
                           <TableCell>{row.city && row.country ? `${row.city}, ${row.country}` : row.city || row.country || 'N/A'}</TableCell>
@@ -414,6 +552,8 @@ const EntityBulkUpload = () => {
                           <TableCell>
                             {rowErrors.length > 0 ? (
                               <Badge variant="destructive">Error</Badge>
+                            ) : willBeSkipped ? (
+                              <Badge variant="secondary">Will Skip</Badge>
                             ) : (
                               <Badge variant="default">Valid</Badge>
                             )}
