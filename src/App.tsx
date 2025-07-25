@@ -96,10 +96,16 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
   const { isSuperAdmin, loading: rolesLoading } = useUserRoles();
 
   if (loading || rolesLoading) {
-    return <div>Loading...</div>;
+    return <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="text-center">Loading...</div>
+    </div>;
   }
 
-  if (!user || !isSuperAdmin()) {
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
+
+  if (!isSuperAdmin()) {
     return <Navigate to="/" replace />;
   }
 
