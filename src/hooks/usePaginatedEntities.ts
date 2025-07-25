@@ -5,7 +5,7 @@ import type { Tables } from '@/integrations/supabase/types';
 
 export type Entity = Tables<'entities'>;
 
-const ITEMS_PER_PAGE = 20;
+const ITEMS_PER_PAGE = 18;
 
 export const usePaginatedEntities = () => {
   return useInfiniteQuery({
