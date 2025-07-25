@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 import BusinessCard from '@/components/BusinessCard';
 import Header from "@/components/common/Header";
 import Footer from "@/components/common/Footer";
-import { usePaginatedEntities, useInfiniteScroll } from '@/hooks/usePaginatedEntities';
+import { usePaginatedEntities } from '@/hooks/usePaginatedEntities';
 import { useReviews } from '@/hooks/useReviews';
 import { transformReviews } from '@/utils/reviewHelpers';
 
@@ -35,8 +35,7 @@ const BusinessDirectory = () => {
 
   const totalCount = data?.pages[0]?.totalCount || 0;
 
-  // Use infinite scroll hook
-  useInfiniteScroll(hasNextPage || false, isFetchingNextPage, fetchNextPage);
+  // Remove automatic infinite scroll
 
   const verificationStatuses = ['all', 'Verified', 'Unverified'];
 
@@ -256,6 +255,13 @@ const BusinessDirectory = () => {
           </div>
         </div>
 
+        {/* Entity Count Display */}
+        <div className="flex justify-between items-center mb-6">
+          <p className="text-sm text-gray-600">
+            Showing {businesses.length} of {totalCount} entities
+          </p>
+        </div>
+
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <Card>
@@ -320,9 +326,12 @@ const BusinessDirectory = () => {
           </div>
         )}
 
-        {/* Load More Button (fallback for users who prefer clicking) */}
+        {/* Load More Button */}
         {hasNextPage && !isFetchingNextPage && getFilteredBusinesses().length > 0 && (
-          <div className="text-center mt-8">
+          <div className="text-center mt-8 space-y-4">
+            <p className="text-sm text-gray-600">
+              Showing {businesses.length} of {totalCount} entities
+            </p>
             <Button 
               variant="outline" 
               size="lg"
