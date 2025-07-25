@@ -100,7 +100,7 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
   }
 
   if (!user || !isSuperAdmin()) {
-    return <Navigate to="/auth" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return children;
