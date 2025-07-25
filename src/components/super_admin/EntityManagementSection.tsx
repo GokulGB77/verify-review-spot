@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Search, Eye, Edit, Ban, RefreshCcw, Trash2, ChevronUp, ChevronDown, CheckSquare, Square } from 'lucide-react';
+import { Search, Eye, Edit, Ban, RefreshCcw, Trash2, ChevronUp, ChevronDown, CheckSquare, Square, ExternalLink } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 import EntityEditForm from '@/components/EntityEditForm';
@@ -500,7 +500,19 @@ const EntityManagementSection: React.FC<EntityManagementSectionProps> = ({
                   </TableCell>
                   <TableCell className="font-medium">
                     <div>
-                      <div className="font-medium">{entity.name}</div>
+                      {(entity.contact as any)?.website ? (
+                        <a
+                          href={(entity.contact as any).website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-medium text-primary hover:text-primary/80 flex items-center gap-1 transition-colors"
+                        >
+                          {entity.name}
+                          <ExternalLink className="h-3 w-3" />
+                        </a>
+                      ) : (
+                        <div className="font-medium">{entity.name}</div>
+                      )}
                       {/* <div className="text-xs text-gray-500 font-mono">
                         ID: {entity.entity_id}
                       </div> */}
