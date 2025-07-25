@@ -371,74 +371,310 @@ const EntityManagementSection: React.FC<EntityManagementSectionProps> = ({
                                   onSuccess={handleEditSuccess}
                                 />
                               ) : (
-                                <>
-                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                      <Label className="font-semibold">Name</Label>
-                                      <p className="text-sm">{selectedEntity.name}</p>
-                                    </div>
-                                    <div>
-                                      <Label className="font-semibold">Legal Name</Label>
-                                      <p className="text-sm">{selectedEntity.legal_name || 'Not provided'}</p>
-                                    </div>
-                                    <div>
-                                      <Label className="font-semibold">Entity Type</Label>
-                                      <p className="text-sm capitalize">{selectedEntity.entity_type?.replace('_', ' ') || 'N/A'}</p>
-                                    </div>
-                                    <div>
-                                      <Label className="font-semibold">Industry</Label>
-                                      <p className="text-sm">{selectedEntity.industry || 'Not provided'}</p>
-                                    </div>
-                                    <div>
-                                      <Label className="font-semibold">Rating</Label>
-                                      <p className="text-sm">{selectedEntity.average_rating || 0}/5 ({selectedEntity.review_count || 0} reviews)</p>
-                                    </div>
-                                    <div>
-                                      <Label className="font-semibold">Website</Label>
-                                      <p className="text-sm">{(selectedEntity.contact as any)?.website || 'Not provided'}</p>
-                                    </div>
-                                    <div>
-                                      <Label className="font-semibold">Phone</Label>
-                                      <p className="text-sm">{(selectedEntity.contact as any)?.phone || 'Not provided'}</p>
-                                    </div>
-                                    <div>
-                                      <Label className="font-semibold">Email</Label>
-                                      <p className="text-sm">{(selectedEntity.contact as any)?.email || 'Not provided'}</p>
-                                    </div>
-                                    <div>
-                                      <Label className="font-semibold">Verification Status</Label>
-                                      <div className="mt-1">
-                                        <Badge variant={selectedEntity.is_verified ? 'default' : 'secondary'}>
-                                          {selectedEntity.is_verified ? 'Verified' : 'Unverified'}
-                                        </Badge>
+                                <div className="space-y-6">
+                                  {/* Basic Information */}
+                                  <div className="border-b pb-4">
+                                    <h3 className="text-lg font-semibold mb-3">Basic Information</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                      <div>
+                                        <Label className="font-semibold">Entity ID</Label>
+                                        <p className="text-sm font-mono">{selectedEntity.entity_id}</p>
                                       </div>
-                                    </div>
-                                    <div>
-                                      <Label className="font-semibold">Active Status</Label>
-                                      <div className="mt-1">
-                                        <Badge variant={(selectedEntity.status || 'active') === 'active' ? 'default' : 'destructive'}>
-                                          {(selectedEntity.status || 'active') === 'active' ? 'Active' : 'Inactive'}
-                                        </Badge>
+                                      <div>
+                                        <Label className="font-semibold">Name</Label>
+                                        <p className="text-sm">{selectedEntity.name}</p>
+                                      </div>
+                                      <div>
+                                        <Label className="font-semibold">Legal Name</Label>
+                                        <p className="text-sm">{selectedEntity.legal_name || 'Not provided'}</p>
+                                      </div>
+                                      <div>
+                                        <Label className="font-semibold">Entity Type</Label>
+                                        <p className="text-sm capitalize">{selectedEntity.entity_type?.replace('_', ' ') || 'N/A'}</p>
+                                      </div>
+                                      <div>
+                                        <Label className="font-semibold">Tagline</Label>
+                                        <p className="text-sm">{selectedEntity.tagline || 'Not provided'}</p>
+                                      </div>
+                                      <div>
+                                        <Label className="font-semibold">Industry</Label>
+                                        <p className="text-sm">{selectedEntity.industry || 'Not provided'}</p>
+                                      </div>
+                                      <div>
+                                        <Label className="font-semibold">Sub Industry</Label>
+                                        <p className="text-sm">{selectedEntity.sub_industry || 'Not provided'}</p>
+                                      </div>
+                                      <div>
+                                        <Label className="font-semibold">Founded Year</Label>
+                                        <p className="text-sm">{selectedEntity.founded_year || 'Not provided'}</p>
+                                      </div>
+                                      <div>
+                                        <Label className="font-semibold">Employee Count</Label>
+                                        <p className="text-sm">{selectedEntity.number_of_employees || 'Not provided'}</p>
+                                      </div>
+                                      <div>
+                                        <Label className="font-semibold">Revenue Range</Label>
+                                        <p className="text-sm">{selectedEntity.revenue_range || 'Not provided'}</p>
                                       </div>
                                     </div>
                                   </div>
+
+                                  {/* Description */}
                                   {selectedEntity.description && (
-                                    <div>
-                                      <Label className="font-semibold">Description</Label>
-                                      <p className="text-sm mt-1 whitespace-pre-wrap">{selectedEntity.description}</p>
+                                    <div className="border-b pb-4">
+                                      <h3 className="text-lg font-semibold mb-3">Description</h3>
+                                      <p className="text-sm whitespace-pre-wrap">{selectedEntity.description}</p>
                                     </div>
                                   )}
-                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                      <Label className="font-semibold">Founded Year</Label>
-                                      <p className="text-sm">{selectedEntity.founded_year || 'Not provided'}</p>
-                                    </div>
-                                    <div>
-                                      <Label className="font-semibold">Employee Count</Label>
-                                      <p className="text-sm">{selectedEntity.number_of_employees || 'Not provided'}</p>
+
+                                  {/* Contact Information */}
+                                  <div className="border-b pb-4">
+                                    <h3 className="text-lg font-semibold mb-3">Contact Information</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                      <div>
+                                        <Label className="font-semibold">Website</Label>
+                                        <p className="text-sm">{(selectedEntity.contact as any)?.website || 'Not provided'}</p>
+                                      </div>
+                                      <div>
+                                        <Label className="font-semibold">Phone</Label>
+                                        <p className="text-sm">{(selectedEntity.contact as any)?.phone || 'Not provided'}</p>
+                                      </div>
+                                      <div>
+                                        <Label className="font-semibold">Email</Label>
+                                        <p className="text-sm">{(selectedEntity.contact as any)?.email || 'Not provided'}</p>
+                                      </div>
                                     </div>
                                   </div>
-                                </>
+
+                                  {/* Location Information */}
+                                  <div className="border-b pb-4">
+                                    <h3 className="text-lg font-semibold mb-3">Location</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                      <div>
+                                        <Label className="font-semibold">Address</Label>
+                                        <p className="text-sm">{(selectedEntity.location as any)?.address || 'Not provided'}</p>
+                                      </div>
+                                      <div>
+                                        <Label className="font-semibold">City</Label>
+                                        <p className="text-sm">{(selectedEntity.location as any)?.city || 'Not provided'}</p>
+                                      </div>
+                                      <div>
+                                        <Label className="font-semibold">State</Label>
+                                        <p className="text-sm">{(selectedEntity.location as any)?.state || 'Not provided'}</p>
+                                      </div>
+                                      <div>
+                                        <Label className="font-semibold">Country</Label>
+                                        <p className="text-sm">{(selectedEntity.location as any)?.country || 'Not provided'}</p>
+                                      </div>
+                                      <div>
+                                        <Label className="font-semibold">Zip Code</Label>
+                                        <p className="text-sm">{(selectedEntity.location as any)?.zip_code || 'Not provided'}</p>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* Status & Verification */}
+                                  <div className="border-b pb-4">
+                                    <h3 className="text-lg font-semibold mb-3">Status & Verification</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                      <div>
+                                        <Label className="font-semibold">Verification Status</Label>
+                                        <div className="mt-1">
+                                          <Badge variant={selectedEntity.is_verified ? 'default' : 'secondary'}>
+                                            {selectedEntity.is_verified ? 'Verified' : 'Unverified'}
+                                          </Badge>
+                                        </div>
+                                      </div>
+                                      <div>
+                                        <Label className="font-semibold">Trust Level</Label>
+                                        <div className="mt-1">
+                                          <Badge variant="outline">
+                                            {selectedEntity.trust_level || 'basic'}
+                                          </Badge>
+                                        </div>
+                                      </div>
+                                      <div>
+                                        <Label className="font-semibold">Active Status</Label>
+                                        <div className="mt-1">
+                                          <Badge variant={(selectedEntity.status || 'active') === 'active' ? 'default' : 'destructive'}>
+                                            {(selectedEntity.status || 'active') === 'active' ? 'Active' : 'Inactive'}
+                                          </Badge>
+                                        </div>
+                                      </div>
+                                      <div>
+                                        <Label className="font-semibold">Business Claimed</Label>
+                                        <div className="mt-1">
+                                          <Badge variant={selectedEntity.claimed_by_business ? 'default' : 'secondary'}>
+                                            {selectedEntity.claimed_by_business ? 'Claimed' : 'Unclaimed'}
+                                          </Badge>
+                                        </div>
+                                      </div>
+                                      <div>
+                                        <Label className="font-semibold">Claimed By User ID</Label>
+                                        <p className="text-sm font-mono">{selectedEntity.claimed_by_user_id || 'Not claimed'}</p>
+                                      </div>
+                                      <div>
+                                        <Label className="font-semibold">Profile Completion</Label>
+                                        <p className="text-sm">{selectedEntity.profile_completion || 0}%</p>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* Rating & Reviews */}
+                                  <div className="border-b pb-4">
+                                    <h3 className="text-lg font-semibold mb-3">Rating & Reviews</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                      <div>
+                                        <Label className="font-semibold">Average Rating</Label>
+                                        <p className="text-sm">{selectedEntity.average_rating || 0}/5</p>
+                                      </div>
+                                      <div>
+                                        <Label className="font-semibold">Review Count</Label>
+                                        <p className="text-sm">{selectedEntity.review_count || 0}</p>
+                                      </div>
+                                      <div>
+                                        <Label className="font-semibold">Platform Score</Label>
+                                        <p className="text-sm">{selectedEntity.platform_score || 0}</p>
+                                      </div>
+                                      <div>
+                                        <Label className="font-semibold">Can Reply to Reviews</Label>
+                                        <div className="mt-1">
+                                          <Badge variant={selectedEntity.can_reply_to_reviews ? 'default' : 'secondary'}>
+                                            {selectedEntity.can_reply_to_reviews ? 'Yes' : 'No'}
+                                          </Badge>
+                                        </div>
+                                      </div>
+                                      <div>
+                                        <Label className="font-semibold">Flagged for Review Fraud</Label>
+                                        <div className="mt-1">
+                                          <Badge variant={selectedEntity.flagged_for_review_fraud ? 'destructive' : 'default'}>
+                                            {selectedEntity.flagged_for_review_fraud ? 'Flagged' : 'Not Flagged'}
+                                          </Badge>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* Media & Images */}
+                                  <div className="border-b pb-4">
+                                    <h3 className="text-lg font-semibold mb-3">Media & Images</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                      <div>
+                                        <Label className="font-semibold">Logo URL</Label>
+                                        <p className="text-sm break-all">{selectedEntity.logo_url || 'Not provided'}</p>
+                                      </div>
+                                      <div>
+                                        <Label className="font-semibold">Cover Image URL</Label>
+                                        <p className="text-sm break-all">{selectedEntity.cover_image_url || 'Not provided'}</p>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* Tags & Keywords */}
+                                  <div className="border-b pb-4">
+                                    <h3 className="text-lg font-semibold mb-3">Tags & Keywords</h3>
+                                    <div className="space-y-3">
+                                      <div>
+                                        <Label className="font-semibold">Category Tags</Label>
+                                        <div className="flex flex-wrap gap-2 mt-1">
+                                          {selectedEntity.category_tags && selectedEntity.category_tags.length > 0 ? (
+                                            selectedEntity.category_tags.map((tag: string, index: number) => (
+                                              <Badge key={index} variant="outline">{tag}</Badge>
+                                            ))
+                                          ) : (
+                                            <p className="text-sm text-gray-500">No category tags</p>
+                                          )}
+                                        </div>
+                                      </div>
+                                      <div>
+                                        <Label className="font-semibold">Keywords</Label>
+                                        <div className="flex flex-wrap gap-2 mt-1">
+                                          {selectedEntity.keywords && selectedEntity.keywords.length > 0 ? (
+                                            selectedEntity.keywords.map((keyword: string, index: number) => (
+                                              <Badge key={index} variant="outline">{keyword}</Badge>
+                                            ))
+                                          ) : (
+                                            <p className="text-sm text-gray-500">No keywords</p>
+                                          )}
+                                        </div>
+                                      </div>
+                                      <div>
+                                        <Label className="font-semibold">Founders</Label>
+                                        <div className="flex flex-wrap gap-2 mt-1">
+                                          {selectedEntity.founders && selectedEntity.founders.length > 0 ? (
+                                            selectedEntity.founders.map((founder: string, index: number) => (
+                                              <Badge key={index} variant="outline">{founder}</Badge>
+                                            ))
+                                          ) : (
+                                            <p className="text-sm text-gray-500">No founders listed</p>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* JSON Data Fields */}
+                                  <div className="border-b pb-4">
+                                    <h3 className="text-lg font-semibold mb-3">Additional Data</h3>
+                                    <div className="space-y-4">
+                                      {selectedEntity.registration_info && Object.keys(selectedEntity.registration_info).length > 0 && (
+                                        <div>
+                                          <Label className="font-semibold">Registration Info</Label>
+                                          <pre className="text-xs bg-gray-100 p-2 rounded mt-1 overflow-auto">
+                                            {JSON.stringify(selectedEntity.registration_info, null, 2)}
+                                          </pre>
+                                        </div>
+                                      )}
+                                      {selectedEntity.social_links && Object.keys(selectedEntity.social_links).length > 0 && (
+                                        <div>
+                                          <Label className="font-semibold">Social Links</Label>
+                                          <pre className="text-xs bg-gray-100 p-2 rounded mt-1 overflow-auto">
+                                            {JSON.stringify(selectedEntity.social_links, null, 2)}
+                                          </pre>
+                                        </div>
+                                      )}
+                                      {selectedEntity.apps && Object.keys(selectedEntity.apps).length > 0 && (
+                                        <div>
+                                          <Label className="font-semibold">Apps</Label>
+                                          <pre className="text-xs bg-gray-100 p-2 rounded mt-1 overflow-auto">
+                                            {JSON.stringify(selectedEntity.apps, null, 2)}
+                                          </pre>
+                                        </div>
+                                      )}
+                                      {selectedEntity.media && Object.keys(selectedEntity.media).length > 0 && (
+                                        <div>
+                                          <Label className="font-semibold">Media</Label>
+                                          <pre className="text-xs bg-gray-100 p-2 rounded mt-1 overflow-auto">
+                                            {JSON.stringify(selectedEntity.media, null, 2)}
+                                          </pre>
+                                        </div>
+                                      )}
+                                      {selectedEntity.custom_fields && Object.keys(selectedEntity.custom_fields).length > 0 && (
+                                        <div>
+                                          <Label className="font-semibold">Custom Fields</Label>
+                                          <pre className="text-xs bg-gray-100 p-2 rounded mt-1 overflow-auto">
+                                            {JSON.stringify(selectedEntity.custom_fields, null, 2)}
+                                          </pre>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  {/* Timestamps */}
+                                  <div>
+                                    <h3 className="text-lg font-semibold mb-3">Timestamps</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                      <div>
+                                        <Label className="font-semibold">Created At</Label>
+                                        <p className="text-sm">{new Date(selectedEntity.created_at).toLocaleString()}</p>
+                                      </div>
+                                      <div>
+                                        <Label className="font-semibold">Updated At</Label>
+                                        <p className="text-sm">{new Date(selectedEntity.updated_at).toLocaleString()}</p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
                               )}
                             </div>
                           )}
