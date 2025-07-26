@@ -358,9 +358,9 @@ const AnimatedTestimonials = () => {
           <div className="mt-16 sm:mt-20 lg:mt-24 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 text-center px-4">
             <div className="p-6 sm:p-8 bg-white rounded-2xl shadow-sm border border-gray-200">
               <div className="text-3xl sm:text-4xl font-bold text-blue-600 mb-2">
-                {allReviews.length}
+                {allReviews.filter(review => review.is_verified === true).length}
               </div>
-              <div className="text-sm sm:text-base text-gray-600 font-medium">Reviews Submitted</div>
+              <div className="text-sm sm:text-base text-gray-600 font-medium">Verified Reviews</div>
             </div>
             <div className="p-6 sm:p-8 bg-white rounded-2xl shadow-sm border border-gray-200">
               <div className="text-3xl sm:text-4xl font-bold text-purple-600 mb-2">
@@ -370,10 +370,10 @@ const AnimatedTestimonials = () => {
             </div>
             <div className="p-6 sm:p-8 bg-white rounded-2xl shadow-sm border border-gray-200 sm:col-span-2 md:col-span-1">
               <div className="text-3xl sm:text-4xl font-bold text-green-600 mb-2">
-                {Math.max(0, Math.floor(allReviews.length * 0.1))}
+                {allReviews.filter(review => getMainBadge(review.profiles) === 'Verified User').map(review => review.user_id).filter((userId, index, arr) => arr.indexOf(userId) === index).length}
               </div>
               <div className="text-sm sm:text-base text-gray-600 font-medium">
-                Daily Active Readers
+                Verified Users
               </div>
             </div>
           </div>
@@ -498,26 +498,26 @@ const AnimatedTestimonials = () => {
         <div className="mt-16 sm:mt-20 lg:mt-24 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 text-center px-4">
           <div className="p-6 sm:p-8 bg-white rounded-2xl shadow-sm border border-gray-200">
             <div className="text-3xl sm:text-4xl font-bold text-blue-600 mb-2">
-              {allReviews.length}+
+              {allReviews.filter(review => review.is_verified === true).length}
             </div>
             <div className="text-sm sm:text-base text-gray-600 font-medium">
-              Verified Reviews Submitted
+              Verified Reviews
             </div>
           </div>
           <div className="p-6 sm:p-8 bg-white rounded-2xl shadow-sm border border-gray-200">
             <div className="text-3xl sm:text-4xl font-bold text-purple-600 mb-2">
-              {businesses.filter((b) => b.status === "active").length}+
+              {businesses.filter((b) => b.status === "active").length}
             </div>
             <div className="text-sm sm:text-base text-gray-600 font-medium">
-              Entites Listed
+              Businesses Listed
             </div>
           </div>
           <div className="p-6 sm:p-8 bg-white rounded-2xl shadow-sm border border-gray-200 sm:col-span-2 md:col-span-1">
             <div className="text-3xl sm:text-4xl font-bold text-green-600 mb-2">
-              {Math.max(1, Math.floor(allReviews.length * 0.1))}+
+              {allReviews.filter(review => getMainBadge(review.profiles) === 'Verified User').map(review => review.user_id).filter((userId, index, arr) => arr.indexOf(userId) === index).length}
             </div>
             <div className="text-sm sm:text-base text-gray-600 font-medium">
-              Daily Active Review Readers
+              Verified Users
             </div>
           </div>
         </div>
