@@ -140,7 +140,6 @@ const Auth = () => {
                 <GoogleLogin
                   onSuccess={handleGoogleSuccess}
                   onError={handleGoogleError}
-                  useOneTap
                 />
               </div>
             </CardContent>
