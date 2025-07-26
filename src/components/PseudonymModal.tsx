@@ -117,17 +117,9 @@ const PseudonymModal = ({ open, user, onComplete }: PseudonymModalProps) => {
   };
 
   return (
-    <Dialog open={open} onOpenChange={() => {}}>
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
       <DialogContent className="sm:max-w-md">
-        <DialogHeader className="relative">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="absolute -top-2 -right-2 h-8 w-8 rounded-full"
-            onClick={handleClose}
-          >
-            <X className="h-4 w-4" />
-          </Button>
+        <DialogHeader>
           <DialogTitle>Add a pseudonym to your profile</DialogTitle>
           <DialogDescription>
             Add a pseudonym to your profile so that the reviews will be posted in that name keeping your real name private.
