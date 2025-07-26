@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { useBusinesses } from "@/hooks/useBusinesses";
 import { useReviews } from "@/hooks/useReviews";
 import {
@@ -79,8 +80,10 @@ export const transformReviewsToTestimonials = (reviews, businesses) => {
 
       const testimonial = {
         text: latestReview.content,
+        title: latestReview.title, // Add title to testimonial object
         author: userName,
         company: business.name,
+        businessId: business.entity_id, // Add business ID for navigation
         avatar: getUserInitials(userName),
         rating: latestReview.rating || 0,
         created_at: latestReview.created_at,
@@ -103,7 +106,9 @@ export const transformReviewsToTestimonials = (reviews, businesses) => {
 };
 
 const TestimonialCard = ({ testimonial, onHover, onLeave, onReadMore }) => {
-  // Function to truncate text - use shorter limit for better mobile experience  
+  const navigate = useNavigate();
+  
+  // Function to truncate text - use shorter limit for better mobile experience
   const truncateText = (text, wordLimit = 35) => {
     const words = text.split(" ");
     if (words.length <= wordLimit) {
@@ -167,6 +172,12 @@ const TestimonialCard = ({ testimonial, onHover, onLeave, onReadMore }) => {
       onMouseLeave={onLeave}
     >
       <div className="space-y-3">
+        {/* Title */}
+        {testimonial.title && (
+          <h3 className="font-semibold text-base text-gray-900 leading-tight line-clamp-2">
+            {testimonial.title}
+          </h3>
+        )}
         <p className="text-gray-900 text-sm leading-relaxed">
           "{truncated}"
         </p>
@@ -191,9 +202,15 @@ const TestimonialCard = ({ testimonial, onHover, onLeave, onReadMore }) => {
                 {testimonial.author}
               </p>
               <span className="text-gray-400 hidden sm:inline">•</span>
-              <p className="text-xs sm:text-sm text-gray-600 truncate">
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/entity/${testimonial.businessId}`);
+                }}
+                className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 truncate transition-colors duration-200 cursor-pointer underline-offset-2 hover:underline text-left"
+              >
                 {testimonial.company}
-              </p>
+              </button>
             </div>
           </div>
         </div>
@@ -594,8 +611,11 @@ const AnimatedTestimonials = () => {
                 </Badge>
               </div>
 
-              {/* Full Review Text */}
+              {/* Title and Full Review Text */}
               <div className="bg-gray-50 rounded-lg p-4">
+                {selectedTestimonial.title && (
+                  <h3 className="font-semibold text-lg mb-3 text-gray-900">{selectedTestimonial.title}</h3>
+                )}
                 <p className="text-gray-900 leading-relaxed">"{selectedTestimonial.text}"</p>
               </div>
 

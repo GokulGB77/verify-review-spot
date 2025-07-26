@@ -172,7 +172,7 @@ const ReviewCard = ({
         {title && (
           <h3 className="font-semibold text-lg mb-2 text-gray-900">{title}</h3>
         )}
-        <p className="text-gray-700 mb-4 leading-relaxed break-words overflow-wrap-anywhere">{content}</p>
+        <p className="text-gray-700 mb-4 leading-relaxed break-words overflow-wrap-anywhere whitespace-pre-wrap">{content}</p>
         
         {businessResponse && (
           <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-4">
@@ -182,7 +182,7 @@ const ReviewCard = ({
               </Badge>
               <span className="text-sm text-gray-600 ml-2">{businessResponseDate}</span>
             </div>
-            <p className="text-gray-700 break-words overflow-wrap-anywhere">{businessResponse}</p>
+            <p className="text-gray-700 break-words overflow-wrap-anywhere whitespace-pre-wrap">{businessResponse}</p>
           </div>
         )}
 
