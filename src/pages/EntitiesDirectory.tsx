@@ -3,7 +3,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Search, Shield, Filter, Building, MapPin, Loader2 } from 'lucide-react';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Search, Shield, Filter, Building, MapPin, Loader2, X } from 'lucide-react';
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Link } from 'react-router-dom';
 import BusinessCard from '@/components/BusinessCard';
 import Header from "@/components/common/Header";
@@ -16,7 +18,9 @@ const BusinessDirectory = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [verificationFilter, setVerificationFilter] = useState('all');
+  const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
   const loadMoreButtonRef = useRef<HTMLButtonElement>(null);
+  const isMobile = useIsMobile();
   
   const { 
     data, 
@@ -191,9 +195,9 @@ const BusinessDirectory = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Page Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Business Directory</h1>
-          <p className="text-lg text-gray-600">
+        <div className="mb-6">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Business Directory</h1>
+          <p className="text-sm md:text-lg text-gray-600">
             Discover verified businesses and read authentic reviews from real users
           </p>
         </div>
@@ -216,44 +220,127 @@ const BusinessDirectory = () => {
             </Button>
           </div>
 
-          <div className="flex flex-wrap gap-4 items-center">
-            <div className="flex items-center space-x-2">
-              <Filter className="h-4 w-4 text-gray-500" />
-              <span className="text-sm font-medium text-gray-700">Filters:</span>
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <span className="text-sm text-gray-600">Category:</span>
-              <div className="flex gap-2">
-                {availableCategories.map((category) => (
-                  <Button
-                    key={category}
-                    variant={categoryFilter === category ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setCategoryFilter(category)}
-                  >
-                    {category === 'all' ? 'All Categories' : category}
-                  </Button>
-                ))}
+          {/* Mobile Filters */}
+          {isMobile ? (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Filter className="h-4 w-4 text-gray-500" />
+                <span className="text-sm font-medium text-gray-700">Filters</span>
+                {(categoryFilter !== 'all' || verificationFilter !== 'all') && (
+                  <Badge variant="secondary" className="text-xs">
+                    {[
+                      categoryFilter !== 'all' ? 1 : 0,
+                      verificationFilter !== 'all' ? 1 : 0
+                    ].reduce((a, b) => a + b, 0)} active
+                  </Badge>
+                )}
               </div>
-            </div>
+              
+              <Sheet open={isFilterSheetOpen} onOpenChange={setIsFilterSheetOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <Filter className="h-4 w-4 mr-2" />
+                    Filter
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="bottom" className="h-[80vh]">
+                  <SheetHeader>
+                    <SheetTitle>Filter Businesses</SheetTitle>
+                  </SheetHeader>
+                  
+                  <div className="space-y-6 mt-6">
+                    {/* Category Filter */}
+                    <div className="space-y-3">
+                      <h3 className="font-medium">Category</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {availableCategories.map((category) => (
+                          <Button
+                            key={category}
+                            variant={categoryFilter === category ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => setCategoryFilter(category)}
+                          >
+                            {category === 'all' ? 'All Categories' : category}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
 
-            <div className="flex items-center space-x-2">
-              <span className="text-sm text-gray-600">Status:</span>
-              <div className="flex gap-2">
-                {verificationStatuses.map((status) => (
-                  <Button
-                    key={status}
-                    variant={verificationFilter === status ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setVerificationFilter(status)}
-                  >
-                    {status === 'all' ? 'All Status' : status}
-                  </Button>
-                ))}
+                    {/* Status Filter */}
+                    <div className="space-y-3">
+                      <h3 className="font-medium">Verification Status</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {verificationStatuses.map((status) => (
+                          <Button
+                            key={status}
+                            variant={verificationFilter === status ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => setVerificationFilter(status)}
+                          >
+                            {status === 'all' ? 'All Status' : status}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Clear Filters */}
+                    <div className="pt-4 border-t">
+                      <Button 
+                        variant="outline" 
+                        className="w-full"
+                        onClick={() => {
+                          setCategoryFilter('all');
+                          setVerificationFilter('all');
+                        }}
+                      >
+                        Clear All Filters
+                      </Button>
+                    </div>
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
+          ) : (
+            /* Desktop Filters */
+            <div className="flex flex-wrap gap-4 items-center">
+              <div className="flex items-center space-x-2">
+                <Filter className="h-4 w-4 text-gray-500" />
+                <span className="text-sm font-medium text-gray-700">Filters:</span>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <span className="text-sm text-gray-600">Category:</span>
+                <div className="flex gap-2">
+                  {availableCategories.map((category) => (
+                    <Button
+                      key={category}
+                      variant={categoryFilter === category ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setCategoryFilter(category)}
+                    >
+                      {category === 'all' ? 'All Categories' : category}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <span className="text-sm text-gray-600">Status:</span>
+                <div className="flex gap-2">
+                  {verificationStatuses.map((status) => (
+                    <Button
+                      key={status}
+                      variant={verificationFilter === status ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setVerificationFilter(status)}
+                    >
+                      {status === 'all' ? 'All Status' : status}
+                    </Button>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Entity Count Display */}
@@ -264,29 +351,29 @@ const BusinessDirectory = () => {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
           <Card>
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-blue-600">{totalBusinesses}</div>
-              <div className="text-sm text-gray-600">Total Businesses</div>
+            <CardContent className="p-3 md:p-4 text-center">
+              <div className="text-lg md:text-2xl font-bold text-blue-600">{totalBusinesses}</div>
+              <div className="text-xs md:text-sm text-gray-600">Total Businesses</div>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-green-600">{verifiedBusinesses}</div>
-              <div className="text-sm text-gray-600">Verified Businesses</div>
+            <CardContent className="p-3 md:p-4 text-center">
+              <div className="text-lg md:text-2xl font-bold text-green-600">{verifiedBusinesses}</div>
+              <div className="text-xs md:text-sm text-gray-600">Verified Businesses</div>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-yellow-600">{stats.averageRating}</div>
-              <div className="text-sm text-gray-600">Average Rating</div>
+            <CardContent className="p-3 md:p-4 text-center">
+              <div className="text-lg md:text-2xl font-bold text-yellow-600">{stats.averageRating}</div>
+              <div className="text-xs md:text-sm text-gray-600">Average Rating</div>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-purple-600">{stats.totalReviews}</div>
-              <div className="text-sm text-gray-600">Total Reviews</div>
+            <CardContent className="p-3 md:p-4 text-center">
+              <div className="text-lg md:text-2xl font-bold text-purple-600">{stats.totalReviews}</div>
+              <div className="text-xs md:text-sm text-gray-600">Total Reviews</div>
             </CardContent>
           </Card>
         </div>
