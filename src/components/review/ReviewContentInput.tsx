@@ -1,15 +1,19 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface ReviewContentInputProps {
+  title: string;
+  onTitleChange: (title: string) => void;
   content: string;
   onContentChange: (content: string) => void;
   isEdit: boolean;
   isUpdate: boolean;
 }
 
-const ReviewContentInput = ({ content, onContentChange, isEdit, isUpdate }: ReviewContentInputProps) => {
+const ReviewContentInput = ({ title, onTitleChange, content, onContentChange, isEdit, isUpdate }: ReviewContentInputProps) => {
   return (
     <Card>
       <CardHeader>
@@ -27,7 +31,25 @@ const ReviewContentInput = ({ content, onContentChange, isEdit, isUpdate }: Revi
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Textarea
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="title">Review Title *</Label>
+            <Input
+              id="title"
+              value={title}
+              onChange={(e) => onTitleChange(e.target.value)}
+              placeholder="e.g., My experience as a student and employee"
+              maxLength={100}
+              className="w-full"
+            />
+            <p className="text-sm text-gray-500">
+              {title.length}/100 characters
+            </p>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="content">Review Content *</Label>
+            <Textarea
+              id="content"
           value={content}
           onChange={(e) => onContentChange(e.target.value)}
           placeholder={isEdit 
@@ -40,9 +62,11 @@ const ReviewContentInput = ({ content, onContentChange, isEdit, isUpdate }: Revi
           rows={6}
           className="w-full"
         />
-        <p className="text-sm text-gray-500 mt-2">
-          Minimum 50 characters. Current: {content.length}
-        </p>
+            <p className="text-sm text-gray-500 mt-2">
+              Minimum 50 characters. Current: {content.length}
+            </p>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
