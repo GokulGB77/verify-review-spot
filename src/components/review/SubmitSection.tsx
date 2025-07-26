@@ -1,6 +1,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 
 interface SubmitSectionProps {
   canSubmit: boolean;
@@ -26,10 +27,11 @@ const SubmitSection = ({
       <CardContent className="pt-6">
         <Button
           type="submit"
-          disabled={!canSubmit}
+          disabled={!canSubmit || isPending}
           className="w-full"
           size="lg"
         >
+          {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {isPending 
             ? (isEdit ? 'Updating...' : (isUpdate ? 'Submitting Update...' : 'Submitting...'))
             : (isEdit ? 'Update Review' : (isUpdate ? 'Submit Update' : 'Submit Review'))

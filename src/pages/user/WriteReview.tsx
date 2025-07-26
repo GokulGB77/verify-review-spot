@@ -171,6 +171,7 @@ const WriteReview = () => {
       isEdit
     });
     
+    // Validate form fields and show specific error messages
     if (!user || !profile) {
       toast({
         title: "Authentication Required",
@@ -180,19 +181,37 @@ const WriteReview = () => {
       return;
     }
 
-    if (!formData.businessId || !formData.rating || !formData.content.trim()) {
+    if (!selectedBusiness || !formData.businessId) {
       toast({
-        title: "Incomplete Form",
-        description: "Please fill in all required fields.",
+        title: "Business Required",
+        description: "Please select a business to review.",
         variant: "destructive",
       });
       return;
     }
 
-    if (formData.content.length < 50) {
+    if (!formData.rating || formData.rating === 0) {
       toast({
-        title: "Review too short",
-        description: "Please write at least 50 characters for your review.",
+        title: "Rating Required",
+        description: "Please provide a rating for this business.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.content || !formData.content.trim()) {
+      toast({
+        title: "Review Content Required",
+        description: "Please write your review content.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (formData.content.trim().length < 50) {
+      toast({
+        title: "Review Too Short",
+        description: `Please write at least 50 characters. Current: ${formData.content.trim().length}/50`,
         variant: "destructive",
       });
       return;
