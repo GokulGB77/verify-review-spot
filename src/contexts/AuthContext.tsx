@@ -34,28 +34,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         console.log('Auth state changed:', event, session?.user?.id);
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
 
-        // Handle Google sign-in pseudonym requirement
+        // Handle Google sign-in pseudonym requirement with setTimeout to avoid deadlock
         if (event === 'SIGNED_IN' && session?.user) {
           const isGoogleProvider = session.user.app_metadata?.provider === 'google';
           
           if (isGoogleProvider) {
-            // Check if user already has a pseudonym
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('pseudonym, pseudonym_set')
-              .eq('id', session.user.id)
-              .single();
+            // Defer the profile check to avoid blocking the auth state change
+            setTimeout(async () => {
+              try {
+                const { data: profile } = await supabase
+                  .from('profiles')
+                  .select('pseudonym, pseudonym_set')
+                  .eq('id', session.user.id)
+                  .single();
 
-            if (!profile?.pseudonym_set) {
-              setPendingGoogleUser(session.user);
-              setShowPseudonymModal(true);
-            }
+                if (!profile?.pseudonym_set) {
+                  setPendingGoogleUser(session.user);
+                  setShowPseudonymModal(true);
+                }
+              } catch (error) {
+                console.error('Error checking profile:', error);
+              }
+            }, 0);
           }
         }
 
