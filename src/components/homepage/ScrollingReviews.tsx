@@ -10,6 +10,8 @@ import {
 import { Star, CheckCircle, Shield, Clock, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 // Function to get user initials for avatar
 const getUserInitials = (name: string) => {
@@ -320,6 +322,20 @@ const AnimatedTestimonials = () => {
   const { data: businesses = [] } = useBusinesses();
   const { data: allReviews = [] } = useReviews();
 
+  // Get total count of verified users
+  const { data: verifiedUsersCount = 0 } = useQuery({
+    queryKey: ['verified-users-count'],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_verified', true);
+      
+      if (error) throw error;
+      return count || 0;
+    },
+  });
+
   // Transform reviews to testimonials format
   const allTestimonials = transformReviewsToTestimonials(
     allReviews,
@@ -387,7 +403,7 @@ const AnimatedTestimonials = () => {
             </div>
             <div className="p-6 sm:p-8 bg-white rounded-2xl shadow-sm border border-gray-200 sm:col-span-2 md:col-span-1">
               <div className="text-3xl sm:text-4xl font-bold text-green-600 mb-2">
-                {Array.from(new Set(allReviews.filter(review => review.profiles?.is_verified === true).map(review => review.user_id))).length}
+                {verifiedUsersCount}
               </div>
               <div className="text-sm sm:text-base text-gray-600 font-medium">
                 Verified Users
@@ -531,7 +547,7 @@ const AnimatedTestimonials = () => {
           </div>
           <div className="p-6 sm:p-8 bg-white rounded-2xl shadow-sm border border-gray-200 sm:col-span-2 md:col-span-1">
             <div className="text-3xl sm:text-4xl font-bold text-green-600 mb-2">
-              {Array.from(new Set(allReviews.filter(review => review.profiles?.is_verified === true).map(review => review.user_id))).length}
+              {verifiedUsersCount}
             </div>
             <div className="text-sm sm:text-base text-gray-600 font-medium">
               Verified Users
