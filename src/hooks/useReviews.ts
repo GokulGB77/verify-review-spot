@@ -220,6 +220,7 @@ export const useCreateReview = () => {
   return useMutation({
     mutationFn: async (reviewData: {
       business_id: string;
+      title: string;
       rating: number;
       content: string;
       user_badge?: string;
@@ -266,6 +267,7 @@ export const useCreateReview = () => {
           .from('reviews')
           .insert([{
             business_id: reviewData.business_id,
+            title: reviewData.title,
             rating: reviewData.rating,
             content: reviewData.content,
             user_id: user.id,
@@ -288,6 +290,7 @@ export const useCreateReview = () => {
           .from('reviews')
           .insert([{
             business_id: reviewData.business_id,
+            title: reviewData.title,
             rating: reviewData.rating,
             content: reviewData.content,
             user_id: user.id,

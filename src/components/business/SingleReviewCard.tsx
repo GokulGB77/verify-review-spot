@@ -253,7 +253,7 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory, entityName 
           </Badge>
         </div>
         {review.title && (
-          <h3 className="font-semibold text-lg mb-2 text-gray-900">{review.title}</h3>
+          <h3 className="font-semibold text-md mb-2 text-gray-900">{review.title}</h3>
         )}
         <ReviewContent content={review.content} maxLength={150} />
       </div>

@@ -346,7 +346,10 @@ const BusinessDirectory = () => {
         {/* Entity Count Display */}
         <div className="flex justify-between items-center mb-6">
           <p className="text-sm text-gray-600">
-            Showing {businesses.length} of {totalCount} entities
+            Showing {getFilteredBusinesses().length} of {totalCount} entities
+            {(categoryFilter !== 'all' || verificationFilter !== 'all' || searchQuery.trim()) && (
+              <span className="text-gray-500"> (filtered)</span>
+            )}
           </p>
         </div>
 
@@ -418,7 +421,10 @@ const BusinessDirectory = () => {
         {hasNextPage && !isFetchingNextPage && getFilteredBusinesses().length > 0 && (
           <div className="text-center mt-8 space-y-4">
             <p className="text-sm text-gray-600">
-              Showing {businesses.length} of {totalCount} entities
+              Showing {getFilteredBusinesses().length} of {totalCount} entities
+              {(categoryFilter !== 'all' || verificationFilter !== 'all' || searchQuery.trim()) && (
+                <span className="text-gray-500"> (filtered)</span>
+              )}
             </p>
             <Button 
               ref={loadMoreButtonRef}
