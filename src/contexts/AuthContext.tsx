@@ -119,17 +119,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = async () => {
     console.log('Signing out...');
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      console.error('Sign out error:', error);
-    } else {
-      console.log('Sign out successful');
-      // Clear local state immediately
-      setUser(null);
-      setSession(null);
-      setShowPseudonymModal(false);
-      setPendingGoogleUser(null);
+    
+    // Clear local state immediately
+    setUser(null);
+    setSession(null);
+    setShowPseudonymModal(false);
+    setPendingGoogleUser(null);
+    
+    // Clear any localStorage data manually since we're not using Supabase auth
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('sb-')) {
+        keysToRemove.push(key);
+      }
     }
+    keysToRemove.forEach(key => localStorage.removeItem(key));
+    
+    console.log('Sign out successful');
   };
 
   const handlePseudonymComplete = () => {
