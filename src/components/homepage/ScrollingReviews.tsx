@@ -79,6 +79,7 @@ export const transformReviewsToTestimonials = (reviews, businesses) => {
 
       const testimonial = {
         text: latestReview.content,
+        title: latestReview.title, // Add title to testimonial object
         author: userName,
         company: business.name,
         avatar: getUserInitials(userName),
@@ -167,6 +168,12 @@ const TestimonialCard = ({ testimonial, onHover, onLeave, onReadMore }) => {
       onMouseLeave={onLeave}
     >
       <div className="space-y-3">
+        {/* Title */}
+        {testimonial.title && (
+          <h3 className="font-semibold text-base text-gray-900 leading-tight line-clamp-2">
+            {testimonial.title}
+          </h3>
+        )}
         <p className="text-gray-900 text-sm leading-relaxed">
           "{truncated}"
         </p>
@@ -594,8 +601,11 @@ const AnimatedTestimonials = () => {
                 </Badge>
               </div>
 
-              {/* Full Review Text */}
+              {/* Title and Full Review Text */}
               <div className="bg-gray-50 rounded-lg p-4">
+                {selectedTestimonial.title && (
+                  <h3 className="font-semibold text-lg mb-3 text-gray-900">{selectedTestimonial.title}</h3>
+                )}
                 <p className="text-gray-900 leading-relaxed">"{selectedTestimonial.text}"</p>
               </div>
 
