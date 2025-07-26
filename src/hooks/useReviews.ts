@@ -10,6 +10,7 @@ export type Review = Tables<'reviews'> & {
     pseudonym: string | null;
     display_name_preference: string | null;
     main_badge: string | null;
+    is_verified: boolean | null;
   } | null;
 };
 
@@ -48,7 +49,7 @@ export const useReviews = (businessId?: string, includeEntity?: boolean) => {
           reviewsWithEntities.map(async (review) => {
             const { data: profile } = await supabase
               .from('profiles')
-              .select('full_name, pseudonym, display_name_preference, main_badge')
+              .select('full_name, pseudonym, display_name_preference, main_badge, is_verified')
               .eq('id', review.user_id)
               .maybeSingle();
             
@@ -60,6 +61,7 @@ export const useReviews = (businessId?: string, includeEntity?: boolean) => {
                 pseudonym: profile.pseudonym,
                 display_name_preference: profile.display_name_preference,
                 main_badge: profile.main_badge,
+                is_verified: profile.is_verified,
               } : null
             };
           })
@@ -88,7 +90,7 @@ export const useReviews = (businessId?: string, includeEntity?: boolean) => {
         reviews.map(async (review) => {
           const { data: profile } = await supabase
             .from('profiles')
-            .select('full_name, pseudonym, display_name_preference, main_badge')
+            .select('full_name, pseudonym, display_name_preference, main_badge, is_verified')
             .eq('id', review.user_id)
             .maybeSingle();
           
@@ -100,6 +102,7 @@ export const useReviews = (businessId?: string, includeEntity?: boolean) => {
               pseudonym: profile.pseudonym,
               display_name_preference: profile.display_name_preference,
               main_badge: profile.main_badge,
+              is_verified: profile.is_verified,
             } : null
           };
         })

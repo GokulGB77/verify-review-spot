@@ -387,7 +387,7 @@ const AnimatedTestimonials = () => {
             </div>
             <div className="p-6 sm:p-8 bg-white rounded-2xl shadow-sm border border-gray-200 sm:col-span-2 md:col-span-1">
               <div className="text-3xl sm:text-4xl font-bold text-green-600 mb-2">
-                {Array.from(new Set(allReviews.filter(review => review.profiles && getMainBadge(review.profiles) === 'Verified User').map(review => review.user_id))).length}
+                {Array.from(new Set(allReviews.filter(review => review.profiles?.is_verified === true).map(review => review.user_id))).length}
               </div>
               <div className="text-sm sm:text-base text-gray-600 font-medium">
                 Verified Users
@@ -531,7 +531,7 @@ const AnimatedTestimonials = () => {
           </div>
           <div className="p-6 sm:p-8 bg-white rounded-2xl shadow-sm border border-gray-200 sm:col-span-2 md:col-span-1">
             <div className="text-3xl sm:text-4xl font-bold text-green-600 mb-2">
-              {Array.from(new Set(allReviews.filter(review => review.profiles && getMainBadge(review.profiles) === 'Verified User').map(review => review.user_id))).length}
+              {Array.from(new Set(allReviews.filter(review => review.profiles?.is_verified === true).map(review => review.user_id))).length}
             </div>
             <div className="text-sm sm:text-base text-gray-600 font-medium">
               Verified Users
