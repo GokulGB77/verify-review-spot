@@ -10,9 +10,11 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
+import { X, AlertCircle } from 'lucide-react';
 
 interface PseudonymModalProps {
   open: boolean;
@@ -23,6 +25,7 @@ interface PseudonymModalProps {
 const PseudonymModal = ({ open, user, onComplete }: PseudonymModalProps) => {
   const [pseudonym, setPseudonym] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
   const { toast } = useToast();
 
   const validatePseudonym = (value: string) => {
@@ -36,24 +39,17 @@ const PseudonymModal = ({ open, user, onComplete }: PseudonymModalProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     
     const trimmedPseudonym = pseudonym.trim();
     
     if (!trimmedPseudonym) {
-      toast({
-        title: 'Pseudonym required',
-        description: 'Please enter a pseudonym to continue.',
-        variant: 'destructive',
-      });
+      setError('Please enter a pseudonym to continue.');
       return;
     }
 
     if (!validatePseudonym(trimmedPseudonym)) {
-      toast({
-        title: 'Invalid pseudonym format',
-        description: 'Pseudonym can only contain letters, numbers, underscores, and hyphens. No spaces allowed.',
-        variant: 'destructive',
-      });
+      setError('Pseudonym can only contain letters, numbers, underscores, and hyphens. No spaces allowed.');
       return;
     }
 
@@ -72,11 +68,7 @@ const PseudonymModal = ({ open, user, onComplete }: PseudonymModalProps) => {
       }
 
       if (existingUser) {
-        toast({
-          title: 'Pseudonym unavailable',
-          description: 'This pseudonym is already taken. Please choose another one.',
-          variant: 'destructive',
-        });
+        setError('This pseudonym is already taken. Please choose another one.');
         setIsSubmitting(false);
         return;
       }
@@ -93,13 +85,9 @@ const PseudonymModal = ({ open, user, onComplete }: PseudonymModalProps) => {
       if (error) {
         // Handle unique constraint violation
         if (error.code === '23505') {
-          toast({
-            title: 'Pseudonym unavailable',
-            description: 'This pseudonym is already taken. Please choose another one.',
-            variant: 'destructive',
-          });
+          setError('This pseudonym is already taken. Please choose another one.');
         } else {
-          throw error;
+          setError('Failed to set pseudonym. Please try again.');
         }
         setIsSubmitting(false);
         return;
@@ -123,10 +111,23 @@ const PseudonymModal = ({ open, user, onComplete }: PseudonymModalProps) => {
     }
   };
 
+  const handleClose = () => {
+    // Skip setting pseudonym and complete the sign-in process
+    onComplete();
+  };
+
   return (
     <Dialog open={open} onOpenChange={() => {}}>
-      <DialogContent className="sm:max-w-md" onPointerDownOutside={e => e.preventDefault()} onEscapeKeyDown={e => e.preventDefault()}>
-        <DialogHeader>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader className="relative">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="absolute -top-2 -right-2 h-8 w-8 rounded-full"
+            onClick={handleClose}
+          >
+            <X className="h-4 w-4" />
+          </Button>
           <DialogTitle>Add a pseudonym to your profile</DialogTitle>
           <DialogDescription>
             Add a pseudonym to your profile so that the reviews will be posted in that name keeping your real name private.
@@ -134,13 +135,23 @@ const PseudonymModal = ({ open, user, onComplete }: PseudonymModalProps) => {
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          
           <div>
             <Label htmlFor="pseudonym">Pseudonym</Label>
             <Input
               id="pseudonym"
               type="text"
               value={pseudonym}
-              onChange={(e) => setPseudonym(e.target.value)}
+              onChange={(e) => {
+                setPseudonym(e.target.value);
+                if (error) setError(''); // Clear error when user starts typing
+              }}
               placeholder="Enter your pseudonym (letters, numbers, _, - only)"
               className="mt-1"
               required
@@ -150,7 +161,10 @@ const PseudonymModal = ({ open, user, onComplete }: PseudonymModalProps) => {
             </p>
           </div>
           
-          <div className="flex justify-end space-x-2">
+          <div className="flex justify-between space-x-2">
+            <Button type="button" variant="outline" onClick={handleClose}>
+              Skip for now
+            </Button>
             <Button type="submit" disabled={isSubmitting || !pseudonym.trim()}>
               {isSubmitting ? 'Setting...' : 'Set Pseudonym'}
             </Button>
