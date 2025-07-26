@@ -1,14 +1,14 @@
-import { useState } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Search, Shield, Filter, Building, MapPin } from 'lucide-react';
+import { Search, Shield, Filter, Building, MapPin, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import BusinessCard from '@/components/BusinessCard';
 import Header from "@/components/common/Header";
 import Footer from "@/components/common/Footer";
-import { useBusinesses } from '@/hooks/useBusinesses';
+import { usePaginatedEntities } from '@/hooks/usePaginatedEntities';
 import { useReviews } from '@/hooks/useReviews';
 import { transformReviews } from '@/utils/reviewHelpers';
 
@@ -16,8 +16,27 @@ const BusinessDirectory = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [verificationFilter, setVerificationFilter] = useState('all');
-  const { data: businesses = [], isLoading, error } = useBusinesses();
+  const loadMoreButtonRef = useRef<HTMLButtonElement>(null);
+  
+  const { 
+    data, 
+    isLoading, 
+    error, 
+    fetchNextPage, 
+    hasNextPage, 
+    isFetchingNextPage 
+  } = usePaginatedEntities();
+  
   const { data: allReviews = [] } = useReviews();
+
+  // Flatten all pages into a single array
+  const businesses = useMemo(() => {
+    return data?.pages.flatMap(page => page.data) || [];
+  }, [data]);
+
+  const totalCount = data?.pages[0]?.totalCount || 0;
+
+  // Remove automatic infinite scroll
 
   const verificationStatuses = ['all', 'Verified', 'Unverified'];
 
@@ -141,7 +160,7 @@ const BusinessDirectory = () => {
   };
 
   const stats = getBusinessStats();
-  const totalBusinesses = businesses.length;
+  const totalBusinesses = totalCount;
   const verifiedBusinesses = businesses.filter(b => b.is_verified).length;
 
   if (isLoading) {
@@ -237,6 +256,13 @@ const BusinessDirectory = () => {
           </div>
         </div>
 
+        {/* Entity Count Display */}
+        <div className="flex justify-between items-center mb-6">
+          <p className="text-sm text-gray-600">
+            Showing {businesses.length} of {totalCount} entities
+          </p>
+        </div>
+
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <Card>
@@ -285,7 +311,7 @@ const BusinessDirectory = () => {
           ))}
         </div>
 
-        {getFilteredBusinesses().length === 0 && (
+        {getFilteredBusinesses().length === 0 && !isLoading && (
           <div className="text-center py-12">
             <Building className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No businesses found</h3>
@@ -293,12 +319,43 @@ const BusinessDirectory = () => {
           </div>
         )}
 
-        {/* Load More */}
-        {getFilteredBusinesses().length > 0 && (
-          <div className="text-center mt-8">
-            <Button variant="outline" size="lg">
+        {/* Loading More Indicator */}
+        {isFetchingNextPage && (
+          <div className="text-center py-8">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-blue-600" />
+            <p className="text-gray-600">Loading more businesses...</p>
+          </div>
+        )}
+
+        {/* Load More Button */}
+        {hasNextPage && !isFetchingNextPage && getFilteredBusinesses().length > 0 && (
+          <div className="text-center mt-8 space-y-4">
+            <p className="text-sm text-gray-600">
+              Showing {businesses.length} of {totalCount} entities
+            </p>
+            <Button 
+              ref={loadMoreButtonRef}
+              variant="outline" 
+              size="lg"
+              onClick={() => {
+                const currentScrollPosition = window.scrollY;
+                fetchNextPage().then(() => {
+                  // Maintain scroll position after new content loads
+                  setTimeout(() => {
+                    window.scrollTo(0, currentScrollPosition);
+                  }, 100);
+                });
+              }}
+            >
               Load More Businesses
             </Button>
+          </div>
+        )}
+
+        {/* End of results indicator */}
+        {!hasNextPage && getFilteredBusinesses().length > 0 && (
+          <div className="text-center py-8">
+            <p className="text-gray-500">You've reached the end of the results</p>
           </div>
         )}
       </div>

@@ -35,7 +35,7 @@ import {
   AlertTriangle,
   Bell,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { useToast } from "@/hooks/use-toast";
@@ -62,8 +62,9 @@ const SuperAdminDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const [activeSection, setActiveSection] = useState("notifications");
+  const activeSection = searchParams.get('section') || 'notifications';
 
   if (rolesLoading) {
     return (
@@ -184,15 +185,15 @@ const SuperAdminDashboard = () => {
       case "notifications":
         return (
           <AdminNotificationsSection 
-            onNavigateToSection={setActiveSection}
+            onNavigateToSection={(section) => setSearchParams({ section })}
           />
         );
         
       case "create-entity":
         return (
           <EntityCreateForm
-            onCancel={() => setActiveSection("businesses")}
-            onSuccess={() => setActiveSection("businesses")}
+            onCancel={() => setSearchParams({ section: "businesses" })}
+            onSuccess={() => setSearchParams({ section: "businesses" })}
           />
         );
 
@@ -265,7 +266,7 @@ const SuperAdminDashboard = () => {
           {menuItems.map((item) => (
             <button
               key={item.value}
-              onClick={() => setActiveSection(item.value)}
+              onClick={() => setSearchParams({ section: item.value })}
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 activeSection === item.value
                   ? "bg-blue-100 text-blue-700"

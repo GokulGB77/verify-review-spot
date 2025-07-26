@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRoles } from "@/hooks/useUserRoles";
@@ -14,12 +14,14 @@ import { UserCircle, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import NotificationDropdown from "@/components/notifications/NotificationDropdown";
 import { useUnreadNotificationsCount } from "@/hooks/useNotifications";
+import HeaderSearch from "./HeaderSearch";
 
 const Header = () => {
   const { user, signOut, loading } = useAuth();
   const { isSuperAdmin, isEntityAdmin, roles } = useUserRoles();
   const { data: unreadCount = 0 } = useUnreadNotificationsCount();
   const navigate = useNavigate();
+  const location = useLocation();
   const [profile, setProfile] = useState<{ full_name?: string | null } | null>(
     null
   );
@@ -75,6 +77,9 @@ const Header = () => {
 
   const firstName = getFirstName();
 
+  // Check if we should show search in header (not on homepage or profile pages)
+  const shouldShowHeaderSearch = !['/', '/profile', '/auth'].includes(location.pathname);
+
   // Show loading state while auth is loading
   if (loading) {
     return (
@@ -91,7 +96,7 @@ const Header = () => {
                 Home
               </Link>
               <Link
-                to="/businesses"
+                to="/entities"
                 className="text-gray-700 hover:text-blue-600"
               >
                 Browse Entities
@@ -131,11 +136,12 @@ const Header = () => {
               Home
             </Link>
             <Link
-              to="/businesses"
+              to="/entities"
               className="text-gray-700 hover:text-blue-600"
             >
               Browse Entities
             </Link>
+            {shouldShowHeaderSearch && <HeaderSearch />}
             {/* <Link to="/reviews" className="text-gray-700 hover:text-blue-600">
               Reviews
             </Link> */}

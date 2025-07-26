@@ -20,16 +20,21 @@ export const useEntities = () => {
   });
 };
 
-export const useEntity = (id: string) => {
+export const useEntity = (id: string, includeInactive = false) => {
   return useQuery({
-    queryKey: ['entity', id],
+    queryKey: ['entity', id, includeInactive],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('entities')
         .select('*')
-        .eq('entity_id', id)
-        .eq('status', 'active')
-        .single();
+        .eq('entity_id', id);
+      
+      // Only filter by active status if not including inactive entities
+      if (!includeInactive) {
+        query = query.eq('status', 'active');
+      }
+      
+      const { data, error } = await query.single();
       
       if (error) throw error;
       return data as Entity;
