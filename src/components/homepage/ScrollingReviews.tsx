@@ -205,7 +205,7 @@ const TestimonialCard = ({ testimonial, onHover, onLeave, onReadMore }) => {
               <button 
                 onClick={(e) => {
                   e.stopPropagation();
-                  navigate(`/entity/${testimonial.businessId}`);
+                  navigate(`/entities/${testimonial.businessId}`);
                 }}
                 className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 truncate transition-colors duration-200 cursor-pointer underline-offset-2 hover:underline text-left"
               >
