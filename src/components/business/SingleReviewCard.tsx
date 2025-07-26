@@ -21,6 +21,7 @@ interface SingleReviewCardProps {
     id: string;
     userId: string;
     userName: string;
+    title?: string;
     rating: number;
     content: string;
     mainBadge: 'Verified User' | 'Unverified User';
@@ -251,6 +252,9 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory, entityName 
             {badgeDisplay.text}
           </Badge>
         </div>
+        {review.title && (
+          <h3 className="font-semibold text-lg mb-2 text-gray-900">{review.title}</h3>
+        )}
         <ReviewContent content={review.content} maxLength={150} />
       </div>
 
@@ -264,7 +268,7 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory, entityName 
             </div>
             <span className="text-xs text-gray-500 ml-6">{review.businessResponseDate}</span>
           </div>
-          <p className="text-gray-700 text-sm leading-relaxed break-words overflow-wrap-anywhere">{review.businessResponse}</p>
+          <p className="text-gray-700 text-sm leading-relaxed break-words overflow-wrap-anywhere whitespace-pre-wrap">{review.businessResponse}</p>
         </div>
       )}
 

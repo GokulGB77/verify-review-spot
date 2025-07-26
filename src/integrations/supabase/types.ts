@@ -448,6 +448,7 @@ export type Database = {
           proof_verified_at: string | null
           proof_verified_by: string | null
           rating: number
+          title: string | null
           update_number: number | null
           updated_at: string
           upvotes: number | null
@@ -473,6 +474,7 @@ export type Database = {
           proof_verified_at?: string | null
           proof_verified_by?: string | null
           rating: number
+          title?: string | null
           update_number?: number | null
           updated_at?: string
           upvotes?: number | null
@@ -498,6 +500,7 @@ export type Database = {
           proof_verified_at?: string | null
           proof_verified_by?: string | null
           rating?: number
+          title?: string | null
           update_number?: number | null
           updated_at?: string
           upvotes?: number | null

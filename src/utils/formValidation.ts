@@ -2,13 +2,14 @@
 import { ReviewFormData } from '@/types/reviewForm';
 
 export const validateForm = (formData: ReviewFormData, selectedBusiness: any) => {
-  const isBasicFormValid = selectedBusiness && formData.rating > 0 && formData.content.length >= 50;
+  const isBasicFormValid = selectedBusiness && formData.rating > 0 && formData.title.trim().length > 0 && formData.content.length >= 50;
   const needsProof = formData.reviewSpecificBadge === 'proof_connection';
   const hasRequiredProof = !needsProof || (needsProof && formData.proofFile);
   
   console.log('Form validation debug:', {
     selectedBusiness: !!selectedBusiness,
     rating: formData.rating,
+    titleLength: formData.title.trim().length,
     contentLength: formData.content.length,
     reviewSpecificBadge: formData.reviewSpecificBadge,
     needsProof,

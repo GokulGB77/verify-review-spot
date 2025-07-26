@@ -2,6 +2,7 @@
 export interface ReviewFormData {
   businessId: string;
   businessName: string;
+  title: string;
   rating: number;
   content: string;
   proofFile: File | null;

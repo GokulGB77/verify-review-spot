@@ -41,7 +41,7 @@ const SubmitSection = ({
         {!canSubmit && (
           <div className="text-sm text-gray-500 text-center mt-3 space-y-1">
             {!isBasicFormValid && (
-              <p>Please complete all required fields (business, rating, review text)</p>
+              <p>Please complete all required fields (business, rating, title, review text with at least 50 characters)</p>
             )}
             {needsProof && !hasFile && (
               <p>Please upload proof or select 'No specific connection' to proceed</p>

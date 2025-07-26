@@ -16,6 +16,7 @@ import { uploadFileToStorage } from '@/utils/fileUpload';
 import { validateForm } from '@/utils/formValidation';
 import BusinessSelection from '@/components/review/BusinessSelection';
 import RatingInput from '@/components/review/RatingInput';
+import ReviewTitleInput from '@/components/review/ReviewTitleInput';
 import ReviewContentInput from '@/components/review/ReviewContentInput';
 import ConnectionSelection from '@/components/review/ConnectionSelection';
 import ProofUpload from '@/components/review/ProofUpload';
@@ -37,6 +38,7 @@ const WriteReview = () => {
   const [formData, setFormData] = useState<ReviewFormData>({
     businessId: '',
     businessName: '',
+    title: '',
     rating: 0,
     content: '',
     proofFile: null,
@@ -85,6 +87,7 @@ const WriteReview = () => {
     if (isEdit && editingReview && user && editingReview.user_id === user.id) {
       setFormData(prev => ({
         ...prev,
+        title: editingReview.title || '',
         rating: editingReview.rating,
         content: editingReview.content,
         customVerificationTag: editingReview.custom_verification_tag || '',
@@ -199,6 +202,15 @@ const WriteReview = () => {
       return;
     }
 
+    if (!formData.title || !formData.title.trim()) {
+      toast({
+        title: "Title Required",
+        description: "Please provide a title for your review.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!formData.content || !formData.content.trim()) {
       toast({
         title: "Review Content Required",
@@ -252,6 +264,7 @@ const WriteReview = () => {
       if (isEdit && editingReview) {
         // Update existing review directly
         const updateData: any = {
+          title: formData.title.trim(),
           rating: formData.rating,
           content: formData.content.trim(),
           review_specific_badge: effectiveConnection || null,
@@ -303,6 +316,7 @@ const WriteReview = () => {
           // Update review data to use new proof system
           const reviewData: any = {
             business_id: formData.businessId,
+            title: formData.title.trim(),
             rating: formData.rating,
             content: formData.content.trim(),
             proof_url: proofUrl,
@@ -505,6 +519,13 @@ const WriteReview = () => {
           <RatingInput
             rating={formData.rating}
             onRatingChange={(rating) => setFormData(prev => ({ ...prev, rating }))}
+            isEdit={isEdit}
+            isUpdate={isUpdate}
+          />
+
+          <ReviewTitleInput
+            title={formData.title}
+            onTitleChange={(title) => setFormData(prev => ({ ...prev, title }))}
             isEdit={isEdit}
             isUpdate={isUpdate}
           />
