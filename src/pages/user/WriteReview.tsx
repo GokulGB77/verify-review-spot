@@ -16,7 +16,7 @@ import { uploadFileToStorage } from '@/utils/fileUpload';
 import { validateForm } from '@/utils/formValidation';
 import BusinessSelection from '@/components/review/BusinessSelection';
 import RatingInput from '@/components/review/RatingInput';
-import ReviewTitleInput from '@/components/review/ReviewTitleInput';
+
 import ReviewContentInput from '@/components/review/ReviewContentInput';
 import ConnectionSelection from '@/components/review/ConnectionSelection';
 import ProofUpload from '@/components/review/ProofUpload';
@@ -523,14 +523,9 @@ const WriteReview = () => {
             isUpdate={isUpdate}
           />
 
-          <ReviewTitleInput
+          <ReviewContentInput
             title={formData.title}
             onTitleChange={(title) => setFormData(prev => ({ ...prev, title }))}
-            isEdit={isEdit}
-            isUpdate={isUpdate}
-          />
-
-          <ReviewContentInput
             content={formData.content}
             onContentChange={(content) => setFormData(prev => ({ ...prev, content }))}
             isEdit={isEdit}
