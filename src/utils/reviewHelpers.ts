@@ -5,6 +5,7 @@ export interface TransformedReview {
   id: string;
   userId: string;
   userName: string;
+  title?: string;
   rating: number;
   content: string;
   mainBadge: 'Verified User' | 'Unverified User';
@@ -51,6 +52,7 @@ export const transformReviews = (allReviews: Review[]): TransformedReview[] => {
       id: latest.id,
       userId: latest.user_id,
       userName: getDisplayName(latest.profiles),
+      title: latest.title,
       rating: latest.rating,
       content: latest.content,
       mainBadge: getMainBadge(latest.profiles),
