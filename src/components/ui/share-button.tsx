@@ -5,7 +5,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Share } from 'lucide-react';
+import { Share, Copy, Check } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 interface ShareButtonProps {
   entityName: string;
@@ -15,6 +17,8 @@ interface ShareButtonProps {
 }
 
 const ShareButton = ({ entityName, entityId, rating, description }: ShareButtonProps) => {
+  const { toast } = useToast();
+  const [isCopied, setIsCopied] = useState(false);
   const currentUrl = window.location.origin;
   // Use clean slug URL without /entities/ prefix
   const profileUrl = `${currentUrl}/${entityId}`;
@@ -35,20 +39,32 @@ const ShareButton = ({ entityName, entityId, rating, description }: ShareButtonP
     // Instagram doesn't have direct URL sharing, so we copy to clipboard
     navigator.clipboard.writeText(`${shareText}\n\n${profileUrl}`)
       .then(() => {
-        alert('Link copied to clipboard! You can now paste it in your Instagram story or post.');
+        toast({
+          description: "Link copied to clipboard! You can now paste it in your Instagram story or post.",
+        });
       })
       .catch(() => {
-        alert('Failed to copy link. Please copy manually: ' + profileUrl);
+        toast({
+          variant: "destructive",
+          description: "Failed to copy link. Please copy manually: " + profileUrl,
+        });
       });
   };
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(profileUrl)
       .then(() => {
-        alert('Link copied to clipboard!');
+        setIsCopied(true);
+        setTimeout(() => setIsCopied(false), 2000);
+        toast({
+          description: "Link copied to clipboard!",
+        });
       })
       .catch(() => {
-        alert('Failed to copy link. Please copy manually: ' + profileUrl);
+        toast({
+          variant: "destructive",
+          description: "Failed to copy link. Please copy manually: " + profileUrl,
+        });
       });
   };
 
@@ -74,8 +90,17 @@ const ShareButton = ({ entityName, entityId, rating, description }: ShareButtonP
           Copy for Instagram
         </DropdownMenuItem>
         <DropdownMenuItem onClick={copyToClipboard} className="cursor-pointer">
-          <Share className="h-4 w-4 mr-2 text-gray-600" />
-          Copy Link
+          {isCopied ? (
+            <>
+              <Check className="h-4 w-4 mr-2 text-green-600" />
+              Copied
+            </>
+          ) : (
+            <>
+              <Copy className="h-4 w-4 mr-2 text-gray-600" />
+              Copy Link
+            </>
+          )}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
