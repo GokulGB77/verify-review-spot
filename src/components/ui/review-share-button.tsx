@@ -5,7 +5,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Share } from 'lucide-react';
+import { Share, Copy, Check } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 interface ReviewShareButtonProps {
   reviewId: string;
@@ -26,6 +28,8 @@ const ReviewShareButton = ({
   reviewerName,
   variant = 'icon'
 }: ReviewShareButtonProps) => {
+  const { toast } = useToast();
+  const [isCopied, setIsCopied] = useState(false);
   const currentUrl = window.location.origin;
   // Use clean slug URL without /entities/ prefix
   const reviewUrl = `${currentUrl}/${entityId}#review-${reviewId}`;
@@ -50,20 +54,32 @@ const ReviewShareButton = ({
   const shareToInstagram = () => {
     navigator.clipboard.writeText(`${shareText}\n\n${reviewUrl}`)
       .then(() => {
-        alert('Review copied to clipboard! You can now paste it in your Instagram story or post.');
+        toast({
+          description: "Review copied to clipboard! You can now paste it in your Instagram story or post.",
+        });
       })
       .catch(() => {
-        alert('Failed to copy review. Please copy manually: ' + reviewUrl);
+        toast({
+          variant: "destructive",
+          description: "Failed to copy review. Please copy manually: " + reviewUrl,
+        });
       });
   };
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(`${shareText}\n\n${reviewUrl}`)
       .then(() => {
-        alert('Review link copied to clipboard!');
+        setIsCopied(true);
+        setTimeout(() => setIsCopied(false), 2000);
+        toast({
+          description: "Review link copied to clipboard!",
+        });
       })
       .catch(() => {
-        alert('Failed to copy link. Please copy manually: ' + reviewUrl);
+        toast({
+          variant: "destructive",
+          description: "Failed to copy link. Please copy manually: " + reviewUrl,
+        });
       });
   };
 
@@ -95,8 +111,17 @@ const ReviewShareButton = ({
           Copy for Instagram
         </DropdownMenuItem>
         <DropdownMenuItem onClick={copyToClipboard} className="cursor-pointer">
-          <Share className="h-4 w-4 mr-2 text-gray-600" />
-          Copy Review Link
+          {isCopied ? (
+            <>
+              <Check className="h-4 w-4 mr-2 text-green-600" />
+              Copied
+            </>
+          ) : (
+            <>
+              <Copy className="h-4 w-4 mr-2 text-gray-600" />
+              Copy Review Link
+            </>
+          )}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
