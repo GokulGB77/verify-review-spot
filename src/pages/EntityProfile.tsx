@@ -27,7 +27,9 @@ const EntityProfile = () => {
   // If no active entity found, try to get inactive entity (for admins)
   const { data: inactiveEntity, isLoading: inactiveLoading } = useEntity(identifier || '', true);
   
-  const { data: allReviews = [], isLoading: reviewsLoading } = useReviews(identifier);
+  // Get reviews using the entity_id (UUID) from the entity, not the slug
+  const entityId = activeEntity?.entity_id || inactiveEntity?.entity_id;
+  const { data: allReviews = [], isLoading: reviewsLoading } = useReviews(entityId);
 
   if (entityLoading || inactiveLoading) {
     return (
@@ -158,7 +160,7 @@ const EntityProfile = () => {
                 <div className="lg:col-span-3">
                   <ReviewsList 
                     reviews={transformedReviews}
-                    businessId={identifier || ''}
+                    businessId={entityId || ''}
                     isLoading={reviewsLoading}
                   />
                 </div>
