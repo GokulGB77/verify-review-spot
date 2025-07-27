@@ -152,9 +152,9 @@ const BusinessHeader = ({ business, totalReviews }: BusinessHeaderProps) => {
               <DropdownMenuContent align="end">
                 <DropdownMenuItem 
                   onClick={() => {
-                    // Use slug for custom URL, fallback to current URL
+                    // Use clean slug URL without /entities/ prefix
                     const customUrl = business.slug 
-                      ? `${window.location.origin}/entities/${business.slug}`
+                      ? `${window.location.origin}/${business.slug}`
                       : window.location.href;
                     const shareData = {
                       title: `${business.name} - ${displayRating.toFixed(1)}★ Rating`,

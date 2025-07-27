@@ -15,16 +15,19 @@ import { transformReviews, calculateRatingDistribution } from '@/utils/reviewHel
 import { AlertTriangle, Mail } from 'lucide-react';
 
 const EntityProfile = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id, slug } = useParams<{ id?: string; slug?: string }>();
   const { isSuperAdmin, isEntityAdmin } = useUserRoles();
   
+  // Get identifier from either id (from /entities/:id) or slug (from /:slug)
+  const identifier = id || slug;
+  
   // Try to get active entity first
-  const { data: activeEntity, isLoading: entityLoading, error: entityError } = useEntity(id || '');
+  const { data: activeEntity, isLoading: entityLoading, error: entityError } = useEntity(identifier || '');
   
   // If no active entity found, try to get inactive entity (for admins)
-  const { data: inactiveEntity, isLoading: inactiveLoading } = useEntity(id || '', true);
+  const { data: inactiveEntity, isLoading: inactiveLoading } = useEntity(identifier || '', true);
   
-  const { data: allReviews = [], isLoading: reviewsLoading } = useReviews(id);
+  const { data: allReviews = [], isLoading: reviewsLoading } = useReviews(identifier);
 
   if (entityLoading || inactiveLoading) {
     return (
@@ -44,7 +47,7 @@ const EntityProfile = () => {
   // Check if entity exists but is inactive
   if (!activeEntity && inactiveEntity && inactiveEntity.status === 'inactive') {
     // Allow super admins and entity admins to view inactive entities
-    if (isSuperAdmin() || isEntityAdmin(id)) {
+    if (isSuperAdmin() || isEntityAdmin(identifier)) {
       entity = inactiveEntity;
     } else {
       // Show inactive entity message for regular users
@@ -155,7 +158,7 @@ const EntityProfile = () => {
                 <div className="lg:col-span-3">
                   <ReviewsList 
                     reviews={transformedReviews}
-                    businessId={id || ''}
+                    businessId={identifier || ''}
                     isLoading={reviewsLoading}
                   />
                 </div>
