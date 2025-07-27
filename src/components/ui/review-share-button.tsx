@@ -27,6 +27,7 @@ const ReviewShareButton = ({
   variant = 'icon'
 }: ReviewShareButtonProps) => {
   const currentUrl = window.location.origin;
+  // Use slug for custom URL, fallback to UUID if no slug
   const reviewUrl = `${currentUrl}/entities/${entityId}#review-${reviewId}`;
   
   // Truncate review content for sharing

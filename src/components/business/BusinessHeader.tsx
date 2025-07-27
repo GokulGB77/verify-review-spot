@@ -152,17 +152,20 @@ const BusinessHeader = ({ business, totalReviews }: BusinessHeaderProps) => {
               <DropdownMenuContent align="end">
                 <DropdownMenuItem 
                   onClick={() => {
-                    const url = window.location.href;
+                    // Use slug for custom URL, fallback to current URL
+                    const customUrl = business.slug 
+                      ? `${window.location.origin}/entities/${business.slug}`
+                      : window.location.href;
                     const shareData = {
                       title: `${business.name} - ${displayRating.toFixed(1)}★ Rating`,
                       text: business.description || `Check out ${business.name}`,
-                      url: url
+                      url: customUrl
                     };
                     
                     if (navigator.share) {
                       navigator.share(shareData);
                     } else {
-                      navigator.clipboard.writeText(url);
+                      navigator.clipboard.writeText(customUrl);
                     }
                   }}
                 >
