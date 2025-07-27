@@ -10,7 +10,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { Entity } from '@/hooks/useEntities';
-import { useToast } from '@/hooks/use-toast';
 
 interface BusinessHeaderProps {
   business: Entity;
@@ -18,7 +17,6 @@ interface BusinessHeaderProps {
 }
 
 const BusinessHeader = ({ business, totalReviews }: BusinessHeaderProps) => {
-  const { toast } = useToast();
   const getVerificationBadgeColor = (verified: boolean | null) => {
     return verified 
       ? 'bg-green-100 text-green-800 border-green-200'
@@ -160,16 +158,10 @@ const BusinessHeader = ({ business, totalReviews }: BusinessHeaderProps) => {
                       : window.location.href;
                     
                     navigator.clipboard.writeText(customUrl).then(() => {
-                      toast({
-                        title: "Link copied!",
-                        description: "The entity link has been copied to your clipboard.",
-                      });
+                      // Could add a toast notification here
+                      alert('Link copied to clipboard!');
                     }).catch(() => {
-                      toast({
-                        title: "Copy failed",
-                        description: "Unable to copy link. Please try again.",
-                        variant: "destructive",
-                      });
+                      alert('Failed to copy link');
                     });
                   }}
                 >
