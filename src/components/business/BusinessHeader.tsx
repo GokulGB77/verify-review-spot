@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Star, MapPin, Globe, Phone, CheckCircle, MoreVertical, Share2 } from 'lucide-react';
+import { Star, MapPin, Globe, Phone, CheckCircle, MoreVertical, Share2, Copy } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import {
   DropdownMenu,
@@ -150,6 +150,24 @@ const BusinessHeader = ({ business, totalReviews }: BusinessHeaderProps) => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
+                <DropdownMenuItem 
+                  onClick={() => {
+                    // Use clean slug URL without /entities/ prefix
+                    const customUrl = business.slug 
+                      ? `${window.location.origin}/${business.slug}`
+                      : window.location.href;
+                    
+                    navigator.clipboard.writeText(customUrl).then(() => {
+                      // Could add a toast notification here
+                      alert('Link copied to clipboard!');
+                    }).catch(() => {
+                      alert('Failed to copy link');
+                    });
+                  }}
+                >
+                  <Copy className="h-4 w-4 mr-2" />
+                  Copy Link
+                </DropdownMenuItem>
                 <DropdownMenuItem 
                   onClick={() => {
                     // Use clean slug URL without /entities/ prefix
