@@ -164,7 +164,16 @@ const ProofVerificationPanel = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => window.open(proofUrl, '_blank')}
+                  onClick={() => {
+                    try {
+                      const url = proofUrl.startsWith('http') 
+                        ? proofUrl 
+                        : `https://hsympreltgeoellhzvus.supabase.co/storage/v1/object/public/review-proofs/${proofUrl}`;
+                      window.open(url, '_blank');
+                    } catch (error) {
+                      console.error('Failed to open proof URL:', error);
+                    }
+                  }}
                 >
                   <Eye className="h-4 w-4 mr-2" />
                   View File

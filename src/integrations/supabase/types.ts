@@ -46,6 +46,7 @@ export type Database = {
           registration_info: Json | null
           revenue_range: string | null
           review_count: number | null
+          slug: string | null
           social_links: Json | null
           status: string | null
           sub_industry: string | null
@@ -84,6 +85,7 @@ export type Database = {
           registration_info?: Json | null
           revenue_range?: string | null
           review_count?: number | null
+          slug?: string | null
           social_links?: Json | null
           status?: string | null
           sub_industry?: string | null
@@ -122,6 +124,7 @@ export type Database = {
           registration_info?: Json | null
           revenue_range?: string | null
           review_count?: number | null
+          slug?: string | null
           social_links?: Json | null
           status?: string | null
           sub_industry?: string | null
@@ -652,6 +655,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_slug: {
+        Args: { name: string }
+        Returns: string
+      }
       get_user_roles: {
         Args: { check_user_id?: string }
         Returns: {

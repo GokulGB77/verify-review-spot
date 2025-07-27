@@ -20,14 +20,23 @@ export const useEntities = () => {
   });
 };
 
-export const useEntity = (id: string, includeInactive = false) => {
+export const useEntity = (identifier: string, includeInactive = false) => {
   return useQuery({
-    queryKey: ['entity', id, includeInactive],
+    queryKey: ['entity', identifier, includeInactive],
     queryFn: async () => {
+      // Check if identifier is a UUID or slug
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(identifier);
+      
       let query = supabase
         .from('entities')
-        .select('*')
-        .eq('entity_id', id);
+        .select('*');
+      
+      // Use entity_id for UUID, slug for slug
+      if (isUUID) {
+        query = query.eq('entity_id', identifier);
+      } else {
+        query = query.eq('slug', identifier);
+      }
       
       // Only filter by active status if not including inactive entities
       if (!includeInactive) {
@@ -39,7 +48,7 @@ export const useEntity = (id: string, includeInactive = false) => {
       if (error) throw error;
       return data as Entity;
     },
-    enabled: !!id,
+    enabled: !!identifier,
   });
 };
 

@@ -78,6 +78,8 @@ function App() {
                     </AdminRoute>
                   }
                 />
+                {/* Direct slug route for entities (must be after all static routes) */}
+                <Route path="/:slug" element={<EntityProfile />} />
                 {/* Catch-all route for 404 */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

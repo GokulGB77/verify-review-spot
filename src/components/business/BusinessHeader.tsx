@@ -1,7 +1,8 @@
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Star, MapPin, Globe, Phone, CheckCircle, MoreVertical, Share2 } from 'lucide-react';
+import { Star, MapPin, Globe, Phone, CheckCircle, MoreVertical, Share2, Copy, Check } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import {
   DropdownMenu,
@@ -17,6 +18,8 @@ interface BusinessHeaderProps {
 }
 
 const BusinessHeader = ({ business, totalReviews }: BusinessHeaderProps) => {
+  const [isCopied, setIsCopied] = useState(false);
+
   const getVerificationBadgeColor = (verified: boolean | null) => {
     return verified 
       ? 'bg-green-100 text-green-800 border-green-200'
@@ -152,17 +155,47 @@ const BusinessHeader = ({ business, totalReviews }: BusinessHeaderProps) => {
               <DropdownMenuContent align="end">
                 <DropdownMenuItem 
                   onClick={() => {
-                    const url = window.location.href;
+                    // Use clean slug URL without /entities/ prefix
+                    const customUrl = business.slug 
+                      ? `${window.location.origin}/${business.slug}`
+                      : window.location.href;
+                    
+                    navigator.clipboard.writeText(customUrl).then(() => {
+                      setIsCopied(true);
+                      setTimeout(() => setIsCopied(false), 2000);
+                    }).catch(() => {
+                      // Keep original text on failure
+                    });
+                  }}
+                >
+                  {isCopied ? (
+                    <>
+                      <Check className="h-4 w-4 mr-2" />
+                      Copied
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-4 w-4 mr-2" />
+                      Copy Link
+                    </>
+                  )}
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => {
+                    // Use clean slug URL without /entities/ prefix
+                    const customUrl = business.slug 
+                      ? `${window.location.origin}/${business.slug}`
+                      : window.location.href;
                     const shareData = {
                       title: `${business.name} - ${displayRating.toFixed(1)}★ Rating`,
                       text: business.description || `Check out ${business.name}`,
-                      url: url
+                      url: customUrl
                     };
                     
                     if (navigator.share) {
                       navigator.share(shareData);
                     } else {
-                      navigator.clipboard.writeText(url);
+                      navigator.clipboard.writeText(customUrl);
                     }
                   }}
                 >

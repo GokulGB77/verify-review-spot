@@ -16,7 +16,8 @@ interface ShareButtonProps {
 
 const ShareButton = ({ entityName, entityId, rating, description }: ShareButtonProps) => {
   const currentUrl = window.location.origin;
-  const profileUrl = `${currentUrl}/entities/${entityId}`;
+  // Use clean slug URL without /entities/ prefix
+  const profileUrl = `${currentUrl}/${entityId}`;
   
   const shareText = `Check out ${entityName} on Verifyd Trust! ${rating ? `⭐ ${rating.toFixed(1)}/5` : ''} ${description ? `- ${description}` : ''}`;
   

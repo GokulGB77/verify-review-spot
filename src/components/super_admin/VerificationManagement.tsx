@@ -6,10 +6,12 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useVerificationHistory, useUserVerificationStats } from '@/hooks/useVerificationHistory';
-import { Eye, Check, X, AlertCircle, RefreshCw, ExternalLink, History, Clock } from 'lucide-react';
+import { Eye, Check, X, AlertCircle, RefreshCw, ExternalLink, History, Clock, Search, Trash2, Filter } from 'lucide-react';
 import VerificationHistoryPanel from './VerificationHistoryPanel';
 
 interface VerificationRequest {
@@ -29,12 +31,19 @@ interface VerificationRequest {
 
 const VerificationManagement = () => {
   const [verificationRequests, setVerificationRequests] = useState<VerificationRequest[]>([]);
+  const [filteredRequests, setFilteredRequests] = useState<VerificationRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedRequest, setSelectedRequest] = useState<VerificationRequest | null>(null);
   const [processing, setProcessing] = useState<string | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [requestToReject, setRequestToReject] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'verified' | 'rejected'>('all');
+  const [sortField, setSortField] = useState<'name' | 'email' | 'updated_at'>('updated_at');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [requestToDelete, setRequestToDelete] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -60,7 +69,9 @@ const VerificationManagement = () => {
       }
 
       console.log('Fetched verification requests:', data);
-      setVerificationRequests(data || []);
+      const requests = data || [];
+      setVerificationRequests(requests);
+      setFilteredRequests(requests);
     } catch (error) {
       console.error('Error fetching verification requests:', error);
       toast({
@@ -234,6 +245,108 @@ const VerificationManagement = () => {
     setShowRejectDialog(true);
   };
 
+  const handleDeleteRequest = async () => {
+    if (!requestToDelete) return;
+
+    try {
+      setProcessing(requestToDelete);
+      
+      const { error } = await supabase
+        .from('profiles')
+        .update({ 
+          pan_number: null,
+          full_name_pan: null,
+          mobile: null,
+          pan_image_url: null,
+          is_verified: null,
+          rejection_reason: null,
+          main_badge: 'Unverified User'
+        })
+        .eq('id', requestToDelete);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success',
+        description: 'Verification request deleted successfully.',
+      });
+
+      setShowDeleteDialog(false);
+      setRequestToDelete(null);
+      await fetchVerificationRequests();
+    } catch (error) {
+      console.error('Error deleting verification request:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to delete verification request.',
+        variant: 'destructive',
+      });
+    } finally {
+      setProcessing(null);
+    }
+  };
+
+  const openDeleteDialog = (userId: string) => {
+    setRequestToDelete(userId);
+    setShowDeleteDialog(true);
+  };
+
+  // Filter and sort logic
+  useEffect(() => {
+    let filtered = [...verificationRequests];
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(request => 
+        request.full_name?.toLowerCase().includes(query) ||
+        request.email?.toLowerCase().includes(query) ||
+        request.full_name_pan?.toLowerCase().includes(query) ||
+        request.mobile?.includes(query) ||
+        request.pan_number?.toLowerCase().includes(query)
+      );
+    }
+
+    // Apply status filter
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(request => {
+        if (statusFilter === 'verified') return request.main_badge === 'Verified User';
+        if (statusFilter === 'rejected') return request.is_verified === false;
+        if (statusFilter === 'pending') return request.is_verified === null;
+        return true;
+      });
+    }
+
+    // Apply sorting
+    filtered.sort((a, b) => {
+      let aValue, bValue;
+      
+      switch (sortField) {
+        case 'name':
+          aValue = a.full_name?.toLowerCase() || '';
+          bValue = b.full_name?.toLowerCase() || '';
+          break;
+        case 'email':
+          aValue = a.email?.toLowerCase() || '';
+          bValue = b.email?.toLowerCase() || '';
+          break;
+        case 'updated_at':
+        default:
+          aValue = new Date(a.updated_at).getTime();
+          bValue = new Date(b.updated_at).getTime();
+          break;
+      }
+
+      if (sortOrder === 'asc') {
+        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+      } else {
+        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+      }
+    });
+
+    setFilteredRequests(filtered);
+  }, [verificationRequests, searchQuery, statusFilter, sortField, sortOrder]);
+
   const getVerificationStatus = (request: VerificationRequest) => {
     if (request.main_badge === 'Verified User') {
       return <Badge variant="default" className="bg-green-500">Verified</Badge>;
@@ -269,25 +382,72 @@ const VerificationManagement = () => {
           <CardDescription>
             Review and approve user verification requests for "Verified User" badges
           </CardDescription>
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-gray-600">
-              Total requests: {verificationRequests.length}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={fetchVerificationRequests}
-              disabled={loading}
-            >
-              <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-              Refresh
-            </Button>
+          
+          {/* Search and Filter Controls */}
+          <div className="space-y-4">
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Search by name, email, PAN name, mobile, or PAN number..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <Select value={statusFilter} onValueChange={(value: any) => setStatusFilter(value)}>
+                <SelectTrigger className="w-full md:w-48">
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="verified">Verified</SelectItem>
+                  <SelectItem value="rejected">Rejected</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={`${sortField}-${sortOrder}`} onValueChange={(value) => {
+                const [field, order] = value.split('-');
+                setSortField(field as any);
+                setSortOrder(order as any);
+              }}>
+                <SelectTrigger className="w-full md:w-48">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="updated_at-desc">Latest First</SelectItem>
+                  <SelectItem value="updated_at-asc">Oldest First</SelectItem>
+                  <SelectItem value="name-asc">Name A-Z</SelectItem>
+                  <SelectItem value="name-desc">Name Z-A</SelectItem>
+                  <SelectItem value="email-asc">Email A-Z</SelectItem>
+                  <SelectItem value="email-desc">Email Z-A</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">
+                Showing {filteredRequests.length} of {verificationRequests.length} requests
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={fetchVerificationRequests}
+                disabled={loading}
+              >
+                <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                Refresh
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
-          {verificationRequests.length === 0 ? (
+          {filteredRequests.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
-              No verification requests found.
+              {verificationRequests.length === 0 
+                ? "No verification requests found." 
+                : "No requests match your search criteria."
+              }
             </div>
           ) : (
             <Table>
@@ -303,7 +463,7 @@ const VerificationManagement = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {verificationRequests.map((request) => (
+                {filteredRequests.map((request) => (
                   <TableRow key={request.id}>
                     <TableCell className="font-medium">
                       {request.full_name || 'N/A'}
@@ -455,6 +615,15 @@ const VerificationManagement = () => {
                             </Button>
                           </>
                         )}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openDeleteDialog(request.id)}
+                          disabled={processing === request.id}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -512,6 +681,35 @@ const VerificationManagement = () => {
                 )}
               </Button>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Verification Request</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this verification request? This will clear all PAN verification data for this user and cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex justify-end gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowDeleteDialog(false)}
+              disabled={processing !== null}
+            >
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={handleDeleteRequest}
+              disabled={processing !== null}
+            >
+              {processing ? 'Deleting...' : 'Delete'}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
