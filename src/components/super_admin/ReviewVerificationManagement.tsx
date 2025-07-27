@@ -88,7 +88,7 @@ const ReviewVerificationManagement = () => {
                     try {
                       const url = review.proof_url.startsWith('http') 
                         ? review.proof_url 
-                        : `https://hsympreltgeoellhzvus.supabase.co/storage/v1/object/public/proof-uploads/${review.proof_url}`;
+                        : `https://hsympreltgeoellhzvus.supabase.co/storage/v1/object/public/review-proofs/${review.proof_url}`;
                       window.open(url, '_blank');
                     } catch (error) {
                       console.error('Failed to open proof URL:', error);

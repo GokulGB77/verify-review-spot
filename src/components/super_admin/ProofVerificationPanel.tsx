@@ -168,7 +168,7 @@ const ProofVerificationPanel = ({
                     try {
                       const url = proofUrl.startsWith('http') 
                         ? proofUrl 
-                        : `https://hsympreltgeoellhzvus.supabase.co/storage/v1/object/public/proof-uploads/${proofUrl}`;
+                        : `https://hsympreltgeoellhzvus.supabase.co/storage/v1/object/public/review-proofs/${proofUrl}`;
                       window.open(url, '_blank');
                     } catch (error) {
                       console.error('Failed to open proof URL:', error);
