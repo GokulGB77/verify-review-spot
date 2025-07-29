@@ -232,6 +232,12 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory, entityName 
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              {isEditable && (
+                <DropdownMenuItem onClick={handleEdit}>
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit ({formatTime(timeLeft)})
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem onClick={handleAddUpdate}>
                 <Plus className="h-4 w-4 mr-2" />
                 Add Update
@@ -272,25 +278,6 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory, entityName 
         </div>
       )}
 
-      {/* Edit Section - Only show if user owns the review, within edit window, and hasn't been edited */}
-      {isEditable && (
-        <div className="bg-blue-50 border border-blue-200 rounded p-3 mb-4">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-blue-700">
-              You can edit this for the next {formatTime(timeLeft)}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleEdit}
-              className="text-blue-700 border-blue-300 hover:bg-blue-100 h-7 text-xs px-2"
-            >
-              <Edit className="h-3 w-3 mr-1" />
-              Edit
-            </Button>
-          </div>
-        </div>
-      )}
 
       {/* Review History Button and Update Badge */}
       {review.hasUpdates && (
@@ -337,6 +324,27 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory, entityName 
         <div className="mt-4">
           <ReviewHistory allReviews={review.allReviews} />
         </div>
+      )}
+      
+      {/* Edit message - Only show if user owns the review, recently posted, and hasn't been edited */}
+      {user && review.userId === user.id && !hasBeenEdited && timeLeft === 0 && review.created_at && (
+        (() => {
+          const reviewTime = new Date(review.created_at).getTime();
+          const currentTime = Date.now();
+          const timeDiff = currentTime - reviewTime;
+          const fiveMinutes = 5 * 60 * 1000; // Show message for 5 minutes after posting
+          
+          if (timeDiff < fiveMinutes) {
+            return (
+              <div className="mt-3 pt-3 border-t border-gray-100">
+                <p className="text-xs text-gray-500">
+                  Reviews can be edited for 1 minute after posting.
+                </p>
+              </div>
+            );
+          }
+          return null;
+        })()
       )}
     </div>
   );
