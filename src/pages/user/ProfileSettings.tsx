@@ -637,7 +637,7 @@ const ProfileSettings = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
       <div className="max-w-2xl mx-auto">
         <Card>
           <ProfileHeader profile={profile} />
@@ -646,7 +646,7 @@ const ProfileSettings = () => {
             setActiveTab={setActiveTab}
             profile={profile}
           />
-          <CardContent className="pt-6">
+          <CardContent className="pt-3 sm:pt-6 px-3 sm:px-6">
             {activeTab === "details" && (
               <BasicDetailsForm
                 formData={formData}
