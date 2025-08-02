@@ -456,6 +456,7 @@ export type Database = {
           updated_at: string
           upvotes: number | null
           user_id: string
+          video_review_url: string | null
         }
         Insert: {
           business_id: string
@@ -482,6 +483,7 @@ export type Database = {
           updated_at?: string
           upvotes?: number | null
           user_id: string
+          video_review_url?: string | null
         }
         Update: {
           business_id?: string
@@ -508,6 +510,7 @@ export type Database = {
           updated_at?: string
           upvotes?: number | null
           user_id?: string
+          video_review_url?: string | null
         }
         Relationships: [
           {

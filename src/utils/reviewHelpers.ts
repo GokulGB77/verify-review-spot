@@ -24,6 +24,7 @@ export interface TransformedReview {
   created_at?: string;
   updated_at?: string;
   business_id?: string;
+  video_review_url?: string;
 }
 
 export const transformReviews = (allReviews: Review[]): TransformedReview[] => {
@@ -71,7 +72,8 @@ export const transformReviews = (allReviews: Review[]): TransformedReview[] => {
       updateNumber: userReviews.length,
       allReviews: sortedReviews,
       created_at: latest.created_at,
-      updated_at: latest.updated_at
+      updated_at: latest.updated_at,
+      video_review_url: latest.video_review_url
     };
 
     result.push(mainReview);

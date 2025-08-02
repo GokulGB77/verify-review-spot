@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Star, CheckCircle, MessageSquare, History, Edit, Shield, Clock, MoreVertical, Plus } from 'lucide-react';
+import { Star, CheckCircle, MessageSquare, History, Edit, Shield, Clock, MoreVertical, Plus, Play } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import ReviewContent from './ReviewContent';
@@ -40,6 +40,7 @@ interface SingleReviewCardProps {
     created_at?: string;
     updated_at?: string;
     business_id?: string;
+    video_review_url?: string;
   };
   viewingHistory: Record<string, boolean>;
   onToggleHistory: (userId: string) => void;
@@ -262,6 +263,21 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory, entityName 
           <h3 className="font-semibold text-md mb-2 text-gray-900">{review.title}</h3>
         )}
         <ReviewContent content={review.content} maxLength={150} />
+        
+        {/* Video Review Link */}
+        {review.video_review_url && (
+          <div className="mt-3">
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2"
+              onClick={() => window.open(review.video_review_url, '_blank')}
+            >
+              <Play className="h-4 w-4" />
+              Watch Video Review
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Business Response */}
