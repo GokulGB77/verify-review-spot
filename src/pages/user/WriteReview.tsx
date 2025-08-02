@@ -44,6 +44,7 @@ const WriteReview = () => {
     proofFile: null,
     reviewSpecificBadge: '',
     proofRemark: '',
+    videoReviewUrl: '',
   });
 
   // Get parameters from URL
@@ -267,6 +268,7 @@ const WriteReview = () => {
           title: formData.title.trim(),
           rating: formData.rating,
           content: formData.content.trim(),
+          video_review_url: formData.videoReviewUrl.trim() || null,
           review_specific_badge: effectiveConnection || null,
           updated_at: new Date().toISOString(),
         };
@@ -319,6 +321,7 @@ const WriteReview = () => {
             title: formData.title.trim(),
             rating: formData.rating,
             content: formData.content.trim(),
+            video_review_url: formData.videoReviewUrl.trim() || null,
             proof_url: proofUrl,
             proof_remark: proofUrl ? (formData.proofRemark.trim() || null) : null,
             is_update: isUpdate,
@@ -531,6 +534,34 @@ const WriteReview = () => {
             isEdit={isEdit}
             isUpdate={isUpdate}
           />
+
+          {/* Video Review URL Field */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Video Review (Optional)</CardTitle>
+              <CardDescription>
+                Add a link to your personal video review on Instagram, YouTube, or other platforms
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <label htmlFor="videoUrl" className="text-sm font-medium text-gray-700">
+                  Video URL
+                </label>
+                <input
+                  id="videoUrl"
+                  type="url"
+                  value={formData.videoReviewUrl}
+                  onChange={(e) => setFormData(prev => ({ ...prev, videoReviewUrl: e.target.value }))}
+                  placeholder="https://youtube.com/watch?v=... or https://instagram.com/p/..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <p className="text-xs text-gray-500">
+                  Share your Instagram Reel, YouTube video, or other platform link
+                </p>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Show existing connection info or connection selection */}
           {existingConnection ? (

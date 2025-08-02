@@ -8,6 +8,7 @@ export interface ReviewFormData {
   proofFile: File | null;
   reviewSpecificBadge: string;
   proofRemark: string;
+  videoReviewUrl: string;
 }
 
 export interface UserProfile {

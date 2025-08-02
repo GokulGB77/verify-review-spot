@@ -32,7 +32,7 @@ const BasicDetailsForm = ({
   profile,
 }: BasicDetailsFormProps) => {
   return (
-    <form onSubmit={handleUpdateProfile} className="space-y-6">
+    <form onSubmit={handleUpdateProfile} className="space-y-4 sm:space-y-6">
       <div>
         <div className="text-left mb-1">
           <Label htmlFor="full_name">Full Name</Label>
@@ -46,6 +46,9 @@ const BasicDetailsForm = ({
           disabled
           className="bg-muted"
         />
+        <p className="text-xs text-gray-500 mt-1">
+          This field is automatically filled from your Google account and cannot be changed.
+        </p>
       </div>
 
       <div>
@@ -53,7 +56,7 @@ const BasicDetailsForm = ({
           <Label htmlFor="pseudonym">
             Pseudonym
             {profile?.pseudonym_set && (
-              <span className="text-sm text-gray-500 ml-2">
+              <span className="text-xs sm:text-sm text-gray-500 ml-2">
                 (Cannot be changed)
               </span>
             )}
@@ -64,10 +67,10 @@ const BasicDetailsForm = ({
           type="text"
           value={formData.pseudonym}
           onChange={(e) => handleInputChange("pseudonym", e.target.value)}
-          placeholder="Enter your pseudonym (letters, numbers, _, - only)"
+          placeholder="Enter your pseudonym"
           disabled={profile?.pseudonym_set || false}
         />
-        <p className="text-sm text-gray-500 mt-1">
+        <p className="text-xs sm:text-sm text-gray-500 mt-1">
           This name will be used for your reviews to keep your real name private.
           Only letters, numbers, underscores, and hyphens allowed. No spaces.
           {profile?.pseudonym_set && " This cannot be changed once set."}
@@ -77,33 +80,33 @@ const BasicDetailsForm = ({
       <div>
         <div className="text-left mb-3">
           <Label>Display Name in Reviews</Label>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-xs sm:text-sm text-gray-500 mt-1">
             Choose how your name appears when you write reviews
           </p>
         </div>
         <RadioGroup
           value={formData.display_name_preference}
           onValueChange={(value) => handleInputChange("display_name_preference", value)}
-          className="grid grid-cols-1 gap-4"
+          className="grid grid-cols-1 gap-3 sm:gap-4"
         >
-          <div className="flex items-center space-x-2 p-3 border rounded-lg">
+          <div className="flex items-center space-x-2 p-2 sm:p-3 border rounded-lg">
             <RadioGroupItem value="pseudonym" id="pseudonym-option" />
             <div className="flex-1">
-              <Label htmlFor="pseudonym-option" className="font-medium">
+              <Label htmlFor="pseudonym-option" className="font-medium text-sm">
                 Pseudonym (Recommended)
               </Label>
-              <p className="text-sm text-gray-500">
+              <p className="text-xs sm:text-sm text-gray-500">
                 Use your pseudonym to keep your identity private
               </p>
             </div>
           </div>
-          <div className="flex items-center space-x-2 p-3 border rounded-lg">
+          <div className="flex items-center space-x-2 p-2 sm:p-3 border rounded-lg">
             <RadioGroupItem value="full_name" id="full-name-option" />
             <div className="flex-1">
-              <Label htmlFor="full-name-option" className="font-medium">
+              <Label htmlFor="full-name-option" className="font-medium text-sm">
                 Full Name
               </Label>
-              <p className="text-sm text-gray-500">
+              <p className="text-xs sm:text-sm text-gray-500">
                 Use your real name (publicly visible)
               </p>
             </div>
@@ -126,7 +129,7 @@ const BasicDetailsForm = ({
       </div>
 
       <div className="flex justify-end">
-        <Button type="submit" disabled={isSubmitting}>
+        <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
           {isSubmitting ? "Updating..." : "Update Profile"}
         </Button>
       </div>
