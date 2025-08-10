@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -6,12 +5,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 
 const CreateDummyReviews = () => {
-  const [loading, setLoading] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const createDummyReviews = async () => {
-    setLoading(true);
+    setCreating(true);
     try {
       const { data, error } = await supabase.functions.invoke('create-dummy-reviews', {
         body: {
@@ -25,12 +25,10 @@ const CreateDummyReviews = () => {
           title: "Success!",
           description: `Created ${data?.insertedCount ?? 50} dummy reviews for Miles Education.`,
         });
-        // Refresh reviews list
         queryClient.invalidateQueries({ queryKey: ['reviews'] });
       } else {
         throw error;
       }
-
     } catch (error: any) {
       toast({
         title: "Error",
@@ -38,14 +36,48 @@ const CreateDummyReviews = () => {
         variant: "destructive",
       });
     } finally {
-      setLoading(false);
+      setCreating(false);
+    }
+  };
+
+  const deleteDummyReviews = async () => {
+    setDeleting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('delete-dummy-reviews', {
+        body: {
+          entityName: 'Miles Education',
+        },
+      });
+
+      if (!error) {
+        toast({
+          title: "Removed",
+          description: `Deleted ${data?.deletedCount ?? 0} dummy reviews for Miles Education.`,
+        });
+        queryClient.invalidateQueries({ queryKey: ['reviews'] });
+      } else {
+        throw error;
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error?.message || error?.error || "Failed to delete dummy reviews. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setDeleting(false);
     }
   };
 
   return (
-    <Button onClick={createDummyReviews} disabled={loading}>
-      {loading ? 'Creating...' : 'Create Dummy Reviews'}
-    </Button>
+    <div className="flex gap-2">
+      <Button onClick={createDummyReviews} disabled={creating}>
+        {creating ? 'Creating…' : 'Create Dummy Reviews'}
+      </Button>
+      <Button onClick={deleteDummyReviews} variant="outline" disabled={deleting}>
+        {deleting ? 'Removing…' : 'Remove Dummy Reviews'}
+      </Button>
+    </div>
   );
 };
 

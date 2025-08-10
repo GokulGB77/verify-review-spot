@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.create-dummy-reviews]
 verify_jwt = false
+
+[functions.delete-dummy-reviews]
+verify_jwt = false

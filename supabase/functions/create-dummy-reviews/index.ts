@@ -90,6 +90,7 @@ serve(async (req) => {
         business_id: businessId,
         rating,
         content: `${base} ${extra}`,
+        custom_verification_tag: 'DUMMY',
         upvotes: randomInt(0, 12),
         downvotes: randomInt(0, 3),
         is_proof_submitted: Math.random() < 0.5,
