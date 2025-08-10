@@ -3,10 +3,12 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 
 const CreateDummyReviews = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const createDummyReviews = async () => {
     setLoading(true);
@@ -23,13 +25,16 @@ const CreateDummyReviews = () => {
           title: "Success!",
           description: `Created ${data?.insertedCount ?? 50} dummy reviews for Miles Education.`,
         });
+        // Refresh reviews list
+        queryClient.invalidateQueries({ queryKey: ['reviews'] });
       } else {
         throw error;
       }
-    } catch (error) {
+
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to create dummy reviews. Please try again.",
+        description: error?.message || error?.error || "Failed to create dummy reviews. Please try again.",
         variant: "destructive",
       });
     } finally {
