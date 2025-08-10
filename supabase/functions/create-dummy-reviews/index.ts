@@ -1,108 +1,119 @@
-
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+};
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response('ok', { headers: corsHeaders });
   }
 
   try {
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
+    );
 
-    // Get businesses first
-    const { data: businesses, error: businessError } = await supabaseClient
-      .from('businesses')
-      .select('id')
-      .limit(5);
+    const { entityName = 'Miles Education', count = 50 } = await req.json().catch(() => ({
+      entityName: 'Miles Education',
+      count: 50,
+    }));
 
-    if (businessError) throw businessError;
+    // Find the entity by name (case-insensitive)
+    const { data: entities, error: entityError } = await supabaseClient
+      .from('entities')
+      .select('entity_id, name')
+      .ilike('name', entityName)
+      .limit(1);
 
-    // Get a user to create reviews (using the first available user)
+    if (entityError) throw entityError;
+
+    if (!entities || entities.length === 0) {
+      return new Response(
+        JSON.stringify({ error: `Entity not found for name: ${entityName}` }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 404 }
+      );
+    }
+
+    const businessId = entities[0].entity_id;
+
+    // Get a pool of users to attribute reviews to
     const { data: profiles, error: profileError } = await supabaseClient
       .from('profiles')
       .select('id')
-      .limit(3);
+      .limit(25);
 
     if (profileError) throw profileError;
 
-    if (!businesses?.length || !profiles?.length) {
+    if (!profiles || profiles.length === 0) {
       return new Response(
-        JSON.stringify({ error: 'No businesses or users found' }),
+        JSON.stringify({ error: 'No users (profiles) found to assign reviews.' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
-      )
+      );
     }
 
-    // Create dummy reviews
-    const dummyReviews = [
-      {
-        user_id: profiles[0].id,
-        business_id: businesses[0].id,
-        rating: 5,
-        content: "Excellent service and great experience! The staff was very professional and the quality exceeded my expectations. Would definitely recommend to others.",
-        user_badge: "Verified User",
-        proof_provided: true,
-        upvotes: 12,
-        downvotes: 1
-      },
-      {
-        user_id: profiles[1]?.id || profiles[0].id,
-        business_id: businesses[0].id,
-        rating: 4,
-        content: "Good overall experience. The service was prompt and the results were satisfactory. Minor areas for improvement but would use again.",
-        user_badge: "Verified Graduate",
-        proof_provided: false,
-        upvotes: 8,
-        downvotes: 0
-      },
-      {
-        user_id: profiles[2]?.id || profiles[0].id,
-        business_id: businesses[1]?.id || businesses[0].id,
-        rating: 3,
-        content: "Average experience. The service was okay but nothing exceptional. Room for improvement in customer service and delivery time.",
-        user_badge: "Verified Employee",
-        proof_provided: true,
-        upvotes: 5,
-        downvotes: 3
-      },
-      {
-        user_id: profiles[0].id,
-        business_id: businesses[1]?.id || businesses[0].id,
-        rating: 5,
-        content: "Outstanding quality and exceptional customer service! They went above and beyond to ensure satisfaction. Highly recommend!",
-        user_badge: "Verified User",
-        proof_provided: true,
-        upvotes: 15,
-        downvotes: 0,
-        business_response: "Thank you so much for your wonderful feedback! We're thrilled that you had such a positive experience with our team.",
-        business_response_date: new Date().toISOString()
-      }
+    const sampleSentences = [
+      'Outstanding experience with knowledgeable staff and prompt support.',
+      'Good overall. Clear communication and timely responses.',
+      'Average service; some areas could be improved but decent value.',
+      'Exceeded expectations with great attention to detail.',
+      'Professional and courteous team. Would recommend to others.',
+      'Support was helpful and resolved my issue quickly.',
+      'Quality service and consistent follow-up throughout.',
+      'Some delays, but the final outcome was satisfactory.',
+      'Impressed by the depth of expertise and resources available.',
+      'Friendly and approachable staff made the process easy.',
     ];
+
+    function randomInt(min: number, max: number) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function randomPastDate(daysBack = 90) {
+      const now = new Date();
+      const past = new Date(now);
+      past.setDate(now.getDate() - randomInt(0, daysBack));
+      past.setHours(randomInt(0, 23), randomInt(0, 59), randomInt(0, 59), 0);
+      return past.toISOString();
+    }
+
+    const dummyReviews = Array.from({ length: Number(count) }).map((_, i) => {
+      const profile = profiles[i % profiles.length];
+      const rating = randomInt(3, 5);
+      const base = sampleSentences[i % sampleSentences.length];
+      const extra = i % 3 === 0 ? ' Highly recommend!' : i % 3 === 1 ? ' Would enroll again.' : ' Learned a lot.';
+      return {
+        user_id: profile.id,
+        business_id: businessId,
+        rating,
+        content: `${base} ${extra}`,
+        upvotes: randomInt(0, 12),
+        downvotes: randomInt(0, 3),
+        is_proof_submitted: Math.random() < 0.5,
+        created_at: randomPastDate(120),
+        updated_at: new Date().toISOString(),
+      };
+    });
 
     const { data, error } = await supabaseClient
       .from('reviews')
       .insert(dummyReviews)
-      .select();
+      .select('id');
 
     if (error) throw error;
 
     return new Response(
-      JSON.stringify({ message: 'Dummy reviews created successfully', data }),
+      JSON.stringify({ message: `Dummy reviews created for ${entityName}`, insertedCount: data?.length ?? 0 }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
-
+    );
   } catch (error) {
+    const message = error?.message ?? 'Unknown error';
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: message }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
-    )
+    );
   }
-})
+});

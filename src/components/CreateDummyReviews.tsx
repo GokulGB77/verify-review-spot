@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const CreateDummyReviews = () => {
   const [loading, setLoading] = useState(false);
@@ -10,17 +11,20 @@ const CreateDummyReviews = () => {
   const createDummyReviews = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/create-dummy-reviews', {
-        method: 'POST',
+      const { data, error } = await supabase.functions.invoke('create-dummy-reviews', {
+        body: {
+          entityName: 'Miles Education',
+          count: 50,
+        },
       });
-      
-      if (response.ok) {
+
+      if (!error) {
         toast({
           title: "Success!",
-          description: "Dummy reviews have been created successfully.",
+          description: `Created ${data?.insertedCount ?? 50} dummy reviews for Miles Education.`,
         });
       } else {
-        throw new Error('Failed to create dummy reviews');
+        throw error;
       }
     } catch (error) {
       toast({
