@@ -17,28 +17,34 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { entityName = 'Miles Education', count = 50 } = await req.json().catch(() => ({
+    const { entityId, entityName = 'Miles Education', count = 50 } = await req.json().catch(() => ({
       entityName: 'Miles Education',
       count: 50,
     }));
 
-    // Find the entity by name (case-insensitive)
-    const { data: entities, error: entityError } = await supabaseClient
-      .from('entities')
-      .select('entity_id, name')
-      .ilike('name', entityName)
-      .limit(1);
+    let businessId: string | null = null;
 
-    if (entityError) throw entityError;
+    if (entityId) {
+      businessId = entityId;
+    } else {
+      // Find the entity by name (case-insensitive)
+      const { data: entities, error: entityError } = await supabaseClient
+        .from('entities')
+        .select('entity_id, name')
+        .ilike('name', entityName)
+        .limit(1);
 
-    if (!entities || entities.length === 0) {
-      return new Response(
-        JSON.stringify({ error: `Entity not found for name: ${entityName}` }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 404 }
-      );
+      if (entityError) throw entityError;
+
+      if (!entities || entities.length === 0) {
+        return new Response(
+          JSON.stringify({ error: `Entity not found for name: ${entityName}` }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 404 }
+        );
+      }
+
+      businessId = entities[0].entity_id;
     }
-
-    const businessId = entities[0].entity_id;
 
     // Get a pool of users to attribute reviews to
     const { data: profiles, error: profileError } = await supabaseClient

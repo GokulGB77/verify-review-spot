@@ -15,7 +15,7 @@ const CreateDummyReviews = () => {
     try {
       const { data, error } = await supabase.functions.invoke('create-dummy-reviews', {
         body: {
-          entityName: 'Miles Education',
+          entityId: '6e71f4ee-899c-4cf2-bf7a-9bab296c0f08',
           count: 50,
         },
       });
@@ -23,7 +23,7 @@ const CreateDummyReviews = () => {
       if (!error) {
         toast({
           title: "Success!",
-          description: `Created ${data?.insertedCount ?? 50} dummy reviews for Miles Education.`,
+          description: `Created ${data?.insertedCount ?? 50} dummy reviews for the specified entity.`,
         });
         queryClient.invalidateQueries({ queryKey: ['reviews'] });
       } else {
