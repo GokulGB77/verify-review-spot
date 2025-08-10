@@ -20,6 +20,7 @@ const EntityEditForm = ({ entity, onCancel, onSuccess }: EntityEditFormProps) =>
   // Extract data from JSONB fields with proper type checking
   const contactData = (entity.contact as any) || {};
   const locationData = (entity.location as any) || {};
+  const socialLinksData = (entity.social_links as any) || {};
   
   const [formData, setFormData] = useState({
     name: entity.name,
@@ -43,7 +44,13 @@ const EntityEditForm = ({ entity, onCancel, onSuccess }: EntityEditFormProps) =>
     city: locationData.city || '',
     state: locationData.state || '',
     country: locationData.country || '',
-    pincode: locationData.pincode || ''
+    pincode: locationData.pincode || '',
+    // Social links (optional)
+    instagram: socialLinksData.instagram || '',
+    youtube: socialLinksData.youtube || '',
+    twitter: socialLinksData.twitter || '',
+    facebook: socialLinksData.facebook || '',
+    linkedin: socialLinksData.linkedin || ''
   });
 
   const { toast } = useToast();
@@ -77,6 +84,13 @@ const EntityEditForm = ({ entity, onCancel, onSuccess }: EntityEditFormProps) =>
             state: data.state || '',
             country: data.country || '',
             pincode: data.pincode || ''
+          },
+          social_links: {
+            instagram: data.instagram || undefined,
+            youtube: data.youtube || undefined,
+            twitter: data.twitter || undefined,
+            facebook: data.facebook || undefined,
+            linkedin: data.linkedin || undefined,
           },
           updated_at: new Date().toISOString()
         })
@@ -262,6 +276,57 @@ const EntityEditForm = ({ entity, onCancel, onSuccess }: EntityEditFormProps) =>
           onChange={(e) => handleInputChange('description', e.target.value)}
           rows={3}
         />
+      </div>
+
+      <div className="pt-2">
+        <Label>Social Links (optional)</Label>
+        <div className="grid grid-cols-2 gap-4 mt-2">
+          <div>
+            <Label htmlFor="instagram">Instagram</Label>
+            <Input
+              id="instagram"
+              value={formData.instagram}
+              onChange={(e) => handleInputChange('instagram', e.target.value)}
+              placeholder="https://instagram.com/yourpage or reel url"
+            />
+          </div>
+          <div>
+            <Label htmlFor="youtube">YouTube</Label>
+            <Input
+              id="youtube"
+              value={formData.youtube}
+              onChange={(e) => handleInputChange('youtube', e.target.value)}
+              placeholder="https://youtube.com/@channel or video url"
+            />
+          </div>
+          <div>
+            <Label htmlFor="twitter">Twitter/X</Label>
+            <Input
+              id="twitter"
+              value={formData.twitter}
+              onChange={(e) => handleInputChange('twitter', e.target.value)}
+              placeholder="https://x.com/username"
+            />
+          </div>
+          <div>
+            <Label htmlFor="facebook">Facebook</Label>
+            <Input
+              id="facebook"
+              value={formData.facebook}
+              onChange={(e) => handleInputChange('facebook', e.target.value)}
+              placeholder="https://facebook.com/page"
+            />
+          </div>
+          <div>
+            <Label htmlFor="linkedin">LinkedIn</Label>
+            <Input
+              id="linkedin"
+              value={formData.linkedin}
+              onChange={(e) => handleInputChange('linkedin', e.target.value)}
+              placeholder="https://linkedin.com/company/..."
+            />
+          </div>
+        </div>
       </div>
 
       <div className="flex gap-2 pt-4">
