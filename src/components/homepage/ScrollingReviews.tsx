@@ -326,13 +326,9 @@ const AnimatedTestimonials = () => {
   const { data: verifiedUsersCount = 0 } = useQuery({
     queryKey: ['verified-users-count'],
     queryFn: async () => {
-      const { count, error } = await supabase
-        .from('profiles')
-        .select('*', { count: 'exact', head: true })
-        .eq('is_verified', true);
-      
+      const { data, error } = await supabase.rpc('count_verified_profiles');
       if (error) throw error;
-      return count || 0;
+      return data || 0;
     },
   });
 

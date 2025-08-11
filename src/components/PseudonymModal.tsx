@@ -56,24 +56,6 @@ const PseudonymModal = ({ open, user, onComplete }: PseudonymModalProps) => {
     setIsSubmitting(true);
     
     try {
-      // Check if pseudonym already exists
-      const { data: existingUser, error: checkError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('pseudonym', trimmedPseudonym)
-        .single();
-
-      if (checkError && checkError.code !== 'PGRST116') {
-        throw checkError;
-      }
-
-      if (existingUser) {
-        setError('This pseudonym is already taken. Please choose another one.');
-        setIsSubmitting(false);
-        return;
-      }
-
-      // Update user profile with pseudonym
       const { error } = await supabase
         .from('profiles')
         .update({
@@ -83,7 +65,6 @@ const PseudonymModal = ({ open, user, onComplete }: PseudonymModalProps) => {
         .eq('id', user.id);
 
       if (error) {
-        // Handle unique constraint violation
         if (error.code === '23505') {
           setError('This pseudonym is already taken. Please choose another one.');
         } else {
@@ -106,7 +87,8 @@ const PseudonymModal = ({ open, user, onComplete }: PseudonymModalProps) => {
         description: 'Failed to set pseudonym. Please try again.',
         variant: 'destructive',
       });
-    } finally {
+    }
+    finally {
       setIsSubmitting(false);
     }
   };
