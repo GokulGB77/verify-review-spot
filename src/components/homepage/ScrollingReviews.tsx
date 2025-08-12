@@ -199,11 +199,11 @@ const TestimonialCard = ({ testimonial, onHover, onLeave, onReadMore }) => {
             <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-xs">
               {testimonial.avatar}
             </div>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">
+            <div className="flex items-center flex-wrap gap-x-1 min-w-0">
+              <span className="text-sm font-medium text-gray-900 truncate">
                 {testimonial.author}
-              </p>
-              <span className="text-gray-400 hidden sm:inline">•</span>
+              </span>
+              <span className="text-gray-500 text-sm">on</span>
               <button 
                 onClick={(e) => {
                   e.stopPropagation();
