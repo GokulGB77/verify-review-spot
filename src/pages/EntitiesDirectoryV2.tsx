@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Search, Filter, Loader2, SortAsc, MapPin, Shield } from "lucide-react";
 import Header from "@/components/common/Header";
 import Footer from "@/components/common/Footer";
@@ -24,6 +24,7 @@ export default function EntitiesDirectoryV2() {
   const [verificationFilter, setVerificationFilter] = useState("all");
   const [sortBy, setSortBy] = useState<"name" | "rating" | "reviews">("name");
   const loadMoreButtonRef = useRef<HTMLButtonElement>(null);
+  const location = useLocation();
 
   // Flat entities
   const entities = useMemo(() => data?.pages.flatMap((p) => p.data) || [], [data]);
@@ -137,6 +138,11 @@ export default function EntitiesDirectoryV2() {
 
     return () => { document.title = prevTitle; };
   }, []);
+
+  useEffect(() => {
+    const param = new URLSearchParams(location.search).get('category');
+    if (param) setCategoryFilter(param);
+  }, [location.search]);
 
   if (isLoading) {
     return (

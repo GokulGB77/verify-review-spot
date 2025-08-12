@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Search, Shield, Filter, Building, MapPin, Loader2, X } from 'lucide-react';
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import BusinessCard from '@/components/BusinessCard';
 import Header from "@/components/common/Header";
 import Footer from "@/components/common/Footer";
@@ -21,6 +21,12 @@ const BusinessDirectory = () => {
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
   const loadMoreButtonRef = useRef<HTMLButtonElement>(null);
   const isMobile = useIsMobile();
+  const location = useLocation();
+  
+  useEffect(() => {
+    const param = new URLSearchParams(location.search).get('category');
+    if (param) setCategoryFilter(param);
+  }, [location.search]);
   
   const { 
     data, 
