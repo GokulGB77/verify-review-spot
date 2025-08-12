@@ -270,6 +270,7 @@ const BusinessDirectory = () => {
                           </Button>
                         ))}
                       </div>
+                      <div className="pt-2 text-xs text-gray-500">More categories are coming soon.</div>
                     </div>
 
                     {/* Status Filter */}
@@ -329,6 +330,7 @@ const BusinessDirectory = () => {
                   ))}
                 </div>
               </div>
+              <div className="text-xs text-gray-500 w-full">More categories are coming soon.</div>
 
               <div className="flex items-center space-x-2">
                 <span className="text-sm text-gray-600">Status:</span>
