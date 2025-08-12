@@ -5,7 +5,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Share, Copy, Check } from 'lucide-react';
+import { Share, Copy, Check, Download } from 'lucide-react';
 import QRCode from 'qrcode';
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
@@ -148,44 +148,17 @@ const ReviewShareButton = ({
 
   async function handleShare(platform: 'whatsapp' | 'linkedin' | 'instagram' | 'facebook' | 'twitter') {
     try {
-      setIsGenerating(true);
-      const aspect = platform === 'instagram' || platform === 'facebook' ? 'square' : 'landscape';
-      const blob = await drawShareImage(aspect);
-      const file = new File([blob], `review-${reviewId}-${aspect}.png`, { type: 'image/png' });
-      const caption = buildCaption();
-
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({ files: [file], text: caption, title: `Review of ${entityName}` });
-        setIsGenerating(false);
-        return;
-      }
-
-      // Fallback: download and open share link with text
-      downloadBlob(file.name, blob);
-      await navigator.clipboard.writeText(caption);
-
-      if (platform === 'whatsapp') {
-        window.open(`https://wa.me/?text=${encodeURIComponent(caption)}`, '_blank');
-      } else if (platform === 'twitter') {
-        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(caption)}`, '_blank');
-      } else if (platform === 'facebook') {
-        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(reviewUrl)}&quote=${encodeURIComponent(caption)}`, '_blank');
-      } else if (platform === 'linkedin') {
-        window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(reviewUrl)}`, '_blank');
-      } else if (platform === 'instagram') {
-        // No direct web share; instruct user
-      }
-
+      await navigator.clipboard.writeText(reviewUrl);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
       toast({
-        description: "Image downloaded and caption copied. Upload the image in the share dialog.",
+        description: "Link copied! Paste it into the app to share.",
       });
     } catch (e) {
       toast({
         variant: "destructive",
-        description: "Failed to generate share image. Please try again.",
+        description: "Failed to copy link. Please try again.",
       });
-    } finally {
-      setIsGenerating(false);
     }
   }
 
@@ -240,23 +213,41 @@ const ReviewShareButton = ({
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuItem onClick={shareToWhatsApp} className="cursor-pointer">
           <div className="h-4 w-4 mr-2 bg-green-600 rounded-sm flex items-center justify-center text-white text-xs font-bold">W</div>
-          WhatsApp (with image)
+          WhatsApp (copy link)
         </DropdownMenuItem>
         <DropdownMenuItem onClick={shareToLinkedIn} className="cursor-pointer">
           <div className="h-4 w-4 mr-2 bg-blue-600 rounded-sm flex items-center justify-center text-white text-xs font-bold">L</div>
-          LinkedIn (with image)
+          LinkedIn (copy link)
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => handleShare('facebook')} className="cursor-pointer">
           <div className="h-4 w-4 mr-2 bg-blue-700 rounded-sm flex items-center justify-center text-white text-xs font-bold">F</div>
-          Facebook (with image)
+          Facebook (copy link)
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => handleShare('twitter')} className="cursor-pointer">
           <div className="h-4 w-4 mr-2 bg-black rounded-sm flex items-center justify-center text-white text-xs font-bold">X</div>
-          Twitter/X (with image)
+          Twitter/X (copy link)
         </DropdownMenuItem>
         <DropdownMenuItem onClick={shareToInstagram} className="cursor-pointer">
           <div className="h-4 w-4 mr-2 bg-pink-600 rounded-sm flex items-center justify-center text-white text-xs font-bold">I</div>
-          Instagram (with image)
+          Instagram (copy link)
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          className="cursor-pointer"
+          onClick={async () => {
+            try {
+              setIsGenerating(true);
+              const blob = await drawShareImage('square');
+              downloadBlob(`review-${reviewId}-square.png`, blob);
+              toast({ description: 'Image downloaded.' });
+            } catch (e) {
+              toast({ variant: 'destructive', description: 'Failed to download image. Please try again.' });
+            } finally {
+              setIsGenerating(false);
+            }
+          }}
+        >
+          <Download className="h-4 w-4 mr-2" />
+          Download image
         </DropdownMenuItem>
         <DropdownMenuItem onClick={copyToClipboard} className="cursor-pointer">
           {isCopied ? (
