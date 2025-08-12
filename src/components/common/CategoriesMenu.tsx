@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/sheet";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
+import { useCategories } from "@/hooks/useCategories";
 import {
   Palette,
   Car,
@@ -38,61 +39,78 @@ import {
   Dumbbell,
   Plane,
   ChevronDown,
+  Shapes,
 } from "lucide-react";
 
 interface CategoriesMenuProps {
   variant?: "desktop" | "mobile";
 }
 
-const categories = [
-  { label: "Art & Design", icon: Palette, group: "Lifestyle" },
-  { label: "Autos & Vehicles", icon: Car, group: "Lifestyle" },
-  { label: "Baby & Kids", icon: Baby, group: "Lifestyle" },
-  { label: "Beauty", icon: Sparkles, group: "Lifestyle" },
-  { label: "Food & Drink", icon: Utensils, group: "Lifestyle" },
-  { label: "Health", icon: HeartPulse, group: "Lifestyle" },
-  { label: "Hobbies", icon: Puzzle, group: "Lifestyle" },
-  { label: "Pets & Animals", icon: PawPrint, group: "Lifestyle" },
-  { label: "Shopping", icon: ShoppingBag, group: "Lifestyle" },
-  { label: "Society", icon: Users, group: "Lifestyle" },
-  { label: "Sports", icon: Dumbbell, group: "Lifestyle" },
-  { label: "Travel", icon: Plane, group: "Lifestyle" },
-
-  { label: "Business", icon: Briefcase, group: "Professional" },
-  { label: "Finance", icon: Wallet, group: "Professional" },
-  { label: "Jobs", icon: BriefcaseBusiness, group: "Professional" },
-  { label: "Law & Government", icon: Scale, group: "Professional" },
-  { label: "Real Estate", icon: Building2, group: "Professional" },
-
-  { label: "Computers & Technology", icon: Cpu, group: "Knowledge" },
-  { label: "Education", icon: GraduationCap, group: "Knowledge" },
-  { label: "Entertainment", icon: Clapperboard, group: "Knowledge" },
-  { label: "Science", icon: Atom, group: "Knowledge" },
-];
-
-const groups = [
+const groupOrder = [
   { name: "Lifestyle", description: "Daily life, health, travel and more" },
   { name: "Professional", description: "Work, money and public services" },
   { name: "Knowledge", description: "Learn, tech and media" },
+  { name: "Other", description: "Everything else" },
 ];
+
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+  "Art & Design": Palette,
+  "Autos & Vehicles": Car,
+  "Baby & Kids": Baby,
+  "Beauty": Sparkles,
+  "Food & Drink": Utensils,
+  "Health": HeartPulse,
+  "Hobbies": Puzzle,
+  "Pets & Animals": PawPrint,
+  "Shopping": ShoppingBag,
+  "Society": Users,
+  "Sports": Dumbbell,
+  "Travel": Plane,
+  "Business": Briefcase,
+  "Finance": Wallet,
+  "Jobs": BriefcaseBusiness,
+  "Law & Government": Scale,
+  "Real Estate": Building2,
+  "Computers & Technology": Cpu,
+  "Education": GraduationCap,
+  "Entertainment": Clapperboard,
+  "Science": Atom,
+};
+
+const guessGroup = (label: string): string => {
+  const l = label.toLowerCase();
+  if (/(business|finance|law|government|job|real estate|tax|bank|insurance)/.test(l)) return "Professional";
+  if (/(tech|computer|software|science|education|school|university|media|entertainment)/.test(l)) return "Knowledge";
+  if (/(health|food|drink|travel|sport|beauty|pet|shopping|society|hobby|auto|vehicle|art|design|baby|kids)/.test(l)) return "Lifestyle";
+  return "Other";
+};
 
 export default function CategoriesMenu({ variant = "desktop" }: CategoriesMenuProps) {
   const [open, setOpen] = useState(false);
+  const { data, isLoading } = useCategories();
+  const categoriesList = data?.categories || [];
+  const computedItems = categoriesList.map((label) => ({
+    label,
+    icon: (iconMap[label] || Shapes),
+    group: guessGroup(label),
+  }));
+  const activeGroups = groupOrder
+    .map((g) => ({ ...g, items: computedItems.filter((c) => c.group === g.name) }))
+    .filter((g) => g.items.length > 0);
 
   const Grid = () => (
     <div className="max-h-[420px] overflow-auto">
-      {groups.map((g) => {
-        const items = categories.filter((c) => c.group === g.name);
-        return (
+      {isLoading ? (
+        <div className="p-4 text-sm text-muted-foreground">Loading categories…</div>
+      ) : (
+        activeGroups.map((g) => (
           <div key={g.name} className="py-3">
             <div className="px-3">
-              <div className="text-xs font-semibold text-muted-foreground tracking-wide">
-                {g.name}
-              </div>
+              <div className="text-xs font-semibold text-muted-foreground tracking-wide">{g.name}</div>
               <div className="text-[11px] text-muted-foreground/80 mb-2">{g.description}</div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-1" role="menu">
-              {items.map(({ label, icon: Icon }) => (
+              {g.items.map(({ label, icon: Icon }) => (
                 <DropdownMenuItem key={label} asChild className="p-0">
                   <Link
                     to={`/entities?category=${encodeURIComponent(label)}`}
@@ -107,8 +125,8 @@ export default function CategoriesMenu({ variant = "desktop" }: CategoriesMenuPr
               ))}
             </div>
           </div>
-        );
-      })}
+        ))
+      )}
       <div className="sticky bottom-0 mt-2 border-t bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <DropdownMenuItem asChild className="p-0">
           <Link
@@ -136,14 +154,15 @@ export default function CategoriesMenu({ variant = "desktop" }: CategoriesMenuPr
           </SheetHeader>
           <div className="px-4 pb-6">
             <Accordion type="multiple" className="w-full">
-              {groups.map((g) => (
-                <AccordionItem key={g.name} value={g.name}>
-                  <AccordionTrigger className="text-sm">{g.name}</AccordionTrigger>
-                  <AccordionContent>
-                    <div className="grid grid-cols-1 gap-1">
-                      {categories
-                        .filter((c) => c.group === g.name)
-                        .map(({ label, icon: Icon }) => (
+              {isLoading ? (
+                <div className="p-2 text-sm text-muted-foreground">Loading…</div>
+              ) : (
+                activeGroups.map((g) => (
+                  <AccordionItem key={g.name} value={g.name}>
+                    <AccordionTrigger className="text-sm">{g.name}</AccordionTrigger>
+                    <AccordionContent>
+                      <div className="grid grid-cols-1 gap-1">
+                        {g.items.map(({ label, icon: Icon }) => (
                           <Link
                             key={label}
                             to={`/entities?category=${encodeURIComponent(label)}`}
@@ -156,10 +175,11 @@ export default function CategoriesMenu({ variant = "desktop" }: CategoriesMenuPr
                             <span className="text-sm text-foreground">{label}</span>
                           </Link>
                         ))}
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                ))
+              )}
             </Accordion>
             <div className="pt-3">
               <Link to="/entities" onClick={() => setOpen(false)} className="inline-flex items-center text-primary text-sm font-medium hover:underline">
