@@ -11,6 +11,7 @@ import HomepageV1 from './pages/Homepage1';
 // import HomepageMinimal from './components/homepage/minimal/HomepageMinimal';
 import MyReviewsPage from './pages/user/MyReviews';
 import EntitiesDirectory from './pages/EntitiesDirectory';
+import EntitiesDirectoryV2 from './pages/EntitiesDirectoryV2';
 import EntityProfile from './pages/EntityProfile';
 import WriteReview from './pages/user/WriteReview';
 import Reviews from './pages/Reviews';
@@ -45,6 +46,7 @@ function App() {
               <Routes>
                 <Route path="/" element={<Homepage />} />
                 <Route path="/entities" element={<EntitiesDirectory />} />
+                <Route path="/entities-v2" element={<EntitiesDirectoryV2 />} />
                 <Route path="/entities/:id" element={<EntityProfile />} />
                 <Route path="/write-review" element={<WriteReview />} />
                 <Route path="/my-reviews" element={<MyReviewsPage />} />
