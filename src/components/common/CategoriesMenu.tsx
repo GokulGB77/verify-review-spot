@@ -130,6 +130,7 @@ export default function CategoriesMenu({ variant = "desktop" }: CategoriesMenuPr
           </div>
         ))
       )}
+      <div className="px-3 pt-2 text-xs text-muted-foreground">More categories are coming soon.</div>
       <div className="sticky bottom-0 mt-2 border-t bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <DropdownMenuItem asChild className="p-0">
           <Link
@@ -184,6 +185,7 @@ export default function CategoriesMenu({ variant = "desktop" }: CategoriesMenuPr
                 ))
               )}
             </Accordion>
+            <div className="pt-2 text-xs text-muted-foreground">More categories are coming soon.</div>
             <div className="pt-3">
               <Link to="/entities" onClick={() => setOpen(false)} className="inline-flex items-center text-primary text-sm font-medium hover:underline">
                 View All Categories
