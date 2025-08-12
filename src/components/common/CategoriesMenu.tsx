@@ -72,7 +72,10 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   "Law & Government": Scale,
   "Real Estate": Building2,
   "Computers & Technology": Cpu,
+  // Map common education variants used in the directory
   "Education": GraduationCap,
+  "Education & Training": GraduationCap,
+  "Education/Training": GraduationCap,
   "Entertainment": Clapperboard,
   "Science": Atom,
 };
