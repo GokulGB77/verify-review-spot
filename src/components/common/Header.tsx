@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import NotificationDropdown from "@/components/notifications/NotificationDropdown";
 import { useUnreadNotificationsCount } from "@/hooks/useNotifications";
 import HeaderSearch from "./HeaderSearch";
+import CategoriesMenu from "./CategoriesMenu";
 
 const Header = () => {
   const { user, signOut, loading } = useAuth();
@@ -135,6 +136,7 @@ const Header = () => {
             <Link to="/" className="text-gray-700 hover:text-blue-600">
               Home
             </Link>
+            <CategoriesMenu />
             <Link
               to="/entities"
               className="text-gray-700 hover:text-blue-600"
@@ -147,6 +149,7 @@ const Header = () => {
             </Link> */}
           </nav>
           <div className="flex items-center space-x-2 sm:space-x-4">
+            <CategoriesMenu variant="mobile" />
             {user ? (
               <>
                 <Button variant="ghost" asChild className="hidden sm:flex">

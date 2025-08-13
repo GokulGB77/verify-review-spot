@@ -342,25 +342,13 @@ const SingleReviewCard = ({ review, viewingHistory, onToggleHistory, entityName 
         </div>
       )}
       
-      {/* Edit message - Only show if user owns the review, recently posted, and hasn't been edited */}
-      {user && review.userId === user.id && !hasBeenEdited && timeLeft === 0 && review.created_at && (
-        (() => {
-          const reviewTime = new Date(review.created_at).getTime();
-          const currentTime = Date.now();
-          const timeDiff = currentTime - reviewTime;
-          const fiveMinutes = 5 * 60 * 1000; // Show message for 5 minutes after posting
-          
-          if (timeDiff < fiveMinutes) {
-            return (
-              <div className="mt-3 pt-3 border-t border-gray-100">
-                <p className="text-xs text-gray-500">
-                  Reviews can be edited for 1 minute after posting.
-                </p>
-              </div>
-            );
-          }
-          return null;
-        })()
+      {/* Edit message - Only show if user owns the review and still within 1-minute edit window */}
+      {user && review.userId === user.id && !hasBeenEdited && timeLeft > 0 && (
+        <div className="mt-3 pt-3 border-t border-gray-100">
+          <p className="text-xs text-gray-500">
+            Reviews can be edited for 1 minute after posting.
+          </p>
+        </div>
       )}
     </div>
   );

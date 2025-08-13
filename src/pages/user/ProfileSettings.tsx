@@ -187,31 +187,7 @@ const ProfileSettings = () => {
         return;
       }
 
-      // Check if pseudonym is being updated and if it's unique
-      if (formData.pseudonym !== profile?.pseudonym && formData.pseudonym.trim()) {
-        console.log("Checking pseudonym uniqueness for:", formData.pseudonym.trim());
-        const { data: existingUser, error: checkError } = await supabase
-          .from("profiles")
-          .select("id")
-          .eq("pseudonym", formData.pseudonym.trim())
-          .neq("id", user.id)
-          .maybeSingle();
-
-        if (checkError && checkError.code !== 'PGRST116') {
-          console.error("Pseudonym check error:", checkError);
-          throw checkError;
-        }
-
-        if (existingUser) {
-          console.log("Pseudonym already exists");
-          toast({
-            title: "Pseudonym unavailable",
-            description: "This pseudonym is already taken. Please choose another one.",
-            variant: "destructive",
-          });
-          return;
-        }
-      }
+      // Pseudonym uniqueness will be enforced by a DB unique index; no pre-check needed
 
       const updateData: any = {
         full_name: formData.full_name.trim() || null,

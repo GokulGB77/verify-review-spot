@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Star, MapPin, Globe, Phone, CheckCircle, MoreVertical, Share2, Copy, Check } from 'lucide-react';
+import { Star, MapPin, Globe, Phone, CheckCircle, MoreVertical, Share2, Copy, Check, Instagram, Youtube, Twitter, Linkedin, Facebook } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import {
   DropdownMenu,
@@ -48,6 +48,7 @@ const BusinessHeader = ({ business, totalReviews }: BusinessHeaderProps) => {
   const displayLocation = formatLocation(locationData);
   const website = contactData?.website || '';
   const phone = contactData?.phone || '';
+  const socialLinks = (business.social_links as any) || {};
 
   return (
     <Card className="mb-6">
@@ -136,6 +137,36 @@ const BusinessHeader = ({ business, totalReviews }: BusinessHeaderProps) => {
               </div>
             )}
           </div>
+
+          {(socialLinks && (socialLinks.instagram || socialLinks.youtube || socialLinks.twitter || socialLinks.facebook || socialLinks.linkedin)) && (
+            <div className="flex items-center gap-3">
+              {socialLinks.instagram && (
+                <a href={socialLinks.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="text-gray-600 hover:text-blue-600 transition-colors">
+                  <Instagram className="h-5 w-5" />
+                </a>
+              )}
+              {socialLinks.youtube && (
+                <a href={socialLinks.youtube} target="_blank" rel="noopener noreferrer" aria-label="YouTube" className="text-gray-600 hover:text-blue-600 transition-colors">
+                  <Youtube className="h-5 w-5" />
+                </a>
+              )}
+              {socialLinks.twitter && (
+                <a href={socialLinks.twitter} target="_blank" rel="noopener noreferrer" aria-label="Twitter/X" className="text-gray-600 hover:text-blue-600 transition-colors">
+                  <Twitter className="h-5 w-5" />
+                </a>
+              )}
+              {socialLinks.facebook && (
+                <a href={socialLinks.facebook} target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="text-gray-600 hover:text-blue-600 transition-colors">
+                  <Facebook className="h-5 w-5" />
+                </a>
+              )}
+              {socialLinks.linkedin && (
+                <a href={socialLinks.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="text-gray-600 hover:text-blue-600 transition-colors">
+                  <Linkedin className="h-5 w-5" />
+                </a>
+              )}
+            </div>
+          )}
 
           <div className="flex gap-3 pt-4">
             <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700">

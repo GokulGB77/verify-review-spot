@@ -658,9 +658,25 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      count_verified_profiles: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
       generate_slug: {
         Args: { name: string }
         Returns: string
+      }
+      get_public_profiles: {
+        Args: { p_user_ids: string[] }
+        Returns: {
+          id: string
+          pseudonym: string
+          full_name: string
+          display_name_preference: string
+          main_badge: string
+          is_verified: boolean
+          avatar_url: string
+        }[]
       }
       get_user_roles: {
         Args: { check_user_id?: string }

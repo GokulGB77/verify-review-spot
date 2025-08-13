@@ -4,6 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Database } from '@/integrations/supabase/types'; // Assuming this type exists
 import { Badge } from '@/components/ui/badge'; // Added for review status/tags if needed later
+import CreateDummyReviews from '../CreateDummyReviews';
 
 type Review = Database['public']['Tables']['reviews']['Row'] & {
   entities?: { name?: string | null } | null; // For displaying entity name
@@ -37,17 +38,20 @@ const ReviewManagementSection: React.FC<ReviewManagementSectionProps> = ({ revie
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Review Management</CardTitle>
-        <CardDescription>
-          Monitor and moderate reviews across the platform.
-          {totalReviews > 0 && (
-            <span className="ml-2 text-xs text-gray-500">
-              (Page {page} of {totalPages}, {totalReviews} total)
-            </span>
-          )}
-        </CardDescription>
-      </CardHeader>
+    <CardHeader>
+      <CardTitle>Review Management</CardTitle>
+      <CardDescription>
+        Monitor and moderate reviews across the platform.
+        {totalReviews > 0 && (
+          <span className="ml-2 text-xs text-gray-500">
+            (Page {page} of {totalPages}, {totalReviews} total)
+          </span>
+        )}
+      </CardDescription>
+      <div className="mt-2">
+        <CreateDummyReviews />
+      </div>
+    </CardHeader>
       <CardContent>
         {reviewsLoading ? (
           <div className="text-center py-8">Loading reviews...</div>

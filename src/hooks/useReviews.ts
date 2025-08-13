@@ -44,28 +44,29 @@ export const useReviews = (businessId?: string, includeEntity?: boolean) => {
           entity: review.entities
         }));
         
-        // Get profile information for each review
-        const reviewsWithProfiles = await Promise.all(
-          reviewsWithEntities.map(async (review) => {
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('full_name, pseudonym, display_name_preference, main_badge, is_verified')
-              .eq('id', review.user_id)
-              .maybeSingle();
-            
-            return {
-              ...review,
-              profiles: profile ? {
-                username: null,
-                full_name: profile.full_name,
-                pseudonym: profile.pseudonym,
-                display_name_preference: profile.display_name_preference,
-                main_badge: profile.main_badge,
-                is_verified: profile.is_verified,
-              } : null
-            };
-          })
-        );
+        // Batch fetch public-safe profile info
+        const userIds = Array.from(new Set(reviewsWithEntities.map(r => r.user_id)));
+        const { data: publicProfiles, error: publicProfilesError } = await supabase
+          .rpc('get_public_profiles', { p_user_ids: userIds });
+
+        if (publicProfilesError) throw publicProfilesError;
+
+        const profileMap = new Map((publicProfiles || []).map((p: any) => [p.id, p]));
+
+        const reviewsWithProfiles = reviewsWithEntities.map((review) => {
+          const p = profileMap.get(review.user_id);
+          return {
+            ...review,
+            profiles: p ? {
+              username: null,
+              full_name: p.full_name, // only present if user opted-in
+              pseudonym: p.pseudonym,
+              display_name_preference: p.display_name_preference,
+              main_badge: p.main_badge,
+              is_verified: p.is_verified,
+            } : null
+          };
+        });
         
         return reviewsWithProfiles as (Review & { entity: any })[];
       }
@@ -85,28 +86,29 @@ export const useReviews = (businessId?: string, includeEntity?: boolean) => {
       if (error) throw error;
       if (!reviews) return [];
       
-      // Then get the profile information for each review
-      const reviewsWithProfiles = await Promise.all(
-        reviews.map(async (review) => {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('full_name, pseudonym, display_name_preference, main_badge, is_verified')
-            .eq('id', review.user_id)
-            .maybeSingle();
-          
-          return {
-            ...review,
-            profiles: profile ? {
-              username: null,
-              full_name: profile.full_name,
-              pseudonym: profile.pseudonym,
-              display_name_preference: profile.display_name_preference,
-              main_badge: profile.main_badge,
-              is_verified: profile.is_verified,
-            } : null
-          };
-        })
-      );
+      // Batch fetch public-safe profile info
+      const userIds = Array.from(new Set(reviews.map((r: any) => r.user_id)));
+      const { data: publicProfiles, error: publicProfilesError } = await supabase
+        .rpc('get_public_profiles', { p_user_ids: userIds });
+
+      if (publicProfilesError) throw publicProfilesError;
+
+      const profileMap = new Map((publicProfiles || []).map((p: any) => [p.id, p]));
+
+      const reviewsWithProfiles = reviews.map((review: any) => {
+        const p = profileMap.get(review.user_id);
+        return {
+          ...review,
+          profiles: p ? {
+            username: null,
+            full_name: p.full_name, // only present if user opted-in
+            pseudonym: p.pseudonym,
+            display_name_preference: p.display_name_preference,
+            main_badge: p.main_badge,
+            is_verified: p.is_verified,
+          } : null
+        };
+      });
       
       return reviewsWithProfiles as Review[];
     },
