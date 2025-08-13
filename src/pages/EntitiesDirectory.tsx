@@ -270,7 +270,6 @@ const BusinessDirectory = () => {
                           </Button>
                         ))}
                       </div>
-                      <div className="pt-2 text-xs text-gray-500">More categories are coming soon.</div>
                     </div>
 
                     {/* Status Filter */}
