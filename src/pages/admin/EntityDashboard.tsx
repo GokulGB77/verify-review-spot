@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Star, TrendingUp, MessageSquare, Users, Edit, Save, Code, Copy, ExternalLink, Key, Reply } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import VerifiedClientSection from '@/components/entity/VerifiedClientSection';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate, useParams } from 'react-router-dom';
 
@@ -239,9 +240,10 @@ const EntityDashboard = () => {
         </div>
 
         <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="profile">Entity Profile</TabsTrigger>
             <TabsTrigger value="reviews">Reviews</TabsTrigger>
+            <TabsTrigger value="verified-clients">Verified Clients</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="api">API Access</TabsTrigger>
           </TabsList>
@@ -424,6 +426,10 @@ const EntityDashboard = () => {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="verified-clients">
+            <VerifiedClientSection entityId={id!} />
           </TabsContent>
 
           <TabsContent value="analytics">
