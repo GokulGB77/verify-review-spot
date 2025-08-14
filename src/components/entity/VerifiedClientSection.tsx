@@ -5,8 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { UserCheck, Plus, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { UserCheck, Plus, Clock, CheckCircle, XCircle, Copy, ExternalLink } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useVerificationRequests, useCreateVerificationRequest, useResendVerificationRequest, generateVerificationLink } from '@/hooks/useVerificationRequests';
 
 interface VerifiedClientSectionProps {
   entityId: string;
@@ -23,47 +24,21 @@ const VerifiedClientSection: React.FC<VerifiedClientSectionProps> = ({ entityId 
     service_date: ''
   });
 
-  // Demo data for now - will be replaced with actual database queries once migration is approved
-  const demoRequests = [
-    {
-      id: '1',
-      client_name: 'John Smith',
-      client_email: 'john.smith@email.com',
-      client_phone: '+1-555-0123',
-      service_product_name: 'Premium Consultation',
-      service_date: '2024-01-15',
-      status: 'pending' as const,
-      created_at: '2024-01-20T10:00:00Z'
-    },
-    {
-      id: '2',
-      client_name: 'Sarah Johnson',
-      client_email: 'sarah.j@email.com',
-      client_phone: null,
-      service_product_name: 'Web Development',
-      service_date: '2024-01-10',
-      status: 'accepted' as const,
-      created_at: '2024-01-18T14:30:00Z'
-    },
-    {
-      id: '3',
-      client_name: 'Mike Davis',
-      client_email: 'mike.davis@company.com',
-      client_phone: '+1-555-0789',
-      service_product_name: null,
-      service_date: null,
-      status: 'declined' as const,
-      created_at: '2024-01-16T09:15:00Z'
-    }
-  ];
+  const { data: requests = [], isLoading } = useVerificationRequests(entityId);
+  const createRequestMutation = useCreateVerificationRequest();
+  const resendRequestMutation = useResendVerificationRequest();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // For demo purposes - will be replaced with actual API call
-    toast({
-      title: 'Success',
-      description: 'Verification request sent successfully (Demo mode)',
+    
+    await createRequestMutation.mutateAsync({
+      entity_id: entityId,
+      ...formData,
+      client_phone: formData.client_phone || undefined,
+      service_product_name: formData.service_product_name || undefined,
+      service_date: formData.service_date || undefined,
     });
+
     setIsDialogOpen(false);
     setFormData({
       client_name: '',
@@ -72,6 +47,27 @@ const VerifiedClientSection: React.FC<VerifiedClientSectionProps> = ({ entityId 
       service_product_name: '',
       service_date: ''
     });
+  };
+
+  const handleCopyLink = async (token: string) => {
+    const link = generateVerificationLink(token);
+    try {
+      await navigator.clipboard.writeText(link);
+      toast({
+        title: 'Copied!',
+        description: 'Verification link copied to clipboard',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to copy link to clipboard',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleResend = async (requestId: string) => {
+    await resendRequestMutation.mutateAsync(requestId);
   };
 
   const getStatusBadgeVariant = (status: string) => {
@@ -179,8 +175,11 @@ const VerifiedClientSection: React.FC<VerifiedClientSectionProps> = ({ entityId 
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button type="submit">
-                    Send Request
+                  <Button 
+                    type="submit" 
+                    disabled={createRequestMutation.isPending}
+                  >
+                    {createRequestMutation.isPending ? 'Sending...' : 'Send Request'}
                   </Button>
                 </DialogFooter>
               </form>
@@ -196,7 +195,7 @@ const VerifiedClientSection: React.FC<VerifiedClientSectionProps> = ({ entityId 
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-blue-600 font-medium">Total Requests</p>
-                  <p className="text-2xl font-bold text-blue-900">{demoRequests.length}</p>
+                  <p className="text-2xl font-bold text-blue-900">{requests.length}</p>
                 </div>
                 <UserCheck className="h-8 w-8 text-blue-600" />
               </div>
@@ -206,7 +205,7 @@ const VerifiedClientSection: React.FC<VerifiedClientSectionProps> = ({ entityId 
                 <div>
                   <p className="text-sm text-yellow-600 font-medium">Pending</p>
                   <p className="text-2xl font-bold text-yellow-900">
-                    {demoRequests.filter(r => r.status === 'pending').length}
+                    {requests.filter(r => r.status === 'pending').length}
                   </p>
                 </div>
                 <Clock className="h-8 w-8 text-yellow-600" />
@@ -217,7 +216,7 @@ const VerifiedClientSection: React.FC<VerifiedClientSectionProps> = ({ entityId 
                 <div>
                   <p className="text-sm text-green-600 font-medium">Accepted</p>
                   <p className="text-2xl font-bold text-green-900">
-                    {demoRequests.filter(r => r.status === 'accepted').length}
+                    {requests.filter(r => r.status === 'accepted').length}
                   </p>
                 </div>
                 <CheckCircle className="h-8 w-8 text-green-600" />
@@ -228,7 +227,7 @@ const VerifiedClientSection: React.FC<VerifiedClientSectionProps> = ({ entityId 
                 <div>
                   <p className="text-sm text-red-600 font-medium">Declined</p>
                   <p className="text-2xl font-bold text-red-900">
-                    {demoRequests.filter(r => r.status === 'declined').length}
+                    {requests.filter(r => r.status === 'declined').length}
                   </p>
                 </div>
                 <XCircle className="h-8 w-8 text-red-600" />
@@ -239,9 +238,13 @@ const VerifiedClientSection: React.FC<VerifiedClientSectionProps> = ({ entityId 
           {/* Requests List */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Recent Verification Requests</h3>
-            {demoRequests.length > 0 ? (
+            {isLoading ? (
+              <div className="text-center py-8 text-muted-foreground">
+                Loading verification requests...
+              </div>
+            ) : requests.length > 0 ? (
               <div className="space-y-3">
-                {demoRequests.map((request) => (
+                {requests.map((request) => (
                   <div key={request.id} className="border rounded-lg p-4 bg-white">
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-3">
@@ -276,13 +279,38 @@ const VerifiedClientSection: React.FC<VerifiedClientSectionProps> = ({ entityId 
                       </div>
                     </div>
 
-                    {request.status === 'pending' && (
-                      <div className="mt-3 pt-3 border-t">
-                        <Button variant="outline" size="sm">
-                          Resend Request
-                        </Button>
+                    {/* Verification Link */}
+                    <div className="mt-3 pt-3 border-t">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <ExternalLink className="h-4 w-4" />
+                          <span>Verification Link:</span>
+                          <code className="text-xs bg-gray-100 px-2 py-1 rounded">
+                            {generateVerificationLink(request.verification_token).substring(0, 40)}...
+                          </code>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleCopyLink(request.verification_token)}
+                          >
+                            <Copy className="h-4 w-4 mr-1" />
+                            Copy Link
+                          </Button>
+                          {request.status === 'pending' && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleResend(request.id)}
+                              disabled={resendRequestMutation.isPending}
+                            >
+                              Resend Request
+                            </Button>
+                          )}
+                        </div>
                       </div>
-                    )}
+                    </div>
                   </div>
                 ))}
               </div>
